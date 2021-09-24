@@ -1,6 +1,6 @@
 package com.github.sujankumarmitra.assetservice.v1.controller;
 
-import com.github.sujankumarmitra.assetservice.v1.dto.StoredAsset;
+import com.github.sujankumarmitra.assetservice.v1.model.StoredAsset;
 import com.github.sujankumarmitra.assetservice.v1.service.AssetStorageService;
 import lombok.AllArgsConstructor;
 import org.springframework.core.io.InputStreamSource;
@@ -33,21 +33,21 @@ public class AssetStorageController {
     private final AssetStorageService assetStorageService;
 
     @PostMapping(value = "/upload/{assetId}")
-    public Mono<ResponseEntity<Void>> uploadAsset(String assetId, ServerWebExchange exchange) {
+    public Mono<ResponseEntity<Void>> storeAsset(String assetId, ServerWebExchange exchange) {
         Flux<DataBuffer> dataBuffers = Mono.fromCallable(exchange::getMultipartData)
                 .flatMap(Function.identity())
                 .map(map -> map.getFirst("file"))
                 .flatMapMany(Part::content);
 
         return assetStorageService
-                .storeObject(assetId, dataBuffers)
+                .storeAsset(assetId, dataBuffers)
                 .map(ResponseEntity::ok);
 
     }
 
     @GetMapping("/download/{assetId}")
-    public Mono<ResponseEntity<InputStreamSource>> getObject(String assetId) {
-        return assetStorageService.retrieveObject(assetId)
+    public Mono<ResponseEntity<InputStreamSource>> retrieveAsset(String assetId) {
+        return assetStorageService.retrieveAsset(assetId)
                 .map(this::toResponseEntity);
     }
 

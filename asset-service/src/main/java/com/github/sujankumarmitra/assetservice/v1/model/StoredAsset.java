@@ -1,6 +1,5 @@
-package com.github.sujankumarmitra.assetservice.v1.dto;
+package com.github.sujankumarmitra.assetservice.v1.model;
 
-import com.github.sujankumarmitra.assetservice.v1.model.Asset;
 import org.springframework.core.io.InputStreamSource;
 
 /**

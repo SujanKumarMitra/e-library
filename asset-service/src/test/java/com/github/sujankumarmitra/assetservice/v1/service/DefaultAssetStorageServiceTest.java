@@ -1,9 +1,9 @@
 package com.github.sujankumarmitra.assetservice.v1.service;
 
 import com.github.sujankumarmitra.assetservice.v1.config.AssetStorageConfiguration;
-import com.github.sujankumarmitra.assetservice.v1.dto.StoredAsset;
 import com.github.sujankumarmitra.assetservice.v1.exception.AssetNotFoundException;
 import com.github.sujankumarmitra.assetservice.v1.model.DefaultAsset;
+import com.github.sujankumarmitra.assetservice.v1.model.StoredAsset;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -86,7 +86,7 @@ class DefaultAssetStorageServiceTest {
     @Test
     void givenValidAssetId_whenStored_shouldStore() throws IOException {
         Flux<DataBuffer> dataBuffers = getSampleFileBuffer();
-        Mono<Void> voidMono = serviceUnderTest.storeObject(VALID_ASSET_ID, dataBuffers);
+        Mono<Void> voidMono = serviceUnderTest.storeAsset(VALID_ASSET_ID, dataBuffers);
 
         StepVerifier.create(voidMono)
                 .expectComplete()
@@ -100,16 +100,14 @@ class DefaultAssetStorageServiceTest {
 
     private Flux<DataBuffer> getSampleFileBuffer() {
         Path path = getSampleFilePath();
-        Flux<DataBuffer> dataBuffers = DataBufferUtils.read(
+        return DataBufferUtils.read(
                 path,
                 new DefaultDataBufferFactory(),
                 5, READ);
-        return dataBuffers;
     }
 
     private Path getSampleFilePath() {
-        Path path = Path.of("src", "test", "resources", "hello.txt");
-        return path;
+        return Path.of("src", "test", "resources", "hello.txt");
     }
 
     @Test
@@ -118,12 +116,12 @@ class DefaultAssetStorageServiceTest {
                 .when(mockAssetService).getAsset(INVALID_ASSET_ID);
 
         Flux<DataBuffer> dataBuffers = getSampleFileBuffer();
-        Mono<Void> voidMono = serviceUnderTest.storeObject(INVALID_ASSET_ID, dataBuffers);
+        Mono<Void> voidMono = serviceUnderTest.storeAsset(INVALID_ASSET_ID, dataBuffers);
 
         StepVerifier.create(voidMono)
                 .expectErrorSatisfies(err -> {
                     assertThat(err).isInstanceOf(AssetNotFoundException.class);
-                    log.info("Exception Thrown {}", err);
+                    log.info("Exception Thrown {}", (Object) err);
                 })
                 .verify();
 
@@ -134,7 +132,7 @@ class DefaultAssetStorageServiceTest {
         copySampleFile();
 
         Mono<InputStreamSource> inputStreamSource = serviceUnderTest
-                .retrieveObject(VALID_ASSET_ID)
+                .retrieveAsset(VALID_ASSET_ID)
                 .map(StoredAsset::getInputStreamSource);
 
         Mono<String> fileContent = inputStreamSource.handle(this::mapToInputStream)
@@ -159,7 +157,7 @@ class DefaultAssetStorageServiceTest {
     @Test
     void givenValidAssetId_whenPurge_shouldPurge() throws IOException {
         copySampleFile();
-        Mono<Void> voidMono = serviceUnderTest.purgeObject(VALID_ASSET_ID);
+        Mono<Void> voidMono = serviceUnderTest.purgeAsset(VALID_ASSET_ID);
 
         StepVerifier.create(voidMono)
                 .expectComplete()
@@ -167,8 +165,8 @@ class DefaultAssetStorageServiceTest {
     }
 
     @Test
-    void givenValidAssetId_whenPurge_shouldComplete() throws IOException {
-        Mono<Void> voidMono = serviceUnderTest.purgeObject(INVALID_ASSET_ID);
+    void givenValidAssetId_whenPurge_shouldComplete() {
+        Mono<Void> voidMono = serviceUnderTest.purgeAsset(INVALID_ASSET_ID);
 
         StepVerifier.create(voidMono)
                 .expectComplete()

@@ -1,9 +1,7 @@
 package com.github.sujankumarmitra.assetservice.v1.service;
 
-import com.github.sujankumarmitra.assetservice.v1.dto.CheckPermissionRequest;
-import com.github.sujankumarmitra.assetservice.v1.dto.CheckPermissionResponse;
-import com.github.sujankumarmitra.assetservice.v1.dto.GrantPermissionRequest;
-import com.github.sujankumarmitra.assetservice.v1.dto.GrantPermissionResponse;
+import com.github.sujankumarmitra.assetservice.v1.model.AssetPermission;
+import reactor.core.publisher.Mono;
 
 /**
  * @author skmitra
@@ -11,7 +9,7 @@ import com.github.sujankumarmitra.assetservice.v1.dto.GrantPermissionResponse;
  */
 public interface AssetPermissionService {
 
-    GrantPermissionResponse grantPermission(GrantPermissionRequest request);
+    Mono<Void> grantPermission(AssetPermission request);
 
-    CheckPermissionResponse checkPermission(CheckPermissionRequest request);
+    Mono<Boolean> hasPermission(String assetId, String subjectId);
 }

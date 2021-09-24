@@ -1,9 +1,9 @@
 package com.github.sujankumarmitra.assetservice.v1.service;
 
 import com.github.sujankumarmitra.assetservice.v1.config.AssetStorageConfiguration;
-import com.github.sujankumarmitra.assetservice.v1.dto.DefaultStoredAsset;
-import com.github.sujankumarmitra.assetservice.v1.dto.StoredAsset;
 import com.github.sujankumarmitra.assetservice.v1.model.Asset;
+import com.github.sujankumarmitra.assetservice.v1.model.DefaultStoredAsset;
+import com.github.sujankumarmitra.assetservice.v1.model.StoredAsset;
 import lombok.AllArgsConstructor;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.InputStreamSource;
@@ -34,7 +34,7 @@ public class DefaultAssetStorageService implements AssetStorageService {
 
 
     @Override
-    public Mono<Void> storeObject(String assetId, Flux<DataBuffer> dataBuffers) {
+    public Mono<Void> storeAsset(String assetId, Flux<DataBuffer> dataBuffers) {
         String baseDir = storageConfiguration.getBaseDir();
         Path writePath = Path.of(baseDir, assetId);
 
@@ -43,7 +43,7 @@ public class DefaultAssetStorageService implements AssetStorageService {
     }
 
     @Override
-    public Mono<StoredAsset> retrieveObject(String assetId) {
+    public Mono<StoredAsset> retrieveAsset(String assetId) {
         Mono<Asset> asset = assetService.getAsset(assetId);
         Mono<InputStreamSource> inputStreamSource = asset.map(this::fetchFromDisk);
 
@@ -51,7 +51,7 @@ public class DefaultAssetStorageService implements AssetStorageService {
     }
 
     @Override
-    public Mono<Void> purgeObject(String assetId) {
+    public Mono<Void> purgeAsset(String assetId) {
         String baseDir = storageConfiguration.getBaseDir();
         Path deletePath = Path.of(baseDir, assetId);
 

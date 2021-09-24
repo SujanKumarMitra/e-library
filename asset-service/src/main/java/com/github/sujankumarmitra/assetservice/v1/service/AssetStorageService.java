@@ -1,6 +1,6 @@
 package com.github.sujankumarmitra.assetservice.v1.service;
 
-import com.github.sujankumarmitra.assetservice.v1.dto.StoredAsset;
+import com.github.sujankumarmitra.assetservice.v1.model.StoredAsset;
 import org.springframework.core.io.buffer.DataBuffer;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -10,9 +10,9 @@ import reactor.core.publisher.Mono;
  * @since Sep 24/09/21, 2021
  */
 public interface AssetStorageService {
-    Mono<Void> storeObject(String assetId, Flux<DataBuffer> dataBuffers);
+    Mono<Void> storeAsset(String assetId, Flux<DataBuffer> dataBuffers);
 
-    Mono<StoredAsset> retrieveObject(String assetId);
+    Mono<StoredAsset> retrieveAsset(String assetId);
 
-    Mono<Void> purgeObject(String assetId);
+    Mono<Void> purgeAsset(String assetId);
 }
