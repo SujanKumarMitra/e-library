@@ -1,9 +1,7 @@
 package com.github.sujankumarmitra.assetservice.v1.service;
 
-import com.github.sujankumarmitra.assetservice.v1.dto.CreateAssetRequest;
-import com.github.sujankumarmitra.assetservice.v1.dto.CreateAssetResponse;
-import com.github.sujankumarmitra.assetservice.v1.dto.DeleteAssetRequest;
-import com.github.sujankumarmitra.assetservice.v1.dto.DeleteAssetResponse;
+import com.github.sujankumarmitra.assetservice.v1.model.Asset;
+import reactor.core.publisher.Mono;
 
 /**
  * @author skmitra
@@ -11,7 +9,9 @@ import com.github.sujankumarmitra.assetservice.v1.dto.DeleteAssetResponse;
  */
 public interface AssetService {
 
-    CreateAssetResponse createAsset(CreateAssetRequest request);
+    Mono<Asset> createAsset(Asset asset);
 
-    DeleteAssetResponse deleteAsset(DeleteAssetRequest request);
+    Mono<Void> deleteAsset(String assetId);
+
+    Mono<Asset> getAsset(String assetId);
 }
