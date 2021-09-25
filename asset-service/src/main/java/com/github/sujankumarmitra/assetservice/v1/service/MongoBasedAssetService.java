@@ -3,6 +3,7 @@ package com.github.sujankumarmitra.assetservice.v1.service;
 import com.github.sujankumarmitra.assetservice.v1.model.Asset;
 import com.github.sujankumarmitra.assetservice.v1.model.MongoDocumentAsset;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 @Slf4j
 public class MongoBasedAssetService implements AssetService {
 
+    @NonNull
     private final ReactiveMongoTemplate mongoTemplate;
 
     @Override
