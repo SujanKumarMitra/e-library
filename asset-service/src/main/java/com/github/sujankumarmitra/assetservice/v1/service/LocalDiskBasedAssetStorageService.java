@@ -5,6 +5,7 @@ import com.github.sujankumarmitra.assetservice.v1.model.Asset;
 import com.github.sujankumarmitra.assetservice.v1.model.DefaultStoredAsset;
 import com.github.sujankumarmitra.assetservice.v1.model.StoredAsset;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -29,7 +30,9 @@ import static java.nio.file.StandardOpenOption.WRITE;
 @AllArgsConstructor
 public class LocalDiskBasedAssetStorageService implements AssetStorageService {
 
+    @NonNull
     private final AssetService assetService;
+    @NonNull
     private final AssetStorageConfiguration storageConfiguration;
 
 
