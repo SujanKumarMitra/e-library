@@ -27,7 +27,7 @@ import static java.nio.file.StandardOpenOption.WRITE;
  */
 //@Service
 @AllArgsConstructor
-public class DefaultAssetStorageService implements AssetStorageService {
+public class LocalDiskBasedAssetStorageService implements AssetStorageService {
 
     private final AssetService assetService;
     private final AssetStorageConfiguration storageConfiguration;

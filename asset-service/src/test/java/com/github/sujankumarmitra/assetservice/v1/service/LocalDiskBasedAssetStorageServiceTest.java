@@ -35,10 +35,10 @@ import static reactor.core.publisher.Mono.just;
  * @since Sep 24/09/21, 2021
  */
 @Slf4j
-class DefaultAssetStorageServiceTest {
+class LocalDiskBasedAssetStorageServiceTest {
 
 
-    protected DefaultAssetStorageService serviceUnderTest;
+    protected LocalDiskBasedAssetStorageService serviceUnderTest;
 
     private static final String VALID_ASSET_ID = "VALID_ASSET_ID";
     private static final String INVALID_ASSET_ID = "INVALID_ASSET_ID";
@@ -65,7 +65,7 @@ class DefaultAssetStorageServiceTest {
         mockStorageConfig();
         mockAssetService();
 
-        serviceUnderTest = new DefaultAssetStorageService(mockAssetService, mockStorageConfig);
+        serviceUnderTest = new LocalDiskBasedAssetStorageService(mockAssetService, mockStorageConfig);
     }
 
     private void mockAssetService() {
