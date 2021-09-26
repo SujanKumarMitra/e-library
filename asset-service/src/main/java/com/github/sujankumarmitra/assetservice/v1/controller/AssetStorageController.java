@@ -3,6 +3,7 @@ package com.github.sujankumarmitra.assetservice.v1.controller;
 import com.github.sujankumarmitra.assetservice.v1.model.StoredAsset;
 import com.github.sujankumarmitra.assetservice.v1.service.AssetStorageService;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.ResponseEntity;
@@ -30,10 +31,11 @@ import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 public class AssetStorageController {
 
     public static final String CONTENT_DISPOSITION_FORMAT = "attachment; filename=\"%s\"";
+    @NonNull
     private final AssetStorageService assetStorageService;
 
     @PostMapping(value = "/upload/{assetId}")
-    public Mono<ResponseEntity<Void>> storeAsset(String assetId, ServerWebExchange exchange) {
+    public Mono<ResponseEntity<Object>> storeAsset(String assetId, ServerWebExchange exchange) {
         Flux<DataBuffer> dataBuffers = Mono.fromCallable(exchange::getMultipartData)
                 .flatMap(Function.identity())
                 .map(map -> map.getFirst("file"))
@@ -41,7 +43,8 @@ public class AssetStorageController {
 
         return assetStorageService
                 .storeAsset(assetId, dataBuffers)
-                .map(ResponseEntity::ok);
+                .map(__ -> ResponseEntity.ok().build())
+                .onErrorResume(ControllerUtils::translateErrors);
 
     }
 
