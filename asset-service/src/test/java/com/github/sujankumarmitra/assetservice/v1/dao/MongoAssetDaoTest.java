@@ -1,9 +1,8 @@
-package com.github.sujankumarmitra.assetservice.v1.service;
+package com.github.sujankumarmitra.assetservice.v1.dao;
 
 import com.github.javafaker.Faker;
 import com.github.sujankumarmitra.assetservice.v1.model.Asset;
 import com.github.sujankumarmitra.assetservice.v1.model.DefaultAsset;
-import com.github.sujankumarmitra.assetservice.v1.model.MongoDocumentAsset;
 import com.mongodb.reactivestreams.client.MongoCollection;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
@@ -18,6 +17,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
@@ -28,34 +28,35 @@ import static org.springframework.data.mongodb.core.query.Query.query;
  */
 @DataMongoTest(properties = "logging.level.org.mongodb.*=DEBUG")
 @Slf4j
-class MongoBasedAssetServiceTest {
+class MongoAssetDaoTest {
 
+    public static final String INVALID_ID = "INVALID_ID";
     @Autowired
     private ReactiveMongoTemplate mongoTemplate = null;
-    protected MongoBasedAssetService serviceUnderTest;
+    protected MongoAssetDao daoUnderTest;
 
     private Faker faker;
 
     @BeforeEach
     void setUp() {
-        serviceUnderTest = new MongoBasedAssetService(mongoTemplate);
+        daoUnderTest = new MongoAssetDao(mongoTemplate);
         faker = new Faker();
     }
 
     @AfterEach
     void tearDown() {
-        mongoTemplate.remove(MongoDocumentAsset.class).all().block();
+        mongoTemplate.remove(MongoAssetDocument.class).all().block();
     }
 
     @Test
     void testServiceAutowiredSuccessfully() {
-        assertThat(serviceUnderTest).isNotNull();
+        assertThat(daoUnderTest).isNotNull();
     }
 
     @Test
     void givenValidAsset_whenCreated_shouldSaveAndReturnAssetWithId() {
         DefaultAsset assetToCreate = new DefaultAsset("VALID", "assetName");
-        Mono<Asset> createdAsset = serviceUnderTest.createAsset(assetToCreate);
+        Mono<Asset> createdAsset = daoUnderTest.insert(assetToCreate);
 
         StepVerifier.create(createdAsset)
                 .expectSubscription()
@@ -79,18 +80,18 @@ class MongoBasedAssetServiceTest {
     }
 
     private String getCollectionName() {
-        return mongoTemplate.getCollectionName(MongoDocumentAsset.class);
+        return mongoTemplate.getCollectionName(MongoAssetDocument.class);
     }
 
     @Test
-    void givenValidAsset_whenDeleted_shouldDelete() {
+    void givenAssetId_whenDeleted_shouldDelete() {
 
         String assetId = mongoTemplate
-                .insert(new MongoDocumentAsset(null, faker.file().fileName()))
+                .insert(new MongoAssetDocument(null, faker.file().fileName(), emptySet()))
                 .block()
                 .getId();
 
-        serviceUnderTest.deleteAsset(assetId).block();
+        daoUnderTest.remove(assetId).block();
 
         Asset nullAsset = findOneById(assetId).block();
         assertThat(nullAsset).isNull();
@@ -101,7 +102,7 @@ class MongoBasedAssetServiceTest {
     void givenValidAssetId_whenFetched_shouldFetch() {
 
         Asset insertedAsset = mongoTemplate
-                .insert(new MongoDocumentAsset(null, faker.file().fileName()))
+                .insert(new MongoAssetDocument(null, faker.file().fileName(), emptySet()))
                 .block();
 
         Document insertedDocument = mongoTemplate.getCollection(getCollectionName())
@@ -111,13 +112,22 @@ class MongoBasedAssetServiceTest {
 
         System.out.println(insertedDocument);
 
-        Asset fetchedAsset = serviceUnderTest.getAsset(insertedAsset.getId()).block();
+        Asset fetchedAsset = daoUnderTest.findOne(insertedAsset.getId()).block();
         Assertions.assertEquals(insertedAsset, fetchedAsset);
     }
 
-    private Mono<MongoDocumentAsset> findOneById(String assetId) {
+    @Test
+    void givenInvalidAssetId_whenFetched_shouldNotEmitAnything() {
+        Mono<Asset> asset = daoUnderTest.findOne(INVALID_ID);
+
+        StepVerifier.create(asset)
+                .expectComplete()
+                .verify();
+    }
+
+    private Mono<MongoAssetDocument> findOneById(String assetId) {
         return mongoTemplate.findOne(query(where("_id").is(assetId))
-                , MongoDocumentAsset.class);
+                , MongoAssetDocument.class);
     }
 
 }

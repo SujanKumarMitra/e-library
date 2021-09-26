@@ -9,7 +9,7 @@ import reactor.core.publisher.Mono;
  */
 public interface AssetPermissionService {
 
-    Mono<Void> grantPermission(AssetPermission request);
+    Mono<Void> grantPermission(AssetPermission permission);
 
     Mono<Boolean> hasPermission(String assetId, String subjectId);
 }
