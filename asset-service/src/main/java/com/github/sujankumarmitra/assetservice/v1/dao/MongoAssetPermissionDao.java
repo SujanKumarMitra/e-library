@@ -6,6 +6,7 @@ import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.model.UpdateOneModel;
 import com.mongodb.client.model.WriteModel;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
@@ -31,6 +32,7 @@ import static org.springframework.data.mongodb.core.query.Criteria.where;
 @AllArgsConstructor
 public class MongoAssetPermissionDao implements AssetPermissionDao {
 
+    @NonNull
     private final ReactiveMongoTemplate mongoTemplate;
 
     @Override

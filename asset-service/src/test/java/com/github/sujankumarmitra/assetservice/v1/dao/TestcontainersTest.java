@@ -8,7 +8,7 @@ import org.testcontainers.utility.DockerImageName;
  * @author skmitra
  * @since Sep 25/09/21, 2021
  */
-class TestContainersTest {
+class TestcontainersTest {
 
     @Test
     void testImageNameParsing() {

@@ -4,6 +4,7 @@ import com.github.sujankumarmitra.assetservice.v1.dao.AssetPermissionDao;
 import com.github.sujankumarmitra.assetservice.v1.exception.AssetNotFoundException;
 import com.github.sujankumarmitra.assetservice.v1.model.AssetPermission;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -16,6 +17,7 @@ import reactor.core.publisher.Mono;
 @AllArgsConstructor
 public class DefaultAssetPermissionService implements AssetPermissionService {
 
+    @NonNull
     private final AssetPermissionDao permissionDao;
 
     @Override

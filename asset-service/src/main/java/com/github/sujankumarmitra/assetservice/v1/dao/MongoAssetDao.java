@@ -1,10 +1,12 @@
 package com.github.sujankumarmitra.assetservice.v1.dao;
 
 import com.github.sujankumarmitra.assetservice.v1.model.Asset;
+import com.github.sujankumarmitra.assetservice.v1.model.DefaultAsset;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 
@@ -45,13 +47,16 @@ public class MongoAssetDao implements AssetDao {
 
     @Override
     public Mono<Asset> findOne(String assetId) {
+        Query query = query(where("_id").is(assetId));
+        query.fields().include("_id","name");
+
         return mongoTemplate
-                .findOne(query(where("_id").is(assetId)), MongoAssetDocument.class)
-                .doOnNext(assetDocument -> setAssetIdInPermissions(assetId, assetDocument))
+                .findOne(query, DefaultAsset.class, getCollectionName())
                 .cast(Asset.class);
     }
 
-    private void setAssetIdInPermissions(String assetId, MongoAssetDocument assetDocument) {
-        assetDocument.getPermissions().forEach(perm -> perm.setAssetId(assetId));
+    private String getCollectionName() {
+        return mongoTemplate.getCollectionName(MongoAssetDocument.class);
     }
+
 }
