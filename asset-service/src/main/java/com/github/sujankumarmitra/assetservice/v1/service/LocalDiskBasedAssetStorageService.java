@@ -10,6 +10,7 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoSink;
@@ -26,7 +27,7 @@ import static java.nio.file.StandardOpenOption.WRITE;
  * @author skmitra
  * @since Sep 24/09/21, 2021
  */
-//@Service
+@Service
 @AllArgsConstructor
 public class LocalDiskBasedAssetStorageService implements AssetStorageService {
 
