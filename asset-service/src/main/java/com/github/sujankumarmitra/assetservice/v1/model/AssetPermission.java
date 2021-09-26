@@ -10,7 +10,7 @@ public interface AssetPermission {
 
     String getSubjectId();
 
-    long getGrantStartTime();
+    long getGrantStartEpochSecond();
 
-    long getGrantDuration();
+    long getGrantDurationInMillis();
 }
