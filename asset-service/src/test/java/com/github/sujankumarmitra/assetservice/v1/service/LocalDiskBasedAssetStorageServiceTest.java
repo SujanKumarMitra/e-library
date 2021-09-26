@@ -37,7 +37,6 @@ import static reactor.core.publisher.Mono.just;
 @Slf4j
 class LocalDiskBasedAssetStorageServiceTest {
 
-
     protected LocalDiskBasedAssetStorageService serviceUnderTest;
 
     private static final String VALID_ASSET_ID = "VALID_ASSET_ID";
@@ -142,6 +141,20 @@ class LocalDiskBasedAssetStorageServiceTest {
 
         StepVerifier.create(fileContent)
                 .expectNext("Hello")
+                .expectComplete()
+                .verify();
+    }
+
+
+    @Test
+    void givenInvalidAssetId_whenRetrieve_shouldCompleteWithoutEmit() {
+        Mockito.doReturn(Mono.empty())
+                .when(mockAssetService).getAsset(INVALID_ASSET_ID);
+
+
+        Mono<StoredAsset> storedAsset = serviceUnderTest.retrieveAsset(INVALID_ASSET_ID);
+
+        StepVerifier.create(storedAsset)
                 .expectComplete()
                 .verify();
     }
