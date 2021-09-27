@@ -33,7 +33,7 @@ import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
  * @since Sep 24/09/21, 2021
  */
 @RestController
-@RequestMapping("/v1")
+@RequestMapping("/api/v1")
 @AllArgsConstructor
 @Tag(
         name = "AssetStorageController",

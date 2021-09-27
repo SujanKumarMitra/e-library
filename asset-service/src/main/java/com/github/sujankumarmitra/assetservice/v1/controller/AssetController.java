@@ -33,7 +33,7 @@ import static reactor.core.publisher.Mono.just;
  * @since Sep 26/09/21, 2021
  */
 @RestController
-@RequestMapping("/v1/asset")
+@RequestMapping("/api/v1/asset")
 @AllArgsConstructor
 @Tag(
         name = "AssetController",

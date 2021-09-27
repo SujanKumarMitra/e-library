@@ -9,10 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 import static org.springframework.http.ResponseEntity.ok;
@@ -22,7 +19,7 @@ import static org.springframework.http.ResponseEntity.ok;
  * @since Sep 26/09/21, 2021
  */
 @RestController
-@RequestMapping("/v1/asset/permission")
+@RequestMapping("/api/v1")
 @AllArgsConstructor
 @Tag(
         name = "AssetPermissionController",
@@ -42,9 +39,11 @@ public class AssetPermissionController {
                     )
             }
     )
-    @PutMapping
+    @PutMapping("/asset/{assetId}/permission")
     @PreAuthorize("hasAuthority('WRITE_ASSET')")
-    public Mono<ResponseEntity<Object>> grantPermission(@RequestBody GrantPermissionRequest permission) {
+    public Mono<ResponseEntity<Object>> grantPermission(@PathVariable String assetId,
+                                                        @RequestBody GrantPermissionRequest permission) {
+        permission.setAssetId(assetId);
         return permissionService
                 .grantPermission(permission)
                 .map(__ -> ok().build())

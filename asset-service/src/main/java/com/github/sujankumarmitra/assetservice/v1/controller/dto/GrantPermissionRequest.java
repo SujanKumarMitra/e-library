@@ -1,5 +1,6 @@
 package com.github.sujankumarmitra.assetservice.v1.controller.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.sujankumarmitra.assetservice.v1.model.AssetPermission;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -12,9 +13,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class GrantPermissionRequest implements AssetPermission {
-    @Schema(
-            description = "Unique ID of asset"
-    )
+    @JsonIgnore
     private String assetId;
     @Schema(
             description = "ID of the client of whom permission will be granted"

@@ -37,6 +37,7 @@ public class SecurityConfiguration {
 
 //        @formatter:off
         return httpSecurity
+                .securityMatcher(pathMatchers("/api/**"))
                 .authorizeExchange()
                     .anyExchange()
                         .authenticated()
@@ -72,7 +73,7 @@ public class SecurityConfiguration {
     private ServerWebExchangeMatcher getPathMatchers() {
         return pathMatchers(
                 "/v3/api-docs/**",
-                "/docs",
+                "/swagger-ui.html",
                 "/swagger-ui/**",
                 "/webjars/**");
     }
