@@ -1,6 +1,6 @@
 package com.github.sujankumarmitra.assetservice.v1.controller;
 
-import com.github.sujankumarmitra.assetservice.v1.config.ApiSecurityScheme;
+import com.github.sujankumarmitra.assetservice.v1.config.OpenApiConfiguration;
 import com.github.sujankumarmitra.assetservice.v1.controller.dto.CreateAssetRequest;
 import com.github.sujankumarmitra.assetservice.v1.model.Asset;
 import com.github.sujankumarmitra.assetservice.v1.model.AssetPermission;
@@ -39,7 +39,7 @@ import static reactor.core.publisher.Mono.just;
         name = "AssetController",
         description = "### Controller for creating and deleting assets"
 )
-@ApiSecurityScheme
+@OpenApiConfiguration.ApiSecurityResponse
 public class AssetController {
 
     @NonNull
@@ -67,7 +67,7 @@ public class AssetController {
             }
     )
     @PreAuthorize("hasAuthority('WRITE_ASSET')")
-    public Mono<ResponseEntity<Object>> createAsset(Authentication authenticatedUser,
+    public Mono<ResponseEntity<Void>> createAsset(Authentication authenticatedUser,
                                                     @RequestBody @Schema(description = "Schema for creating a new Asset") CreateAssetRequest request) {
 
         return assetService
@@ -75,8 +75,7 @@ public class AssetController {
                 .map(Asset::getId)
                 .zipWith(just(authenticatedUser.getName()), this::getAssetPermission)
                 .flatMap(this::grantPermissionToAssetCreator)
-                .map(assetId -> created(create(assetId)).build())
-                .onErrorResume(ControllerUtils::translateErrors);
+                .map(assetId -> created(create(assetId)).build());
     }
 
     @DeleteMapping("/{assetId}")
@@ -91,12 +90,10 @@ public class AssetController {
             }
     )
     @PreAuthorize("hasAuthority('WRITE_ASSET')")
-    public Mono<ResponseEntity<Object>> deleteAsset(@PathVariable String assetId) {
+    public Mono<ResponseEntity<Void>> deleteAsset(@PathVariable String assetId) {
         return assetService
                 .deleteAsset(assetId)
-                .thenReturn(accepted().build())
-                .doOnNext(System.out::println)
-                .onErrorResume(ControllerUtils::translateErrors);
+                .thenReturn(accepted().build());
     }
 
 

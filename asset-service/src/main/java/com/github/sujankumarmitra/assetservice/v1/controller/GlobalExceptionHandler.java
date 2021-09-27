@@ -1,6 +1,6 @@
-package com.github.sujankumarmitra.assetservice.v1;
+package com.github.sujankumarmitra.assetservice.v1.controller;
 
-import com.github.sujankumarmitra.assetservice.v1.dao.ErrorResponse;
+import com.github.sujankumarmitra.assetservice.v1.controller.dto.ErrorResponse;
 import com.github.sujankumarmitra.assetservice.v1.exception.ApiOperationException;
 import com.github.sujankumarmitra.assetservice.v1.exception.DefaultErrorDetails;
 import com.github.sujankumarmitra.assetservice.v1.exception.ErrorDetails;
@@ -19,6 +19,7 @@ import static org.springframework.http.ResponseEntity.internalServerError;
  * @since Sep 27/09/21, 2021
  */
 @RestControllerAdvice
+//@ApiResponse
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ApiOperationException.class)

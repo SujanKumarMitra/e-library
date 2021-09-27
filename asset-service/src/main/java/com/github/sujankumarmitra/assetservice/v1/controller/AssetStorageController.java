@@ -1,6 +1,8 @@
 package com.github.sujankumarmitra.assetservice.v1.controller;
 
-import com.github.sujankumarmitra.assetservice.v1.config.ApiSecurityScheme;
+import com.github.sujankumarmitra.assetservice.v1.config.OpenApiConfiguration;
+import com.github.sujankumarmitra.assetservice.v1.controller.dto.ErrorResponse;
+import com.github.sujankumarmitra.assetservice.v1.exception.AssetNeverStoredException;
 import com.github.sujankumarmitra.assetservice.v1.exception.AssetNotFoundException;
 import com.github.sujankumarmitra.assetservice.v1.model.StoredAsset;
 import com.github.sujankumarmitra.assetservice.v1.service.AssetStorageService;
@@ -28,7 +30,10 @@ import static io.swagger.v3.oas.annotations.enums.ParameterIn.PATH;
 import static java.lang.String.format;
 import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.http.HttpStatus.PRECONDITION_REQUIRED;
 import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
+import static org.springframework.http.ResponseEntity.ok;
+import static org.springframework.http.ResponseEntity.status;
 import static reactor.core.publisher.Mono.error;
 
 /**
@@ -42,7 +47,7 @@ import static reactor.core.publisher.Mono.error;
         name = "AssetStorageController",
         description = "### Controller for storing and retrieving asset objects"
 )
-@ApiSecurityScheme
+@OpenApiConfiguration.ApiSecurityResponse
 public class AssetStorageController {
 
     public static final String CONTENT_DISPOSITION_FORMAT = "attachment; filename=\"%s\"";
@@ -82,13 +87,12 @@ public class AssetStorageController {
     )
     @PutMapping(value = "/assets/{assetId}", consumes = {APPLICATION_OCTET_STREAM_VALUE})
     @PreAuthorize("hasAuthority('WRITE_ASSET')")
-    public Mono<ResponseEntity<Object>> storeAsset(@PathVariable String assetId, ServerWebExchange exchange) {
+    public Mono<ResponseEntity<Void>> storeAsset(@PathVariable String assetId, ServerWebExchange exchange) {
         Flux<DataBuffer> dataBuffers = exchange.getRequest().getBody();
 
         return assetStorageService
                 .storeAsset(assetId, dataBuffers)
-                .map(__ -> ResponseEntity.ok().build())
-                .onErrorResume(ControllerUtils::translateErrors);
+                .map(__ -> ok().build());
 
     }
 
@@ -124,7 +128,17 @@ public class AssetStorageController {
                     ),
                     @ApiResponse(
                             responseCode = "404",
-                            description = "Asset with provided assetId not found"
+                            description = "Asset with provided assetId not found",
+                            content = @Content(
+                                    schema = @Schema
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "428",
+                            description = "asset is created but never stored",
+                            content = @Content(
+                                    schema = @Schema
+                            )
                     )
             }
     )
@@ -137,11 +151,17 @@ public class AssetStorageController {
                 .map(this::toResponseEntity);
     }
 
+
+    @ExceptionHandler(AssetNeverStoredException.class)
+    public Mono<ResponseEntity<ErrorResponse>> assetNeverStoredExceptionHandler(AssetNeverStoredException ex) {
+        return Mono.just(status(PRECONDITION_REQUIRED)
+                .body(new ErrorResponse(ex.getErrors())));
+    }
+
     private ResponseEntity<InputStreamSource> toResponseEntity(StoredAsset storedAsset) {
         String assetName = storedAsset.getAsset().getName();
         InputStreamSource streamSource = storedAsset.getInputStreamSource();
-        return ResponseEntity
-                .ok()
+        return ok()
                 .header(CONTENT_DISPOSITION, format(CONTENT_DISPOSITION_FORMAT, assetName))
                 .header(CONTENT_TYPE, APPLICATION_OCTET_STREAM_VALUE)
                 .body(streamSource);
