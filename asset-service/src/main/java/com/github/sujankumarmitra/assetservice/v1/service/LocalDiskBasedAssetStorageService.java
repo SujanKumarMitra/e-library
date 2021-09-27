@@ -49,10 +49,7 @@ public class LocalDiskBasedAssetStorageService implements AssetStorageService {
 
     @Override
     public Mono<StoredAsset> retrieveAsset(String assetId) {
-        Mono<Asset> asset = assetService
-                .getAsset(assetId)
-                .switchIfEmpty(Mono.error(new AssetNotFoundException(assetId)));
-
+        Mono<Asset> asset = assetService.getAsset(assetId);
         Mono<InputStreamSource> inputStreamSource = asset.map(this::fetchFromDisk);
 
         return Mono.zip(asset, inputStreamSource, DefaultStoredAsset::new);

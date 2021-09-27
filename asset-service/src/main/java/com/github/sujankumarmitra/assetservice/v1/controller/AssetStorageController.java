@@ -1,6 +1,7 @@
 package com.github.sujankumarmitra.assetservice.v1.controller;
 
 import com.github.sujankumarmitra.assetservice.v1.config.ApiSecurityScheme;
+import com.github.sujankumarmitra.assetservice.v1.exception.AssetNotFoundException;
 import com.github.sujankumarmitra.assetservice.v1.model.StoredAsset;
 import com.github.sujankumarmitra.assetservice.v1.service.AssetStorageService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,6 +29,7 @@ import static java.lang.String.format;
 import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
+import static reactor.core.publisher.Mono.error;
 
 /**
  * @author skmitra
@@ -71,6 +73,10 @@ public class AssetStorageController {
                     @ApiResponse(
                             responseCode = "200",
                             description = "Server has successfully handled the request"
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "Asset with provided assetId not found"
                     )
             }
     )
@@ -115,14 +121,19 @@ public class AssetStorageController {
                                             )
                                     )
                             }
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "Asset with provided assetId not found"
                     )
             }
     )
     @GetMapping("/assets/{assetId}")
     @PreAuthorize("hasAuthority('READ_ASSET')")
     public Mono<ResponseEntity<InputStreamSource>> retrieveAsset(Authentication authenticatedUser,
-                                                      @PathVariable String assetId) {
+                                                                 @PathVariable String assetId) {
         return assetStorageService.retrieveAsset(assetId)
+                .switchIfEmpty(error(new AssetNotFoundException(assetId)))
                 .map(this::toResponseEntity);
     }
 
