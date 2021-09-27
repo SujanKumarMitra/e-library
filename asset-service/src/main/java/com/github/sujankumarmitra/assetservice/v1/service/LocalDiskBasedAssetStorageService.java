@@ -1,6 +1,7 @@
 package com.github.sujankumarmitra.assetservice.v1.service;
 
 import com.github.sujankumarmitra.assetservice.v1.config.AssetStorageProperties;
+import com.github.sujankumarmitra.assetservice.v1.exception.AssetNeverStoredException;
 import com.github.sujankumarmitra.assetservice.v1.exception.AssetNotFoundException;
 import com.github.sujankumarmitra.assetservice.v1.model.Asset;
 import com.github.sujankumarmitra.assetservice.v1.model.DefaultStoredAsset;
@@ -78,6 +79,9 @@ public class LocalDiskBasedAssetStorageService implements AssetStorageService {
         String baseDir = storageConfiguration.getBaseDir();
         Path readPath = Path.of(baseDir, asset.getId());
 
+        if(!Files.exists(readPath)) {
+            throw new AssetNeverStoredException(asset.getId());
+        }
         return new FileSystemResource(readPath);
     }
 

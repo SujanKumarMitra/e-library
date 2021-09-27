@@ -185,4 +185,17 @@ class LocalDiskBasedAssetStorageServiceTest {
                 .expectComplete()
                 .verify();
     }
+
+
+    @Test
+    void givenValidAssetIdButNoAssociatedFile_whenRetrieveAsset_shouldEmitError() {
+        Mockito.doReturn(Mono.just(new DefaultAsset(VALID_ASSET_ID, "somename")))
+                .when(mockAssetService).getAsset(VALID_ASSET_ID);
+
+        Mono<StoredAsset> storedAsset = serviceUnderTest.retrieveAsset(VALID_ASSET_ID);
+
+        StepVerifier.create(storedAsset)
+                .expectError()
+                .verify();
+    }
 }
