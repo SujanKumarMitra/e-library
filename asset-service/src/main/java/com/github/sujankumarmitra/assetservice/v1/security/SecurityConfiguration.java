@@ -1,6 +1,7 @@
 package com.github.sujankumarmitra.assetservice.v1.security;
 
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
@@ -25,14 +26,16 @@ import static org.springframework.security.web.server.util.matcher.ServerWebExch
 @AllArgsConstructor
 public class SecurityConfiguration {
 
-    ReactiveAuthenticationManager authenticationManager;
-    ServerAuthenticationConverter authenticationConverter;
+    @NonNull
+    private ReactiveAuthenticationManager jwtAuthenticationManager;
+    @NonNull
+    private ServerAuthenticationConverter jwtAuthenticationConverter;
 
     @Bean
     public SecurityWebFilterChain jwtFilterChain(ServerHttpSecurity httpSecurity) {
 
-        AuthenticationWebFilter jwtFilter = new AuthenticationWebFilter(authenticationManager);
-        jwtFilter.setServerAuthenticationConverter(authenticationConverter);
+        AuthenticationWebFilter jwtFilter = new AuthenticationWebFilter(jwtAuthenticationManager);
+        jwtFilter.setServerAuthenticationConverter(jwtAuthenticationConverter);
 
 
 //        @formatter:off

@@ -1,12 +1,13 @@
 package com.github.sujankumarmitra.assetservice.v1.service;
 
 import com.github.sujankumarmitra.assetservice.v1.dao.AssetPermissionDao;
-import com.github.sujankumarmitra.assetservice.v1.exception.AssetNotFoundException;
 import com.github.sujankumarmitra.assetservice.v1.model.AssetPermission;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+
+import static java.lang.Boolean.FALSE;
 
 
 /**
@@ -30,8 +31,8 @@ public class DefaultAssetPermissionService implements AssetPermissionService {
         long currentTimestamp = System.currentTimeMillis();
 
         return permissionDao.findOne(assetId, subjectId)
-                .switchIfEmpty(Mono.error(new AssetNotFoundException(assetId)))
-                .map(permission -> checkPermission(currentTimestamp, permission));
+                .map(permission -> checkPermission(currentTimestamp, permission))
+                .switchIfEmpty(Mono.just(FALSE));
 
     }
 

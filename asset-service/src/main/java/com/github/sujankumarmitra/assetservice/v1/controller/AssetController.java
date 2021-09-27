@@ -40,6 +40,7 @@ import static reactor.core.publisher.Mono.just;
         description = "### Controller for creating and deleting assets"
 )
 @OpenApiConfiguration.ApiSecurityResponse
+@OpenApiConfiguration.ApiSecurityScheme
 public class AssetController {
 
     @NonNull

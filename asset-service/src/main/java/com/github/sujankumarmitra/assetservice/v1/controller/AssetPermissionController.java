@@ -27,6 +27,7 @@ import static org.springframework.http.ResponseEntity.ok;
         description = "### Controller for granting clients permission to access assets"
 )
 @OpenApiConfiguration.ApiSecurityResponse
+@OpenApiConfiguration.ApiSecurityScheme
 public class AssetPermissionController {
 
     @NonNull
