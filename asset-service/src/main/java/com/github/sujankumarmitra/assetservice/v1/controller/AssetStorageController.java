@@ -121,7 +121,7 @@ public class AssetStorageController {
     @GetMapping("/assets/{assetId}")
     @PreAuthorize("hasAuthority('READ_ASSET')")
     public Mono<ResponseEntity<InputStreamSource>> retrieveAsset(Authentication authenticatedUser,
-                                                                 @PathVariable String assetId) {
+                                                      @PathVariable String assetId) {
         return assetStorageService.retrieveAsset(assetId)
                 .map(this::toResponseEntity);
     }

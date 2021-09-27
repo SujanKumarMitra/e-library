@@ -24,8 +24,7 @@ import reactor.core.publisher.Mono;
 import static com.github.sujankumarmitra.assetservice.v1.model.AssetPermission.INFINITE_GRANT_DURATION;
 import static java.lang.System.currentTimeMillis;
 import static java.net.URI.create;
-import static org.springframework.http.ResponseEntity.accepted;
-import static org.springframework.http.ResponseEntity.created;
+import static org.springframework.http.ResponseEntity.*;
 import static reactor.core.publisher.Mono.just;
 
 
@@ -95,7 +94,8 @@ public class AssetController {
     public Mono<ResponseEntity<Object>> deleteAsset(@PathVariable String assetId) {
         return assetService
                 .deleteAsset(assetId)
-                .map(__ -> accepted().build())
+                .thenReturn(accepted().build())
+                .doOnNext(System.out::println)
                 .onErrorResume(ControllerUtils::translateErrors);
     }
 
