@@ -29,7 +29,6 @@ public class MongoAssetDao implements AssetDao {
     @Override
     public Mono<Asset> insert(Asset asset) {
         MongoAssetDocument assetDocument = MongoAssetDocument.newBuilder()
-                .id(asset.getId())
                 .name(asset.getName())
                 .permissions(emptySet())
                 .build();

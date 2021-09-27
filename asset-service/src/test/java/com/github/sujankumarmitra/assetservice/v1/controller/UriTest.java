@@ -17,7 +17,7 @@ class UriTest {
 
     @Test
     void testAcceptedUri() {
-        URI uri = assertDoesNotThrow(() -> URI.create("/somepath"));
+        URI uri = assertDoesNotThrow(() -> URI.create("somepath"));
         log.info("Created URI: '{}'", uri);
     }
 }

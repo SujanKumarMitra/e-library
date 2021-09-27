@@ -6,6 +6,7 @@ import com.github.sujankumarmitra.assetservice.v1.model.DefaultAsset;
 import com.mongodb.reactivestreams.client.MongoCollection;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,7 +56,7 @@ class MongoAssetDaoTest {
 
     @Test
     void givenValidAsset_whenCreated_shouldSaveAndReturnAssetWithId() {
-        DefaultAsset assetToCreate = new DefaultAsset("VALID", "assetName");
+        DefaultAsset assetToCreate = new DefaultAsset(ObjectId.get().toHexString(), "assetName");
         Mono<Asset> createdAsset = daoUnderTest.insert(assetToCreate);
 
         StepVerifier.create(createdAsset)

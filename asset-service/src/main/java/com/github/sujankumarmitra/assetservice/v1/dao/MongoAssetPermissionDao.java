@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
@@ -51,7 +52,7 @@ public class MongoAssetPermissionDao implements AssetPermissionDao {
     private List<WriteModel<Document>> prepareBulkWrites(AssetPermission permission) {
         String subjectId = permission.getSubjectId();
 
-        Bson idFilter = eq("_id", permission.getAssetId());
+        Bson idFilter = eq("_id", new ObjectId(permission.getAssetId()));
         Bson subjectFilter = eq("subjectId", subjectId);
         Bson pullDocument = pull("permissions", subjectFilter);
         UpdateOneModel<Document> pullOperation = new UpdateOneModel<>(idFilter, pullDocument);

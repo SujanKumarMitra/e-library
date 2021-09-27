@@ -3,6 +3,7 @@ package com.github.sujankumarmitra.assetservice.v1.dao;
 import com.github.javafaker.Faker;
 import com.github.sujankumarmitra.assetservice.v1.model.AssetPermission;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.types.ObjectId;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,7 +32,7 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 @Slf4j
 class MongoAssetPermissionDaoTest {
 
-    public static final String VALID_ASSET_ID = "VALID_ASSET_ID";
+    public static final String VALID_ASSET_ID = ObjectId.get().toString();
     public static final String VALID_SUBJECT_ID = "VALID_SUBJECT_ID";
 
     @Autowired

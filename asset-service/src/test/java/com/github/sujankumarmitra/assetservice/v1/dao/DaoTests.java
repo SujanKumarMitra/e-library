@@ -1,5 +1,6 @@
 package com.github.sujankumarmitra.assetservice.v1.dao;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.platform.suite.api.SelectClasses;
 import org.junit.runner.RunWith;
@@ -13,5 +14,6 @@ import org.junit.runner.RunWith;
         MongoAssetDaoTest.class,
         MongoAssetPermissionDao.class
 })
+@Disabled
 class DaoTests {
 }

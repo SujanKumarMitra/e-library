@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,7 +42,8 @@ public class AssetPermissionController {
                     )
             }
     )
-    @PutMapping("/")
+    @PutMapping
+    @PreAuthorize("hasAuthority('WRITE_ASSET')")
     public Mono<ResponseEntity<Object>> grantPermission(@RequestBody GrantPermissionRequest permission) {
         return permissionService
                 .grantPermission(permission)

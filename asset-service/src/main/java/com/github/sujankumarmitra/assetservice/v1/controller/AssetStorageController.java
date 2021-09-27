@@ -15,6 +15,8 @@ import lombok.NonNull;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
@@ -69,6 +71,7 @@ public class AssetStorageController {
             }
     )
     @PutMapping(value = "/upload/{assetId}", consumes = {APPLICATION_OCTET_STREAM_VALUE})
+    @PreAuthorize("hasAuthority('WRITE_ASSET')")
     public Mono<ResponseEntity<Object>> storeAsset(@PathVariable String assetId, ServerWebExchange exchange) {
         Flux<DataBuffer> dataBuffers = exchange.getRequest().getBody();
 
@@ -110,7 +113,9 @@ public class AssetStorageController {
             }
     )
     @GetMapping("/download/{assetId}")
-    public Mono<ResponseEntity<InputStreamSource>> retrieveAsset(String assetId) {
+    @PreAuthorize("hasAuthority('READ_ASSET')")
+    public Mono<ResponseEntity<InputStreamSource>> retrieveAsset(Authentication authenticatedUser,
+                                                                 @PathVariable String assetId) {
         return assetStorageService.retrieveAsset(assetId)
                 .map(this::toResponseEntity);
     }

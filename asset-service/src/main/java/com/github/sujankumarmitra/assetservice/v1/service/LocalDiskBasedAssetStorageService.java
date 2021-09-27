@@ -1,6 +1,6 @@
 package com.github.sujankumarmitra.assetservice.v1.service;
 
-import com.github.sujankumarmitra.assetservice.v1.config.AssetStorageConfiguration;
+import com.github.sujankumarmitra.assetservice.v1.config.AssetStorageProperties;
 import com.github.sujankumarmitra.assetservice.v1.model.Asset;
 import com.github.sujankumarmitra.assetservice.v1.model.DefaultStoredAsset;
 import com.github.sujankumarmitra.assetservice.v1.model.StoredAsset;
@@ -34,7 +34,7 @@ public class LocalDiskBasedAssetStorageService implements AssetStorageService {
     @NonNull
     private final AssetService assetService;
     @NonNull
-    private final AssetStorageConfiguration storageConfiguration;
+    private final AssetStorageProperties storageConfiguration;
 
 
     @Override

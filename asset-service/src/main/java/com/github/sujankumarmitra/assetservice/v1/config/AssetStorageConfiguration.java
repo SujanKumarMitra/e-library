@@ -1,10 +1,13 @@
 package com.github.sujankumarmitra.assetservice.v1.config;
 
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+
 /**
  * @author skmitra
- * @since Sep 24/09/21, 2021
+ * @since Sep 26/09/21, 2021
  */
-public interface AssetStorageConfiguration {
-
-    String getBaseDir();
+@Configuration
+@EnableConfigurationProperties(DefaultAssetStorageProperties.class)
+public class AssetStorageConfiguration {
 }

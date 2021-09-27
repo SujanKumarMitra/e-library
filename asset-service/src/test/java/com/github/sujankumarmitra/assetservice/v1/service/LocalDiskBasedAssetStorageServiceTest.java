@@ -1,6 +1,6 @@
 package com.github.sujankumarmitra.assetservice.v1.service;
 
-import com.github.sujankumarmitra.assetservice.v1.config.AssetStorageConfiguration;
+import com.github.sujankumarmitra.assetservice.v1.config.AssetStorageProperties;
 import com.github.sujankumarmitra.assetservice.v1.exception.AssetNotFoundException;
 import com.github.sujankumarmitra.assetservice.v1.model.DefaultAsset;
 import com.github.sujankumarmitra.assetservice.v1.model.StoredAsset;
@@ -41,7 +41,7 @@ class LocalDiskBasedAssetStorageServiceTest {
 
     private static final String VALID_ASSET_ID = "VALID_ASSET_ID";
     private static final String INVALID_ASSET_ID = "INVALID_ASSET_ID";
-    private AssetStorageConfiguration mockStorageConfig;
+    private AssetStorageProperties mockStorageConfig;
     private AssetService mockAssetService;
 
     private StringBuilder bufferContentToStringBuilder(StringBuilder sb, DataBuffer buf) {
@@ -75,7 +75,7 @@ class LocalDiskBasedAssetStorageServiceTest {
     }
 
     private void mockStorageConfig() {
-        mockStorageConfig = Mockito.mock(AssetStorageConfiguration.class);
+        mockStorageConfig = Mockito.mock(AssetStorageProperties.class);
         Mockito.doReturn("/tmp")
                 .when(mockStorageConfig)
                 .getBaseDir();
