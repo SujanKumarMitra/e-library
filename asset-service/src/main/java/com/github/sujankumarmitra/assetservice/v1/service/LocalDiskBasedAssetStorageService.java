@@ -1,6 +1,7 @@
 package com.github.sujankumarmitra.assetservice.v1.service;
 
 import com.github.sujankumarmitra.assetservice.v1.config.AssetStorageProperties;
+import com.github.sujankumarmitra.assetservice.v1.exception.AssetNotFoundException;
 import com.github.sujankumarmitra.assetservice.v1.model.Asset;
 import com.github.sujankumarmitra.assetservice.v1.model.DefaultStoredAsset;
 import com.github.sujankumarmitra.assetservice.v1.model.StoredAsset;
@@ -20,8 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 
-import static java.nio.file.StandardOpenOption.CREATE;
-import static java.nio.file.StandardOpenOption.WRITE;
+import static java.nio.file.StandardOpenOption.*;
 
 /**
  * @author skmitra
@@ -43,12 +43,16 @@ public class LocalDiskBasedAssetStorageService implements AssetStorageService {
         Path writePath = Path.of(baseDir, assetId);
 
         return assetService.getAsset(assetId)
+                .switchIfEmpty(Mono.error(new AssetNotFoundException(assetId)))
                 .flatMap(asset -> writeToDisk(writePath, dataBuffers));
     }
 
     @Override
     public Mono<StoredAsset> retrieveAsset(String assetId) {
-        Mono<Asset> asset = assetService.getAsset(assetId);
+        Mono<Asset> asset = assetService
+                .getAsset(assetId)
+                .switchIfEmpty(Mono.error(new AssetNotFoundException(assetId)));
+
         Mono<InputStreamSource> inputStreamSource = asset.map(this::fetchFromDisk);
 
         return Mono.zip(asset, inputStreamSource, DefaultStoredAsset::new);
@@ -85,7 +89,8 @@ public class LocalDiskBasedAssetStorageService implements AssetStorageService {
                 dataBuffers,
                 writePath,
                 WRITE,
-                CREATE);
+                CREATE,
+                TRUNCATE_EXISTING);
     }
 
 
