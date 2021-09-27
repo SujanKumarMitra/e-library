@@ -1,5 +1,6 @@
 package com.github.sujankumarmitra.assetservice.v1.controller;
 
+import com.github.sujankumarmitra.assetservice.v1.config.ApiSecurityScheme;
 import com.github.sujankumarmitra.assetservice.v1.controller.dto.CreateAssetRequest;
 import com.github.sujankumarmitra.assetservice.v1.model.Asset;
 import com.github.sujankumarmitra.assetservice.v1.model.AssetPermission;
@@ -33,12 +34,13 @@ import static reactor.core.publisher.Mono.just;
  * @since Sep 26/09/21, 2021
  */
 @RestController
-@RequestMapping("/api/v1/asset")
+@RequestMapping("/api/v1/assets")
 @AllArgsConstructor
 @Tag(
         name = "AssetController",
         description = "### Controller for creating and deleting assets"
 )
+@ApiSecurityScheme
 public class AssetController {
 
     @NonNull

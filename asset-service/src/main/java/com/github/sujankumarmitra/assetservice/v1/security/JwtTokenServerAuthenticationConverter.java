@@ -20,8 +20,8 @@ public class JwtTokenServerAuthenticationConverter implements ServerAuthenticati
     @Override
     public Mono<Authentication> convert(ServerWebExchange exchange) {
         ServerHttpRequest request = exchange.getRequest();
-        if (request.getCookies().containsKey("Authorization")) {
-            HttpCookie tokenCookie = request.getCookies().getFirst("Authorization");
+        if (request.getCookies().containsKey("secret")) {
+            HttpCookie tokenCookie = request.getCookies().getFirst("secret");
             return Mono.just(new JwtAuthenticationToken(tokenCookie.getValue()));
         }
 
@@ -30,8 +30,8 @@ public class JwtTokenServerAuthenticationConverter implements ServerAuthenticati
             return Mono.just(new JwtAuthenticationToken(tokenValue));
         }
 
-        if (request.getQueryParams().containsKey("token")) {
-            String tokenValue = request.getQueryParams().getFirst("token");
+        if (request.getQueryParams().containsKey("access_token")) {
+            String tokenValue = request.getQueryParams().getFirst("access_token");
             return Mono.just(new JwtAuthenticationToken(tokenValue));
         }
 

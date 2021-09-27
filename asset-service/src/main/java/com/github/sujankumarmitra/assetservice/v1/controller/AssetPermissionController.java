@@ -1,5 +1,6 @@
 package com.github.sujankumarmitra.assetservice.v1.controller;
 
+import com.github.sujankumarmitra.assetservice.v1.config.ApiSecurityScheme;
 import com.github.sujankumarmitra.assetservice.v1.controller.dto.GrantPermissionRequest;
 import com.github.sujankumarmitra.assetservice.v1.service.AssetPermissionService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,12 +20,13 @@ import static org.springframework.http.ResponseEntity.ok;
  * @since Sep 26/09/21, 2021
  */
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/assets")
 @AllArgsConstructor
 @Tag(
         name = "AssetPermissionController",
         description = "### Controller for granting clients permission to access assets"
 )
+@ApiSecurityScheme
 public class AssetPermissionController {
 
     @NonNull
@@ -39,7 +41,7 @@ public class AssetPermissionController {
                     )
             }
     )
-    @PutMapping("/asset/{assetId}/permission")
+    @PutMapping("/{assetId}/permissions")
     @PreAuthorize("hasAuthority('WRITE_ASSET')")
     public Mono<ResponseEntity<Object>> grantPermission(@PathVariable String assetId,
                                                         @RequestBody GrantPermissionRequest permission) {

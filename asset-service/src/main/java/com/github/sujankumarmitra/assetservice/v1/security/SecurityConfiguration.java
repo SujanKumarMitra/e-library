@@ -43,6 +43,7 @@ public class SecurityConfiguration {
                         .authenticated()
                 .and()
                     .httpBasic().disable()
+                    .formLogin().disable()
                     .csrf().disable()
                     .logout().disable()
                     .addFilterAt(jwtFilter, AUTHENTICATION)
@@ -62,6 +63,7 @@ public class SecurityConfiguration {
                     .permitAll()
                 .and()
                     .httpBasic().disable()
+                    .formLogin().disable()
                     .logout().disable()
                     .csrf().disable()
                 .build();

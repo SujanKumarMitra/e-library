@@ -1,5 +1,6 @@
 package com.github.sujankumarmitra.assetservice.v1.controller;
 
+import com.github.sujankumarmitra.assetservice.v1.config.ApiSecurityScheme;
 import com.github.sujankumarmitra.assetservice.v1.model.StoredAsset;
 import com.github.sujankumarmitra.assetservice.v1.service.AssetStorageService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,6 +40,7 @@ import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
         name = "AssetStorageController",
         description = "### Controller for storing and retrieving asset objects"
 )
+@ApiSecurityScheme
 public class AssetStorageController {
 
     public static final String CONTENT_DISPOSITION_FORMAT = "attachment; filename=\"%s\"";
@@ -57,8 +59,10 @@ public class AssetStorageController {
             requestBody = @RequestBody(
                     description = "a stream of bytes",
                     content = @Content(
-                            mediaType = APPLICATION_OCTET_STREAM_VALUE,
+                            mediaType = "application/octet-stream",
                             schema = @Schema(
+                                    description = "a stream of bytes",
+                                    implementation = byte[].class,
                                     format = "binary"
                             )
                     )
@@ -70,7 +74,7 @@ public class AssetStorageController {
                     )
             }
     )
-    @PutMapping(value = "/upload/{assetId}", consumes = {APPLICATION_OCTET_STREAM_VALUE})
+    @PutMapping(value = "/assets/{assetId}", consumes = {APPLICATION_OCTET_STREAM_VALUE})
     @PreAuthorize("hasAuthority('WRITE_ASSET')")
     public Mono<ResponseEntity<Object>> storeAsset(@PathVariable String assetId, ServerWebExchange exchange) {
         Flux<DataBuffer> dataBuffers = exchange.getRequest().getBody();
@@ -105,14 +109,16 @@ public class AssetStorageController {
                                     @Content(
                                             mediaType = "application/octet-stream",
                                             schema = @Schema(
-                                                    description = "a stream of bytes"
+                                                    description = "a stream of bytes",
+                                                    implementation = byte[].class,
+                                                    format = "binary"
                                             )
                                     )
                             }
                     )
             }
     )
-    @GetMapping("/download/{assetId}")
+    @GetMapping("/assets/{assetId}")
     @PreAuthorize("hasAuthority('READ_ASSET')")
     public Mono<ResponseEntity<InputStreamSource>> retrieveAsset(Authentication authenticatedUser,
                                                                  @PathVariable String assetId) {

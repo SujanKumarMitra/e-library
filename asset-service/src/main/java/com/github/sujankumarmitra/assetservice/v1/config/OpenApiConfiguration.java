@@ -3,6 +3,7 @@ package com.github.sujankumarmitra.assetservice.v1.config;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Contact;
 import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -19,7 +20,12 @@ import org.springframework.context.annotation.Configuration;
                         url = "https://github.com/SujanKumarMitra/e-library"
                 ),
                 version = "1.0"
-        )
+        ),
+        security = {
+                @SecurityRequirement(name = "cookie"),
+                @SecurityRequirement(name = "access_token"),
+                @SecurityRequirement(name = "Bearer")
+        }
 )
 @Configuration
 public class OpenApiConfiguration {
