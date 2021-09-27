@@ -47,7 +47,7 @@ public class MongoAssetDao implements AssetDao {
     @Override
     public Mono<Asset> findOne(String assetId) {
         Query query = query(where("_id").is(assetId));
-        query.fields().include("_id","name");
+        query.fields().include("_id", "name");
 
         return mongoTemplate
                 .findOne(query, DefaultAsset.class, getCollectionName())

@@ -24,7 +24,8 @@ import reactor.core.publisher.Mono;
 import static com.github.sujankumarmitra.assetservice.v1.model.AssetPermission.INFINITE_GRANT_DURATION;
 import static java.lang.System.currentTimeMillis;
 import static java.net.URI.create;
-import static org.springframework.http.ResponseEntity.*;
+import static org.springframework.http.ResponseEntity.accepted;
+import static org.springframework.http.ResponseEntity.created;
 import static reactor.core.publisher.Mono.just;
 
 
@@ -69,7 +70,7 @@ public class AssetController {
     )
     @PreAuthorize("hasAuthority('WRITE_ASSET')")
     public Mono<ResponseEntity<Void>> createAsset(Authentication authenticatedUser,
-                                                    @RequestBody @Schema(description = "Schema for creating a new Asset") CreateAssetRequest request) {
+                                                  @RequestBody @Schema(description = "Schema for creating a new Asset") CreateAssetRequest request) {
 
         return assetService
                 .createAsset(request)
@@ -96,7 +97,6 @@ public class AssetController {
                 .deleteAsset(assetId)
                 .thenReturn(accepted().build());
     }
-
 
 
     private Mono<String> grantPermissionToAssetCreator(AssetPermission assetPermission) {

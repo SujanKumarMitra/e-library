@@ -1,0 +1,14 @@
+package com.github.sujankumarmitra.assetservice.v1.config;
+
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+/**
+ * @author skmitra
+ * @since Sep 27/09/21, 2021
+ */
+@Data
+@ConfigurationProperties("app.auth")
+public class DefaultAuthenticationProperties implements AuthenticationProperties {
+    private String baseUrl;
+}

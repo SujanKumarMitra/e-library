@@ -1,5 +1,6 @@
 package com.github.sujankumarmitra.assetservice.v1.security;
 
+import com.github.sujankumarmitra.assetservice.v1.exception.MalformedBearerTokenException;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.core.Authentication;
@@ -15,23 +16,32 @@ import reactor.core.publisher.Mono;
 @Component
 public class JwtTokenServerAuthenticationConverter implements ServerAuthenticationConverter {
 
-//    TODO externalize token extraction keys to make it configurable
+    private static final String COOKIE_PARAM = "secret";
+    private static final String AUTHORIZATION_PARAM = "Authorization";
+    private static final String AUTHORIZATION_PARAM_PREFIX = "Bearer ";
+    private static final String ACCESS_TOKEN_PARAM = "access_token";
 
     @Override
     public Mono<Authentication> convert(ServerWebExchange exchange) {
         ServerHttpRequest request = exchange.getRequest();
-        if (request.getCookies().containsKey("secret")) {
-            HttpCookie tokenCookie = request.getCookies().getFirst("secret");
+        if (request.getCookies().containsKey(COOKIE_PARAM)) {
+            HttpCookie tokenCookie = request.getCookies().getFirst(COOKIE_PARAM);
             return Mono.just(new JwtAuthenticationToken(tokenCookie.getValue()));
         }
 
-        if (request.getHeaders().containsKey("Authorization")) {
-            String tokenValue = request.getHeaders().getFirst("Authorization");
-            return Mono.just(new JwtAuthenticationToken(tokenValue.substring("Bearer ".length())));
+        if (request.getHeaders().containsKey(AUTHORIZATION_PARAM)) {
+            String tokenValue = request.getHeaders().getFirst(AUTHORIZATION_PARAM);
+            return Mono.create(sink -> {
+                if (tokenValue.length() < AUTHORIZATION_PARAM_PREFIX.length())
+                    sink.error(new MalformedBearerTokenException(tokenValue));
+                sink.success(
+                        new JwtAuthenticationToken(
+                                tokenValue.substring(AUTHORIZATION_PARAM_PREFIX.length())));
+            });
         }
 
-        if (request.getQueryParams().containsKey("access_token")) {
-            String tokenValue = request.getQueryParams().getFirst("access_token");
+        if (request.getQueryParams().containsKey(ACCESS_TOKEN_PARAM)) {
+            String tokenValue = request.getQueryParams().getFirst(ACCESS_TOKEN_PARAM);
             return Mono.just(new JwtAuthenticationToken(tokenValue));
         }
 

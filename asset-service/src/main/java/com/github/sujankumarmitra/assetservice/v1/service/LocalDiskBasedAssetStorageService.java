@@ -79,7 +79,7 @@ public class LocalDiskBasedAssetStorageService implements AssetStorageService {
         String baseDir = storageConfiguration.getBaseDir();
         Path readPath = Path.of(baseDir, asset.getId());
 
-        if(!Files.exists(readPath)) {
+        if (!Files.exists(readPath)) {
             throw new AssetNeverStoredException(asset.getId());
         }
         return new FileSystemResource(readPath);

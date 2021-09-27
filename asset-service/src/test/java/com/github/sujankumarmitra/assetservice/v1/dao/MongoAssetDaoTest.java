@@ -32,10 +32,9 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 class MongoAssetDaoTest {
 
     public static final String INVALID_ID = "INVALID_ID";
+    protected MongoAssetDao daoUnderTest;
     @Autowired
     private ReactiveMongoTemplate mongoTemplate = null;
-    protected MongoAssetDao daoUnderTest;
-
     private Faker faker;
 
     @BeforeEach

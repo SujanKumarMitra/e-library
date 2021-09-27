@@ -45,7 +45,7 @@ public class AssetPermissionController {
     @PutMapping("/{assetId}/permissions")
     @PreAuthorize("hasAuthority('WRITE_ASSET')")
     public Mono<ResponseEntity<Void>> grantPermission(@PathVariable String assetId,
-                                                        @RequestBody GrantPermissionRequest permission) {
+                                                      @RequestBody GrantPermissionRequest permission) {
         permission.setAssetId(assetId);
         return permissionService
                 .grantPermission(permission)

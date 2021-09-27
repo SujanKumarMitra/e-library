@@ -37,10 +37,9 @@ import static reactor.core.publisher.Mono.just;
 @Slf4j
 class LocalDiskBasedAssetStorageServiceTest {
 
-    protected LocalDiskBasedAssetStorageService serviceUnderTest;
-
     private static final String VALID_ASSET_ID = "VALID_ASSET_ID";
     private static final String INVALID_ASSET_ID = "INVALID_ASSET_ID";
+    protected LocalDiskBasedAssetStorageService serviceUnderTest;
     private AssetStorageProperties mockStorageConfig;
     private AssetService mockAssetService;
 

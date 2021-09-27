@@ -6,6 +6,8 @@ package com.github.sujankumarmitra.assetservice.v1.model;
  */
 public interface AssetPermission {
 
+    long INFINITE_GRANT_DURATION = -1;
+
     String getAssetId();
 
     String getSubjectId();
@@ -13,6 +15,4 @@ public interface AssetPermission {
     long getGrantStartEpochMilliseconds();
 
     long getGrantDurationInMilliseconds();
-
-    long INFINITE_GRANT_DURATION = -1;
 }
