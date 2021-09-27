@@ -27,7 +27,7 @@ public class JwtTokenServerAuthenticationConverter implements ServerAuthenticati
 
         if (request.getHeaders().containsKey("Authorization")) {
             String tokenValue = request.getHeaders().getFirst("Authorization");
-            return Mono.just(new JwtAuthenticationToken(tokenValue));
+            return Mono.just(new JwtAuthenticationToken(tokenValue.substring("Bearer ".length())));
         }
 
         if (request.getQueryParams().containsKey("access_token")) {
