@@ -1,6 +1,7 @@
 package com.github.sujankumarmitra.assetservice.v1.config;
 
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 
@@ -9,7 +10,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @since Sep 26/09/21, 2021
  */
 @Data
-@ConfigurationProperties("app.storage")
+@ConfigurationProperties
 public class DefaultAssetStorageProperties implements AssetStorageProperties {
+    @Value("${STORAGE_DIR}")
     private String baseDir;
 }

@@ -1,6 +1,6 @@
 app:
   storage:
-    baseDir: "${STORAGE_BASEDIR}"
+    baseDir: "${STORAGE_DIR}"
   auth:
     baseUrl: "${AUTH_SERVER_URL}"
 spring:

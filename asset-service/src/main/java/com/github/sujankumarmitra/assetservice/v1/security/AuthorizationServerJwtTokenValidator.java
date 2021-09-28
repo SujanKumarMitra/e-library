@@ -18,7 +18,7 @@ import static org.springframework.web.reactive.function.BodyInserters.fromFormDa
  * @since Sep 27/09/21, 2021
  */
 @Component
-@Profile("prod")
+@Profile("!mock")
 public class AuthorizationServerJwtTokenValidator implements JwtTokenValidator {
 
     private final WebClient webClient;

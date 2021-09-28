@@ -1,7 +1,9 @@
 app:
+  storage:
+    baseDir: "${STORAGE_DIR:/tmp}"
   auth:
-    baseUrl: "http://localhost:5000"
+    baseUrl: "${AUTH_SERVER_URL:http://localhost:5000}"
 spring:
   data:
     mongodb:
-      uri: "mongodb://localhost:27017/asset_service"
+      uri: "${DB_URL:mongodb://localhost:27017/asset_service}"

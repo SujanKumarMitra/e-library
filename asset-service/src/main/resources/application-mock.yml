@@ -1,7 +1,7 @@
 app:
-  auth:
-    baseUrl: "XXX"
+  storage:
+    baseDir: "/tmp"
 spring:
   data:
     mongo:
-      uri: "mongodb://localhost/asset_service_db"
+      database: "asset_service_db"

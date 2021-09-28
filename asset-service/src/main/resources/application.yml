@@ -1,6 +1,3 @@
-app:
-  storage:
-    baseDir: "/tmp"
 spring:
   profiles:
-    active: "mock"
+    active: "prod"
