@@ -13,6 +13,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+import javax.validation.Valid;
+
 import static org.springframework.http.ResponseEntity.ok;
 
 /**
@@ -45,7 +47,7 @@ public class AssetPermissionController {
     @PutMapping("/{assetId}/permissions")
     @PreAuthorize("hasAuthority('WRITE_ASSET')")
     public Mono<ResponseEntity<Void>> grantPermission(@PathVariable String assetId,
-                                                      @RequestBody GrantPermissionRequest permission) {
+                                                      @RequestBody @Valid GrantPermissionRequest permission) {
         permission.setAssetId(assetId);
         return permissionService
                 .grantPermission(permission)

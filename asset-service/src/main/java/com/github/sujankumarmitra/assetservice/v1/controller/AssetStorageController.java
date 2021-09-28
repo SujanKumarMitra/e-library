@@ -185,7 +185,7 @@ public class AssetStorageController {
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public Mono<ResponseEntity<ErrorResponse>> AccessDeniedExceptionHandler(AccessDeniedException ex) {
+    public Mono<ResponseEntity<ErrorResponse>> accessDeniedExceptionHandler(AccessDeniedException ex) {
         return Mono.just(status(FORBIDDEN)
                 .body(new ErrorResponse(List.of(ex::getMessage))));
     }

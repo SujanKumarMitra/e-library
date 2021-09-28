@@ -7,6 +7,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
 /**
  * @author skmitra
  * @since Sep 26/09/21, 2021
@@ -14,8 +17,14 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Schema(description = "Schema for creating a new Asset")
 public class CreateAssetRequest implements Asset {
-    @Schema(description = "a name which will be associated with binary object")
+    @Schema(
+            title = "a name which will be associated with binary object",
+            minLength = 1
+    )
+    @NotNull(message = "cannot be null")
+    @NotBlank(message = "cannot be blank")
     private String name;
 
     @JsonIgnore

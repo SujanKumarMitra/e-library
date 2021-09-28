@@ -7,10 +7,14 @@ import com.github.sujankumarmitra.assetservice.v1.exception.ErrorDetails;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.support.WebExchangeBindException;
 import reactor.core.publisher.Mono;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
+import static java.util.stream.Collectors.toList;
 import static org.springframework.http.ResponseEntity.badRequest;
 import static org.springframework.http.ResponseEntity.internalServerError;
 
@@ -39,5 +43,23 @@ public class GlobalExceptionHandler {
                 .map(Collections::singleton)
                 .map(ErrorResponse::new)
                 .map(internalServerError()::body);
+    }
+
+    @ExceptionHandler(WebExchangeBindException.class)
+    public Mono<ResponseEntity<ErrorResponse>> methodArgumentNotValidExceptionHandler(WebExchangeBindException ex) {
+        Collection<ErrorDetails> errorDetails = extractErrors(ex);
+        return Mono.just(buildResponseBody(errorDetails));
+    }
+
+    private ResponseEntity<ErrorResponse> buildResponseBody(Collection<ErrorDetails> errorDetails) {
+        return badRequest()
+                .body(new ErrorResponse(errorDetails));
+    }
+
+    private List<ErrorDetails> extractErrors(WebExchangeBindException ex) {
+        return ex.getFieldErrors()
+                .stream()
+                .map(error -> new DefaultErrorDetails("Error on field '" + error.getField() + "', " + error.getDefaultMessage()))
+                .collect(toList());
     }
 }
