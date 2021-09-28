@@ -11,6 +11,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Data
 @ConfigurationProperties
 public class DefaultAuthenticationProperties implements AuthenticationProperties {
-    @Value("${AUTH_SERVER_URL}")
+    @Value("${app.auth.baseUrl}")
     private String baseUrl;
 }

@@ -18,7 +18,7 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 @NoArgsConstructor
 @Schema(description = "Schema for creating a new Asset")
-public class CreateAssetRequest implements Asset {
+public class CreateAssetRequest extends Asset {
     @Schema(
             title = "a name which will be associated with binary object",
             minLength = 1

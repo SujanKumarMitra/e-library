@@ -1,18 +1,33 @@
 package com.github.sujankumarmitra.assetservice.v1.model;
 
+import java.util.Objects;
+
 /**
  * @author skmitra
  * @since Sep 24/09/21, 2021
  */
-public interface AssetPermission {
+public abstract class AssetPermission {
 
-    long INFINITE_GRANT_DURATION = -1;
+    public static final long INFINITE_GRANT_DURATION = -1;
 
-    String getAssetId();
+    public abstract String getAssetId();
 
-    String getSubjectId();
+    public abstract String getSubjectId();
 
-    long getGrantStartEpochMilliseconds();
+    public abstract long getGrantStartEpochMilliseconds();
 
-    long getGrantDurationInMilliseconds();
+    public abstract long getGrantDurationInMilliseconds();
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DefaultAssetPermission that = (DefaultAssetPermission) o;
+        return getGrantStartEpochMilliseconds() == that.getGrantStartEpochMilliseconds() && getGrantDurationInMilliseconds() == that.getGrantDurationInMilliseconds() && getAssetId().equals(that.getAssetId()) && getSubjectId().equals(that.getSubjectId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getAssetId(), getSubjectId(), getGrantStartEpochMilliseconds(), getGrantDurationInMilliseconds());
+    }
 }

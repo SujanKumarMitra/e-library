@@ -4,6 +4,7 @@ import com.github.sujankumarmitra.assetservice.v1.config.OpenApiConfiguration;
 import com.github.sujankumarmitra.assetservice.v1.controller.dto.ErrorResponse;
 import com.github.sujankumarmitra.assetservice.v1.exception.AssetNeverStoredException;
 import com.github.sujankumarmitra.assetservice.v1.exception.AssetNotFoundException;
+import com.github.sujankumarmitra.assetservice.v1.exception.DefaultErrorDetails;
 import com.github.sujankumarmitra.assetservice.v1.model.StoredAsset;
 import com.github.sujankumarmitra.assetservice.v1.service.AssetPermissionService;
 import com.github.sujankumarmitra.assetservice.v1.service.AssetStorageService;
@@ -98,6 +99,7 @@ public class AssetStorageController {
     )
     @PutMapping(value = "/assets/{assetId}", consumes = {APPLICATION_OCTET_STREAM_VALUE})
     @PreAuthorize("hasAuthority('WRITE_ASSET')")
+    @OpenApiConfiguration.ApiBadRequestResponse
     public Mono<ResponseEntity<Void>> storeAsset(@PathVariable String assetId, ServerWebExchange exchange) {
         Flux<DataBuffer> dataBuffers = exchange.getRequest().getBody();
 
@@ -187,7 +189,7 @@ public class AssetStorageController {
     @ExceptionHandler(AccessDeniedException.class)
     public Mono<ResponseEntity<ErrorResponse>> accessDeniedExceptionHandler(AccessDeniedException ex) {
         return Mono.just(status(FORBIDDEN)
-                .body(new ErrorResponse(List.of(ex::getMessage))));
+                .body(new ErrorResponse(List.of(new DefaultErrorDetails(ex.getMessage())))));
     }
 
     private ResponseEntity<InputStreamSource> toResponseEntity(StoredAsset storedAsset) {

@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class DefaultMongoProperties {
 
-    @Value("${DB_URL}")
+    @Value("${spring.data.mongodb.uri}")
     private String uri;
 
 }

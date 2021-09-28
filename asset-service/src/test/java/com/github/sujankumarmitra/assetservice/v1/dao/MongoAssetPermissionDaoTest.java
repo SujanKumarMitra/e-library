@@ -32,7 +32,7 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 @Slf4j
 class MongoAssetPermissionDaoTest {
 
-    public static final String VALID_ASSET_ID = ObjectId.get().toString();
+    public static final ObjectId VALID_ASSET_ID = ObjectId.get();
     public static final String VALID_SUBJECT_ID = "VALID_SUBJECT_ID";
 
     @Autowired
@@ -172,7 +172,7 @@ class MongoAssetPermissionDaoTest {
 
         System.out.println(mongoTemplate.insert(assetDocument).block());
 
-        AssetPermission fetchedPermission = daoUnderTest.findOne(VALID_ASSET_ID, VALID_SUBJECT_ID).block();
+        AssetPermission fetchedPermission = daoUnderTest.findOne(VALID_ASSET_ID.toString(), VALID_SUBJECT_ID).block();
 
         System.out.println(fetchedPermission);
 

@@ -11,7 +11,7 @@ import org.springframework.core.io.InputStreamSource;
 @Setter
 @AllArgsConstructor
 @ToString
-public class DefaultStoredAsset extends AbstractStoredAsset {
+public class DefaultStoredAsset extends StoredAsset {
     @NonNull
     private final Asset asset;
     @NonNull

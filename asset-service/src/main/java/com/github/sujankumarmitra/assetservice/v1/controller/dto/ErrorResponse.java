@@ -21,7 +21,7 @@ public class ErrorResponse {
     @NonNull
     private final Collection<ErrorDetails> errors;
 
-    @Schema
+    @Schema(title = "total count of errors")
     public int getErrorCount() {
         return errors.size();
     }

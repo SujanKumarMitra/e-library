@@ -10,7 +10,7 @@ import reactor.core.publisher.Mono;
  * @since Sep 27/09/21, 2021
  */
 @Component
-@Profile("mock")
+@Profile("dev")
 public class MockAuthorizationServerJwtTokenValidator implements JwtTokenValidator {
 
     @Override

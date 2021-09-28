@@ -4,6 +4,7 @@ import com.github.sujankumarmitra.assetservice.v1.dao.AssetPermissionDao;
 import com.github.sujankumarmitra.assetservice.v1.model.AssetPermission;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -103,8 +104,9 @@ class DefaultAssetPermissionServiceTest {
     }
 
     @Data
+    @EqualsAndHashCode(callSuper = false)
     @AllArgsConstructor
-    static class AssetPermissionImpl implements AssetPermission {
+    static class AssetPermissionImpl extends AssetPermission {
         String assetId;
         String subjectId;
         long grantStartEpochMilliseconds;

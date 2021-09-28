@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 
+import java.util.Objects;
+
 /**
  * @author skmitra
  * @since Sep 26/09/21, 2021
@@ -12,7 +14,7 @@ import lombok.NonNull;
 @Data
 @Builder(builderMethodName = "newBuilder")
 @AllArgsConstructor
-public class DefaultAssetPermission implements AssetPermission {
+public class DefaultAssetPermission extends AssetPermission {
     @NonNull
     private String assetId;
     @NonNull

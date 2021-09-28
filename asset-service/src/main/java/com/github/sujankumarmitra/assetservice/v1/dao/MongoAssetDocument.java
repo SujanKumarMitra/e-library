@@ -1,6 +1,6 @@
 package com.github.sujankumarmitra.assetservice.v1.dao;
 
-import com.github.sujankumarmitra.assetservice.v1.model.AbstractAsset;
+import com.github.sujankumarmitra.assetservice.v1.model.Asset;
 import lombok.Getter;
 import lombok.Setter;
 import org.bson.types.ObjectId;
@@ -19,7 +19,7 @@ import java.util.Set;
 @TypeAlias("Asset")
 @Getter
 @Setter
-class MongoAssetDocument extends AbstractAsset {
+class MongoAssetDocument extends Asset {
     @Id
     private ObjectId id;
     private String name;
@@ -54,11 +54,6 @@ class MongoAssetDocument extends AbstractAsset {
 
         public MongoAssetDocumentBuilder id(ObjectId id) {
             this.id = id;
-            return this;
-        }
-
-        public MongoAssetDocumentBuilder id(String id) {
-            this.id = new ObjectId(id);
             return this;
         }
 

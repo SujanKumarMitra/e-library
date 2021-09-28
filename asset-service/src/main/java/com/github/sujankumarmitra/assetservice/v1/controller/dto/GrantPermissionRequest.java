@@ -19,12 +19,12 @@ import static java.lang.System.currentTimeMillis;
 @Data
 @NoArgsConstructor
 @Schema(description = "Payload for granting access to an asset")
-public class GrantPermissionRequest implements AssetPermission {
+public class GrantPermissionRequest extends AssetPermission {
     @JsonIgnore
     private String assetId;
 
     @Schema(
-            description = "ID of the client of whom permission will be granted",
+            title = "ID of the client of whom permission will be granted",
             minLength = 1
     )
     @NotNull
@@ -37,7 +37,6 @@ public class GrantPermissionRequest implements AssetPermission {
 
     )
     @NotNull
-//    @FutureOrPresentEpochMilliseconds
     private long grantStartEpochMilliseconds;
 
     @Schema(
@@ -46,7 +45,6 @@ public class GrantPermissionRequest implements AssetPermission {
             description = "must be either -1 or positive"
     )
     @NotNull
-//    @ValidGrantDuration
     private long grantDurationInMilliseconds;
 
     @AssertTrue(message = "must be present or future")

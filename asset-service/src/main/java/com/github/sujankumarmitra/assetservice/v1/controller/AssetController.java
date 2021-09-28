@@ -58,18 +58,18 @@ public class AssetController {
             description = "# Create an asset for storing binary object",
             responses = {
                     @ApiResponse(
-                            responseCode = "202",
+                            responseCode = "201",
                             headers = @Header(
                                     name = "Location",
                                     description = "Unique ID pointing to this asset",
                                     schema = @Schema(
-                                            example = "/7d553b6b-c6e4-42a7-bc8d-7cda07909b2f"
+                                            example = "7d553b6b-c6e4-42a7-bc8d-7cda07909b2f"
                                     )
                             )
-
                     )
             }
     )
+    @OpenApiConfiguration.ApiBadRequestResponse
     @PreAuthorize("hasAuthority('WRITE_ASSET')")
     public Mono<ResponseEntity<Void>> createAsset(Authentication authenticatedUser,
                                                   @RequestBody @Valid CreateAssetRequest request) {

@@ -1,7 +1,0 @@
-app:
-  storage:
-    baseDir: "/tmp"
-spring:
-  data:
-    mongo:
-      database: "asset_service_db"

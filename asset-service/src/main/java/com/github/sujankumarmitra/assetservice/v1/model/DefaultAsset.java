@@ -10,7 +10,7 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @ToString
-public class DefaultAsset extends AbstractAsset {
+public class DefaultAsset extends Asset {
     @NonNull
     private final String id;
     @NonNull

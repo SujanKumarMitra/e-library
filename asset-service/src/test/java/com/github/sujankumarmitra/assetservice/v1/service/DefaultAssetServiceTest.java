@@ -5,6 +5,7 @@ import com.github.sujankumarmitra.assetservice.v1.model.Asset;
 import com.github.sujankumarmitra.assetservice.v1.model.DefaultAsset;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -61,8 +62,9 @@ class DefaultAssetServiceTest {
     }
 
     @Data
+    @EqualsAndHashCode(callSuper = true)
     @AllArgsConstructor
-    private static class AssetImpl implements Asset {
+    private static class AssetImpl extends Asset {
         private String id;
         private String name;
     }

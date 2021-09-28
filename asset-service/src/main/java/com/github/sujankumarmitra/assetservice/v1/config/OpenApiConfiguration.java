@@ -1,5 +1,6 @@
 package com.github.sujankumarmitra.assetservice.v1.config;
 
+import com.github.sujankumarmitra.assetservice.v1.controller.dto.ErrorResponse;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Contact;
 import io.swagger.v3.oas.annotations.info.Info;
@@ -101,4 +102,17 @@ public class OpenApiConfiguration {
     public @interface ApiSecurityResponse {
     }
 
+
+    @ApiResponse(
+            responseCode = "400",
+            description = "Request contains errors",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ErrorResponse.class)
+            )
+    )
+    @Target({METHOD, TYPE})
+    @Retention(RUNTIME)
+    public @interface ApiBadRequestResponse {
+    }
 }

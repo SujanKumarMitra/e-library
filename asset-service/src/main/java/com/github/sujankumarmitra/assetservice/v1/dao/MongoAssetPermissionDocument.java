@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.annotation.TypeAlias;
 
@@ -13,10 +14,23 @@ import org.springframework.data.annotation.TypeAlias;
 @Builder(builderMethodName = "newBuilder")
 @NoArgsConstructor // required by MappingMongoConverter
 @AllArgsConstructor // required by LombokBuilder
-class MongoAssetPermissionDocument implements AssetPermission {
+class MongoAssetPermissionDocument extends AssetPermission {
     @Transient
-    private String assetId;
+    private ObjectId assetId;
     private String subjectId;
     private long grantStartEpochMilliseconds;
     private long grantDurationInMilliseconds;
+
+    @Override
+    public String getAssetId() {
+        return assetId == null ? null : assetId.toString();
+    }
+
+    public void setAssetId(String assetId) {
+        this.assetId = new ObjectId(assetId);
+    }
+
+    public ObjectId getAssetObjectId() {
+        return assetId;
+    }
 }

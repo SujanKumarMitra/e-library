@@ -8,7 +8,7 @@ import lombok.NonNull;
  * @since Sep 24/09/21, 2021
  */
 @Data
-public class DefaultErrorDetails implements ErrorDetails {
+public class DefaultErrorDetails extends ErrorDetails {
     @NonNull
     private final String message;
 }
