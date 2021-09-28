@@ -9,6 +9,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.ServerAuthenticationEntryPoint;
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
 import org.springframework.security.web.server.authentication.ServerAuthenticationConverter;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher;
@@ -30,6 +31,8 @@ public class SecurityConfiguration {
     private ReactiveAuthenticationManager jwtAuthenticationManager;
     @NonNull
     private ServerAuthenticationConverter jwtAuthenticationConverter;
+    @NonNull
+    private ServerAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     @Bean
     public SecurityWebFilterChain jwtFilterChain(ServerHttpSecurity httpSecurity) {
@@ -50,6 +53,9 @@ public class SecurityConfiguration {
                     .csrf().disable()
                     .logout().disable()
                     .addFilterAt(jwtFilter, AUTHENTICATION)
+                    .exceptionHandling()
+                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                    .and()
                 .build();
 //        @formatter:on
     }
@@ -82,5 +88,4 @@ public class SecurityConfiguration {
                 "/swagger-ui/**",
                 "/webjars/**");
     }
-
 }
