@@ -1,0 +1,9 @@
+app:
+  storage:
+    baseDir: "${STORAGE_BASEDIR}"
+  auth:
+    baseUrl: "${AUTH_SERVER_URL}"
+spring:
+  data:
+    mongodb:
+      uri: "${DB_URL}"

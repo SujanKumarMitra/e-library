@@ -2,6 +2,7 @@ package com.github.sujankumarmitra.assetservice.v1.security;
 
 import com.github.sujankumarmitra.assetservice.v1.config.AuthenticationProperties;
 import lombok.Data;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -17,6 +18,7 @@ import static org.springframework.web.reactive.function.BodyInserters.fromFormDa
  * @since Sep 27/09/21, 2021
  */
 @Component
+@Profile("prod")
 public class AuthorizationServerJwtTokenValidator implements JwtTokenValidator {
 
     private final WebClient webClient;

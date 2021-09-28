@@ -1,0 +1,7 @@
+app:
+  auth:
+    baseUrl: "XXX"
+spring:
+  data:
+    mongo:
+      uri: "mongodb://localhost/asset_service_db"
