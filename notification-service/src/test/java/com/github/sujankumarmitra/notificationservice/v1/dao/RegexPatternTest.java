@@ -1,4 +1,4 @@
-package com.github.mitrakumarsujan.notificationservice.v1.dao;
+package com.github.sujankumarmitra.notificationservice.v1.dao;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

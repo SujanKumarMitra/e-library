@@ -1,4 +1,4 @@
-package com.github.mitrakumarsujan.notificationservice.v1.model;
+package com.github.sujankumarmitra.notificationservice.v1.model;
 
 import lombok.Builder;
 import lombok.Data;

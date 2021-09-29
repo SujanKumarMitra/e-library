@@ -1,4 +1,4 @@
-package com.github.mitrakumarsujan.notificationservice;
+package com.github.sujankumarmitra.notificationservice;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;

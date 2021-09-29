@@ -1,11 +1,11 @@
-package com.github.mitrakumarsujan.notificationservice.v1.controller;
+package com.github.sujankumarmitra.notificationservice.v1.controller;
 
-import com.github.mitrakumarsujan.notificationservice.v1.controller.dto.CreateNotificationRequest;
-import com.github.mitrakumarsujan.notificationservice.v1.controller.dto.GetNotificationsResponse;
-import com.github.mitrakumarsujan.notificationservice.v1.dao.NotificationDao;
-import com.github.mitrakumarsujan.notificationservice.v1.exception.ErrorDetails;
-import com.github.mitrakumarsujan.notificationservice.v1.exception.NotificationNotFoundException;
-import com.github.mitrakumarsujan.notificationservice.v1.model.Notification;
+import com.github.sujankumarmitra.notificationservice.v1.controller.dto.CreateNotificationRequest;
+import com.github.sujankumarmitra.notificationservice.v1.controller.dto.GetNotificationsResponse;
+import com.github.sujankumarmitra.notificationservice.v1.dao.NotificationDao;
+import com.github.sujankumarmitra.notificationservice.v1.exception.ErrorDetails;
+import com.github.sujankumarmitra.notificationservice.v1.exception.NotificationNotFoundException;
+import com.github.sujankumarmitra.notificationservice.v1.model.Notification;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.springframework.http.ResponseEntity;

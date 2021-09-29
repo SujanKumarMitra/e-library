@@ -1,7 +1,7 @@
-package com.github.mitrakumarsujan.notificationservice.v1.dao;
+package com.github.sujankumarmitra.notificationservice.v1.dao;
 
 import com.github.javafaker.Faker;
-import com.github.mitrakumarsujan.notificationservice.v1.model.Notification;
+import com.github.sujankumarmitra.notificationservice.v1.model.Notification;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

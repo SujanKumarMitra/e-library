@@ -1,8 +1,8 @@
-package com.github.mitrakumarsujan.notificationservice.v1.dao;
+package com.github.sujankumarmitra.notificationservice.v1.dao;
 
-import com.github.mitrakumarsujan.notificationservice.v1.exception.NotificationNotFoundException;
-import com.github.mitrakumarsujan.notificationservice.v1.model.DefaultNotification;
-import com.github.mitrakumarsujan.notificationservice.v1.model.Notification;
+import com.github.sujankumarmitra.notificationservice.v1.exception.NotificationNotFoundException;
+import com.github.sujankumarmitra.notificationservice.v1.model.DefaultNotification;
+import com.github.sujankumarmitra.notificationservice.v1.model.Notification;
 import com.mongodb.client.result.InsertOneResult;
 import com.mongodb.client.result.UpdateResult;
 import com.mongodb.reactivestreams.client.FindPublisher;

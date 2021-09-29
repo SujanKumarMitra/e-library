@@ -1,7 +1,7 @@
-package com.github.mitrakumarsujan.notificationservice.v1.controller.dto;
+package com.github.sujankumarmitra.notificationservice.v1.controller.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.github.mitrakumarsujan.notificationservice.v1.model.Notification;
+import com.github.sujankumarmitra.notificationservice.v1.model.Notification;
 
 /**
  * @author skmitra

@@ -1,6 +1,6 @@
-package com.github.mitrakumarsujan.notificationservice.v1.dao;
+package com.github.sujankumarmitra.notificationservice.v1.dao;
 
-import com.github.mitrakumarsujan.notificationservice.v1.model.Notification;
+import com.github.sujankumarmitra.notificationservice.v1.model.Notification;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

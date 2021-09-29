@@ -1,4 +1,4 @@
-package com.github.mitrakumarsujan.notificationservice.v1.exception;
+package com.github.sujankumarmitra.notificationservice.v1.exception;
 
 import java.util.Collection;
 

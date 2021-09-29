@@ -1,4 +1,4 @@
-package com.github.mitrakumarsujan.notificationservice;
+package com.github.sujankumarmitra.notificationservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
