@@ -3,15 +3,21 @@ package com.github.sujankumarmitra.notificationservice.v1.controller.dto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.sujankumarmitra.notificationservice.v1.model.Notification;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
 /**
  * @author skmitra
  * @since Sep 29/09/21, 2021
  */
 public class CreateNotificationRequest extends Notification {
 
-    long createdAt;
-    String consumerId;
-    String payload;
+    @NotNull
+    private long createdAt;
+    @NotBlank
+    private String consumerId;
+    @NotBlank
+    private String payload;
 
 
     @JsonIgnore
