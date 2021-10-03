@@ -3,7 +3,6 @@ package com.github.sujankumarmitra.notificationservice.v1.dao;
 import com.github.sujankumarmitra.notificationservice.v1.exception.NotificationNotFoundException;
 import com.github.sujankumarmitra.notificationservice.v1.model.DefaultNotification;
 import com.github.sujankumarmitra.notificationservice.v1.model.Notification;
-import com.mongodb.client.model.Filters;
 import com.mongodb.client.result.InsertOneResult;
 import com.mongodb.client.result.UpdateResult;
 import com.mongodb.reactivestreams.client.FindPublisher;
@@ -90,7 +89,7 @@ public class MongoNotificationDao implements NotificationDao {
         return collection
                 .find(eq(CONSUMER_ID, consumerId))
                 .limit(count)
-                .sort(descending(CREATED_AT));
+                .sort(descending(CREATED_AT,ID));
     }
 
     @Override
@@ -112,9 +111,9 @@ public class MongoNotificationDao implements NotificationDao {
         return collection
                 .find(and(
                         eq(CONSUMER_ID, consumerId),
-                        gt(ID, objectId)))
+                        lt(ID, objectId)))
                 .limit(count)
-                .sort(descending(CREATED_AT));
+                .sort(descending(CREATED_AT,ID));
     }
 
     @Override
