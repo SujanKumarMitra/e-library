@@ -15,6 +15,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -35,6 +37,8 @@ import static org.springframework.http.ResponseEntity.*;
         name = "NotificationController",
         description = "### Controller for creating and acknowledging notifications"
 )
+@OpenApiConfiguration.ApiSecurityScheme
+@OpenApiConfiguration.ApiSecurityResponse
 public class NotificationController {
 
     public static final int DEFAULT_PAGE_SIZE = 10;
@@ -54,6 +58,7 @@ public class NotificationController {
             )
     )
     @OpenApiConfiguration.ApiBadRequestResponse
+    @PreAuthorize("hasAuthority('NOTIFICATION_PRODUCE')")
     public Mono<ResponseEntity<Void>> createNotification(@RequestBody @Valid CreateNotificationRequest request) {
         return notificationDao
                 .insert(request)
@@ -61,9 +66,14 @@ public class NotificationController {
                 .map(uri -> created(uri).build());
     }
 
-    @GetMapping("/{consumerId}")
-    public Mono<ResponseEntity<GetNotificationsResponse>> getNotifications(@PathVariable String consumerId, @RequestParam(required = false) String lastInsertedId) {
+    @GetMapping
+    @PreAuthorize("hasAuthority('NOTIFICATION_CONSUME')")
+    @Operation(description = "# Fetch notifications for a consumer")
+    @ApiResponse(responseCode = "200", description = "Server acknowledged the request")
+    public Mono<ResponseEntity<GetNotificationsResponse>> getNotifications(Authentication authentication, @RequestParam(required = false) String lastInsertedId) {
         Flux<Notification> flux;
+        String consumerId = authentication.getName();
+
         if (lastInsertedId == null) flux = notificationDao.find(consumerId, DEFAULT_PAGE_SIZE);
         else flux = notificationDao.find(consumerId, lastInsertedId, DEFAULT_PAGE_SIZE);
 
@@ -77,9 +87,10 @@ public class NotificationController {
     @ApiResponse(responseCode = "200", description = "Server acknowledged the request")
     @ApiResponse(responseCode = "404", description = "Notification not found with given id")
     @PatchMapping("/{notificationId}/ack")
-    public Mono<ResponseEntity<Void>> acknowledgeNotification(@PathVariable String notificationId, @RequestParam("consumerId") String consumerId) {
+    @PreAuthorize("hasAuthority('NOTIFICATION_CONSUME')")
+    public Mono<ResponseEntity<Void>> acknowledgeNotification(Authentication authentication, @PathVariable String notificationId) {
         return notificationDao
-                .setAcknowledged(notificationId, consumerId)
+                .setAcknowledged(notificationId, authentication.getName())
                 .map(__ -> ok().build());
     }
 

@@ -1,0 +1,7 @@
+app:
+  auth:
+    baseUrl: "${AUTH_SERVER_URL}"
+spring:
+  data:
+    mongodb:
+      uri: "${DB_URL}"
