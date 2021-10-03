@@ -1,9 +1,11 @@
 package com.github.sujankumarmitra.notificationservice.v1.dao;
 
 import com.github.javafaker.Faker;
+import com.github.sujankumarmitra.notificationservice.v1.exception.NotificationNotFoundException;
 import com.github.sujankumarmitra.notificationservice.v1.model.Notification;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Slf4j
 class MongoNotificationDaoTest {
 
+    public static final String VALID_CONSUMER_ID = "VALID_CONSUMER_ID";
     @Autowired
     private ReactiveMongoTemplate mongoTemplate;
     private MongoNotificationDao daoUnderTest;
@@ -104,11 +107,11 @@ class MongoNotificationDaoTest {
 
 
     @Test
-    void givenValidNotificationId_whenSetAcknowledged_shouldSetAcknowledgement() {
+    void givenValidNotificationIdAndConsumerId_whenSetAcknowledged_shouldSetAcknowledgement() {
         MongoNotificationDocument notificationDocument = MongoNotificationDocument
                 .newBuilder()
                 .createdAt(currentTimeMillis())
-                .consumerId("VALID_CONSUMER_ID")
+                .consumerId(VALID_CONSUMER_ID)
                 .acknowledged(false)
                 .payload("VALID_PAYLOAD")
                 .build();
@@ -118,7 +121,7 @@ class MongoNotificationDaoTest {
                 .block()
                 .getId();
 
-        daoUnderTest.setAcknowledged(notificationId).block();
+        daoUnderTest.setAcknowledged(notificationId, VALID_CONSUMER_ID).block();
 
         MongoNotificationDocument fetchedNotificationDocument = mongoTemplate.findAll(MongoNotificationDocument.class)
                 .take(1)
@@ -126,5 +129,26 @@ class MongoNotificationDaoTest {
                 .block();
 
         assertThat(fetchedNotificationDocument.isAcknowledged()).isTrue();
+    }
+
+    @Test
+    void givenValidNotificationIdButDifferentConsumerId_whenSetAcknowledged_shouldThrowException() {
+        MongoNotificationDocument notificationDocument = MongoNotificationDocument
+                .newBuilder()
+                .createdAt(currentTimeMillis())
+                .consumerId(VALID_CONSUMER_ID)
+                .acknowledged(false)
+                .payload("VALID_PAYLOAD")
+                .build();
+
+        String notificationId = mongoTemplate
+                .insert(notificationDocument)
+                .block()
+                .getId();
+
+        Assertions.assertThrows(NotificationNotFoundException.class,
+                () -> daoUnderTest.setAcknowledged(notificationId, "INVALID_CONSUMER_ID").block());
+
+
     }
 }

@@ -16,6 +16,6 @@ public interface NotificationDao {
 
     Flux<Notification> find(String consumerId, String lastNotificationId, int count);
 
-    Mono<Void> setAcknowledged(String notificationId);
+    Mono<Void> setAcknowledged(String notificationId, String consumerId);
 
 }

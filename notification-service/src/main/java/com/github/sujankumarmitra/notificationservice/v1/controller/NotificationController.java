@@ -77,9 +77,9 @@ public class NotificationController {
     @ApiResponse(responseCode = "200", description = "Server acknowledged the request")
     @ApiResponse(responseCode = "404", description = "Notification not found with given id")
     @PatchMapping("/{notificationId}/ack")
-    public Mono<ResponseEntity<Void>> acknowledgeNotification(@PathVariable String notificationId) {
+    public Mono<ResponseEntity<Void>> acknowledgeNotification(@PathVariable String notificationId, @RequestParam("consumerId") String consumerId) {
         return notificationDao
-                .setAcknowledged(notificationId)
+                .setAcknowledged(notificationId, consumerId)
                 .map(__ -> ok().build());
     }
 

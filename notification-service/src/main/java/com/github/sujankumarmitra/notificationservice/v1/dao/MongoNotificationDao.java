@@ -3,6 +3,7 @@ package com.github.sujankumarmitra.notificationservice.v1.dao;
 import com.github.sujankumarmitra.notificationservice.v1.exception.NotificationNotFoundException;
 import com.github.sujankumarmitra.notificationservice.v1.model.DefaultNotification;
 import com.github.sujankumarmitra.notificationservice.v1.model.Notification;
+import com.mongodb.client.model.Filters;
 import com.mongodb.client.result.InsertOneResult;
 import com.mongodb.client.result.UpdateResult;
 import com.mongodb.reactivestreams.client.FindPublisher;
@@ -51,7 +52,7 @@ public class MongoNotificationDao implements NotificationDao {
     }
 
     @Override
-    public Mono<String> insert(Notification notification) {
+    public Mono<String> insert(@NonNull Notification notification) {
         return getMongoCollection()
                 .flatMapMany(collection -> insert(notification, collection))
                 .next()
@@ -72,7 +73,7 @@ public class MongoNotificationDao implements NotificationDao {
     }
 
     @Override
-    public Flux<Notification> find(String consumerId, int count) {
+    public Flux<Notification> find(@NonNull String consumerId, int count) {
 
         return getMongoCollection()
                 .flatMapMany(collection -> find(consumerId, count, collection))
@@ -93,7 +94,7 @@ public class MongoNotificationDao implements NotificationDao {
     }
 
     @Override
-    public Flux<Notification> find(String consumerId, String lastNotificationId, int count) {
+    public Flux<Notification> find(@NonNull String consumerId, @NonNull String lastNotificationId, int count) {
         ObjectId objectId;
         try {
             objectId = new ObjectId(lastNotificationId);
@@ -117,7 +118,7 @@ public class MongoNotificationDao implements NotificationDao {
     }
 
     @Override
-    public Mono<Void> setAcknowledged(String notificationId) {
+    public Mono<Void> setAcknowledged(@NonNull String notificationId, @NonNull String consumerId) {
         final ObjectId objectId;
         try {
             objectId = new ObjectId(notificationId);
@@ -127,7 +128,7 @@ public class MongoNotificationDao implements NotificationDao {
 
 
         return getMongoCollection()
-                .flatMapMany(mongoCollection -> updateAcknowledged(objectId, mongoCollection))
+                .flatMapMany(mongoCollection -> updateAcknowledged(objectId, consumerId, mongoCollection))
                 .next()
                 .handle(((result, sink) -> {
                     if (result.getMatchedCount() == 0)
@@ -137,7 +138,10 @@ public class MongoNotificationDao implements NotificationDao {
                 }));
     }
 
-    private Publisher<UpdateResult> updateAcknowledged(ObjectId finalObjectId, MongoCollection<Document> mongoCollection) {
-        return mongoCollection.updateOne(eq(ID, finalObjectId), set(ACKNOWLEDGED, true));
+    private Publisher<UpdateResult> updateAcknowledged(ObjectId finalObjectId, String consumerId, MongoCollection<Document> mongoCollection) {
+        return mongoCollection.updateOne(
+                and(eq(ID, finalObjectId),
+                        eq(CONSUMER_ID, consumerId)),
+                set(ACKNOWLEDGED, true));
     }
 }
