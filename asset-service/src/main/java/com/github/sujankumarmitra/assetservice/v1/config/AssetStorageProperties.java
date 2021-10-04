@@ -4,7 +4,7 @@ package com.github.sujankumarmitra.assetservice.v1.config;
  * @author skmitra
  * @since Sep 24/09/21, 2021
  */
-public interface AssetStorageProperties {
+public abstract class AssetStorageProperties {
 
-    String getBaseDir();
+    public abstract String getBaseDir();
 }

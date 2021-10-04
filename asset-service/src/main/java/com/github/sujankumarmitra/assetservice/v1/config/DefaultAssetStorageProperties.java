@@ -11,7 +11,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @Data
 @ConfigurationProperties
-public class DefaultAssetStorageProperties implements AssetStorageProperties {
+public class DefaultAssetStorageProperties extends AssetStorageProperties {
     @Value("${app.storage.baseDir}")
     private String baseDir;
 }
