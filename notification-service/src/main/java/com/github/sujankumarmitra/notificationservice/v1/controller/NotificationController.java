@@ -3,12 +3,14 @@ package com.github.sujankumarmitra.notificationservice.v1.controller;
 import com.github.sujankumarmitra.notificationservice.v1.config.OpenApiConfiguration;
 import com.github.sujankumarmitra.notificationservice.v1.controller.dto.CreateNotificationRequest;
 import com.github.sujankumarmitra.notificationservice.v1.controller.dto.GetNotificationsResponse;
+import com.github.sujankumarmitra.notificationservice.v1.controller.dto.NotificationDto;
 import com.github.sujankumarmitra.notificationservice.v1.dao.NotificationDao;
 import com.github.sujankumarmitra.notificationservice.v1.exception.ErrorDetails;
 import com.github.sujankumarmitra.notificationservice.v1.exception.NotificationNotFoundException;
 import com.github.sujankumarmitra.notificationservice.v1.model.Notification;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -64,6 +66,24 @@ public class NotificationController {
                 .insert(request)
                 .map(URI::create)
                 .map(uri -> created(uri).build());
+    }
+
+
+    @GetMapping("/{notificationId}")
+    @Operation(description = "# Fetch a created notification")
+    @ApiResponse(responseCode = "200", description = "Server acknowledged the request")
+    @ApiResponse(
+            responseCode = "404",
+            description = "Notification not found with given id",
+            content = @Content(schema = @Schema)
+    )
+    @PreAuthorize("hasAuthority('NOTIFICATION_CONSUME')")
+    public Mono<ResponseEntity<NotificationDto>> getNotification(Authentication authentication, @PathVariable String notificationId) {
+        return notificationDao
+                .findOne(notificationId, authentication.getName())
+                .map(NotificationDto::new)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(notFound().build());
     }
 
     @GetMapping

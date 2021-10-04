@@ -62,6 +62,29 @@ public class MongoNotificationDao implements NotificationDao {
                 .map(ObjectId::toHexString);
     }
 
+    @Override
+    public Mono<Notification> findOne(String notificationId, String consumerId) {
+        ObjectId objectId;
+        try {
+            objectId = new ObjectId(notificationId);
+        } catch (IllegalArgumentException ex) {
+            return Mono.empty();
+        }
+
+
+        return getMongoCollection()
+                .flatMapMany(collection -> findOne(consumerId, objectId, collection))
+                .next()
+                .map(this::toPojo);
+    }
+
+    private Publisher<Document> findOne(String consumerId, ObjectId objectId, MongoCollection<Document> collection) {
+        return collection.find(and(
+                        eq(ID, objectId),
+                        eq(CONSUMER_ID, consumerId)))
+                .first();
+    }
+
     private Publisher<InsertOneResult> insert(Notification notification, MongoCollection<Document> collection) {
         return collection.insertOne(
                 new Document()
@@ -89,7 +112,7 @@ public class MongoNotificationDao implements NotificationDao {
         return collection
                 .find(eq(CONSUMER_ID, consumerId))
                 .limit(count)
-                .sort(descending(CREATED_AT,ID));
+                .sort(descending(CREATED_AT, ID));
     }
 
     @Override
@@ -113,7 +136,7 @@ public class MongoNotificationDao implements NotificationDao {
                         eq(CONSUMER_ID, consumerId),
                         lt(ID, objectId)))
                 .limit(count)
-                .sort(descending(CREATED_AT,ID));
+                .sort(descending(CREATED_AT, ID));
     }
 
     @Override

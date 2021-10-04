@@ -4,6 +4,7 @@ import com.github.javafaker.Faker;
 import com.github.sujankumarmitra.notificationservice.v1.exception.NotificationNotFoundException;
 import com.github.sujankumarmitra.notificationservice.v1.model.Notification;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.types.ObjectId;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -151,4 +152,56 @@ class MongoNotificationDaoTest {
 
 
     }
+
+    @Test
+    void givenValidNotificationIdAndConsumerId_whenFindOne_shouldFetchNotification() {
+        MongoNotificationDocument notificationDocument = MongoNotificationDocument
+                .newBuilder()
+                .createdAt(currentTimeMillis())
+                .consumerId(VALID_CONSUMER_ID)
+                .payload("VALID_PAYLOAD")
+                .acknowledged(false)
+                .build();
+
+        MongoNotificationDocument document = mongoTemplate.insert(notificationDocument).block();
+
+        Notification fetchedNotification = daoUnderTest.findOne(document.getId(), VALID_CONSUMER_ID).block();
+
+        assertThat(fetchedNotification).isNotNull();
+        System.out.println(fetchedNotification);
+
+
+    }
+
+    @Test
+    void givenInValidNotificationId_whenFindOne_shouldCompleteEmpty() {
+        Notification fetchedNotification = daoUnderTest.findOne(ObjectId.get().toHexString(), VALID_CONSUMER_ID).block();
+
+        assertThat(fetchedNotification).isNull();
+        System.out.println(fetchedNotification);
+
+
+    }
+
+    @Test
+    void givenValidNotificationIdButDifferentConsumerId_whenFindOne_shouldCompleteEmpty() {
+
+        MongoNotificationDocument notificationDocument = MongoNotificationDocument
+                .newBuilder()
+                .createdAt(currentTimeMillis())
+                .consumerId(VALID_CONSUMER_ID)
+                .payload("VALID_PAYLOAD")
+                .acknowledged(false)
+                .build();
+
+        MongoNotificationDocument document = mongoTemplate.insert(notificationDocument).block();
+
+        Notification fetchedNotification = daoUnderTest.findOne(document.getId(), "INVALID_CONSUMER_ID").block();
+
+        assertThat(fetchedNotification).isNull();
+        System.out.println(fetchedNotification);
+
+
+    }
+
 }

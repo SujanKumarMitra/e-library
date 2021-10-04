@@ -12,6 +12,8 @@ public interface NotificationDao {
 
     Mono<String> insert(Notification notification);
 
+    Mono<Notification> findOne(String notificationId, String consumerId);
+
     Flux<Notification> find(String consumerId, int count);
 
     Flux<Notification> find(String consumerId, String lastNotificationId, int count);
