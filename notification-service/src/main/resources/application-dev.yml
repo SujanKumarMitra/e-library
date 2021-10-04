@@ -1,6 +1,9 @@
 app:
   auth:
     baseUrl: "${AUTH_SERVER_URL:http://localhost:5000}"
+  kafka:
+    bootstrapServers: "${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}"
+    notificationTopicName: "${KAFKA_NOTIFICATION_TOPIC_NAME:new_notifications}"
 spring:
   data:
     mongodb:
