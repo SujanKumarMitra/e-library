@@ -10,7 +10,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @Data
 @ConfigurationProperties
-public class DefaultAuthenticationProperties implements AuthenticationProperties {
+public class DefaultAuthenticationProperties extends AuthenticationProperties {
     @Value("${app.auth.baseUrl}")
     private String baseUrl;
 }
