@@ -11,11 +11,14 @@ import org.springframework.core.annotation.Order;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.SynchronousSink;
 
 import java.util.List;
+
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 /**
  * @author skmitra
@@ -37,7 +40,10 @@ public class JsonViewErrorWebExceptionHandler implements ErrorWebExceptionHandle
                 .handle(this::convertToBytes)
                 .map(httpResponse.bufferFactory()::wrap);
 
-
+        if (ex instanceof ResponseStatusException)
+            httpResponse.setStatusCode(((ResponseStatusException) ex).getStatus());
+        else
+            httpResponse.setStatusCode(INTERNAL_SERVER_ERROR);
         return httpResponse.writeWith(dataBufferMono);
     }
 
