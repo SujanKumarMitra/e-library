@@ -10,15 +10,12 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import reactor.kafka.receiver.KafkaReceiver;
 import reactor.kafka.receiver.ReceiverOptions;
-import reactor.kafka.receiver.ReceiverPartition;
 import reactor.kafka.sender.KafkaSender;
 import reactor.kafka.sender.SenderOptions;
 
 import javax.annotation.PostConstruct;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -61,15 +58,6 @@ public class KafkaConfiguration {
         consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG, UUID.randomUUID().toString());
 
         return ReceiverOptions.create(consumerProps);
-    }
-
-    @Bean
-    public KafkaReceiver<String, String> kafkaReceiver() {
-        ReceiverOptions<String, String> receiverOptions = receiverOptions()
-                .subscription(List.of(kafkaProperties.getNotificationTopicName()))
-                .addAssignListener(partitions -> partitions.forEach(ReceiverPartition::seekToEnd));
-
-        return KafkaReceiver.create(receiverOptions);
     }
 
 

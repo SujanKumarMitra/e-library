@@ -7,7 +7,9 @@ import com.github.sujankumarmitra.notificationservice.v1.controller.dto.Notifica
 import com.github.sujankumarmitra.notificationservice.v1.dao.NotificationDao;
 import com.github.sujankumarmitra.notificationservice.v1.exception.ErrorDetails;
 import com.github.sujankumarmitra.notificationservice.v1.exception.NotificationNotFoundException;
+import com.github.sujankumarmitra.notificationservice.v1.model.DefaultNewNotificationEvent;
 import com.github.sujankumarmitra.notificationservice.v1.model.Notification;
+import com.github.sujankumarmitra.notificationservice.v1.service.events.NotificationEventService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -24,8 +26,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
-import java.net.URI;
 
+import static java.net.URI.create;
 import static org.springframework.http.ResponseEntity.*;
 
 /**
@@ -46,6 +48,8 @@ public class NotificationController {
     public static final int DEFAULT_PAGE_SIZE = 10;
     @NonNull
     private final NotificationDao notificationDao;
+    @NonNull
+    private final NotificationEventService eventService;
 
     @PostMapping
     @Operation(description = "# Create a notification for a consumer to consume")
@@ -62,10 +66,11 @@ public class NotificationController {
     @OpenApiConfiguration.ApiBadRequestResponse
     @PreAuthorize("hasAuthority('NOTIFICATION_PRODUCE')")
     public Mono<ResponseEntity<Void>> createNotification(@RequestBody @Valid CreateNotificationRequest request) {
-        return notificationDao
-                .insert(request)
-                .map(URI::create)
-                .map(uri -> created(uri).build());
+        return notificationDao.insert(request)
+                .map(notificationId -> new DefaultNewNotificationEvent(notificationId, request.getConsumerId()))
+                .flatMap(event -> eventService
+                        .publishEvent(event)
+                        .thenReturn(created(create(event.getNotificationId())).build()));
     }
 
 

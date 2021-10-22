@@ -1,7 +1,5 @@
 package com.github.sujankumarmitra.notificationservice.v1.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 /**
@@ -9,12 +7,11 @@ import lombok.Data;
  * @since Oct 04/10/21, 2021
  */
 @Data
-public class JacksonNewNotificationEvent extends NewNotificationEvent {
+public class DefaultNewNotificationEvent extends NewNotificationEvent {
     private final String notificationId;
     private final String consumerId;
 
-    @JsonCreator
-    public JacksonNewNotificationEvent(@JsonProperty("notificationId") String notificationId, @JsonProperty(value = "consumerId") String consumerId) {
+    public DefaultNewNotificationEvent(String notificationId, String consumerId) {
         this.notificationId = notificationId;
         this.consumerId = consumerId;
     }
