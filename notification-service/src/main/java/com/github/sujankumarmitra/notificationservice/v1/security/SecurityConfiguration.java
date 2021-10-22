@@ -45,6 +45,8 @@ public class SecurityConfiguration {
         return httpSecurity
                 .securityMatcher(pathMatchers("/api/**"))
                 .authorizeExchange()
+                    .pathMatchers("/api/v1/socket")
+                        .hasAuthority("NOTIFICATION_CONSUME")
                     .anyExchange()
                         .authenticated()
                 .and()

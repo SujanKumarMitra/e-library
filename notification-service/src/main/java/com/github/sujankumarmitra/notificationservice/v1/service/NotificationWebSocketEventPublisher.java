@@ -24,8 +24,6 @@ public class NotificationWebSocketEventPublisher implements InitializingBean {
     private final NotificationEventService eventService;
     @NonNull
     private final WebSocketSessionService sessionService;
-    @NonNull
-    private final ObjectMapper mapper;
 
     @Override
     public void afterPropertiesSet() {
