@@ -52,11 +52,6 @@ public class OpenApiConfiguration {
             in = QUERY
     )
     @SecurityScheme(
-            name = "secret",
-            type = APIKEY,
-            in = COOKIE
-    )
-    @SecurityScheme(
             name = "Bearer",
             paramName = "Authorization",
             scheme = "bearer",

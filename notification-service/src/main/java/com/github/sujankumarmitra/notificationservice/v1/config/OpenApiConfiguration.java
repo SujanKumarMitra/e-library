@@ -14,7 +14,6 @@ import org.springframework.context.annotation.Configuration;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import static io.swagger.v3.oas.annotations.enums.SecuritySchemeIn.COOKIE;
 import static io.swagger.v3.oas.annotations.enums.SecuritySchemeIn.QUERY;
 import static io.swagger.v3.oas.annotations.enums.SecuritySchemeType.APIKEY;
 import static io.swagger.v3.oas.annotations.enums.SecuritySchemeType.HTTP;
@@ -50,11 +49,6 @@ public class OpenApiConfiguration {
             name = "access_token",
             type = APIKEY,
             in = QUERY
-    )
-    @SecurityScheme(
-            name = "secret",
-            type = APIKEY,
-            in = COOKIE
     )
     @SecurityScheme(
             name = "Bearer",

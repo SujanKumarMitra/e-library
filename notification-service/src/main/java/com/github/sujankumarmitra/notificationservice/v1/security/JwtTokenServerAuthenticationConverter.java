@@ -1,7 +1,6 @@
 package com.github.sujankumarmitra.notificationservice.v1.security;
 
 import com.github.sujankumarmitra.notificationservice.v1.exception.MalformedBearerTokenException;
-import org.springframework.http.HttpCookie;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.server.authentication.ServerAuthenticationConverter;
@@ -16,7 +15,6 @@ import reactor.core.publisher.Mono;
 @Component
 public class JwtTokenServerAuthenticationConverter implements ServerAuthenticationConverter {
 
-    private static final String COOKIE_PARAM = "secret";
     private static final String AUTHORIZATION_PARAM = "Authorization";
     private static final String AUTHORIZATION_PARAM_PREFIX = "Bearer ";
     private static final String ACCESS_TOKEN_PARAM = "access_token";
@@ -24,10 +22,6 @@ public class JwtTokenServerAuthenticationConverter implements ServerAuthenticati
     @Override
     public Mono<Authentication> convert(ServerWebExchange exchange) {
         ServerHttpRequest request = exchange.getRequest();
-        if (request.getCookies().containsKey(COOKIE_PARAM)) {
-            HttpCookie tokenCookie = request.getCookies().getFirst(COOKIE_PARAM);
-            return Mono.just(new JwtAuthenticationToken(tokenCookie.getValue()));
-        }
 
         if (request.getHeaders().containsKey(AUTHORIZATION_PARAM)) {
             String tokenValue = request.getHeaders().getFirst(AUTHORIZATION_PARAM);
