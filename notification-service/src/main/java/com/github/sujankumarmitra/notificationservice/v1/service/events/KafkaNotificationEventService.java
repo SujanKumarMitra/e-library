@@ -11,10 +11,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.stereotype.Service;
 import reactor.core.Disposable;
-import reactor.core.publisher.ConnectableFlux;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import reactor.core.publisher.SynchronousSink;
+import reactor.core.publisher.*;
 import reactor.kafka.receiver.KafkaReceiver;
 import reactor.kafka.receiver.ReceiverOptions;
 import reactor.kafka.sender.KafkaSender;
@@ -80,7 +77,17 @@ public class KafkaNotificationEventService implements NotificationEventService, 
 
     @Override
     public Flux<Notification> consumeEvents() {
-        return this.notificationEventFlux;
+        return Flux.create(sink -> notificationEventFlux
+                .subscribe(sink::next,
+                        err -> emitNonCancellationError(sink, err),
+                        sink::complete));
+    }
+
+    private void emitNonCancellationError(FluxSink<Notification> sink, Throwable err) {
+        if (!(err instanceof CancellationException))
+            sink.error(err);
+        else
+            sink.complete();
     }
 
     private void serialize(Notification event, SynchronousSink<String> sink) {
@@ -103,10 +110,6 @@ public class KafkaNotificationEventService implements NotificationEventService, 
     @Override
     public void destroy() {
         kafkaSender.close();
-        try {
-            notificationEventFluxDisposable.dispose();
-        } catch (CancellationException e) {
-            // ignore
-        }
+        notificationEventFluxDisposable.dispose();
     }
 }
