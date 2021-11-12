@@ -2,8 +2,8 @@ package com.github.sujankumarmitra.notificationservice.v1.service.events;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.sujankumarmitra.notificationservice.v1.config.KafkaProperties;
-import com.github.sujankumarmitra.notificationservice.v1.model.DefaultNewNotificationEvent;
-import com.github.sujankumarmitra.notificationservice.v1.model.NewNotificationEvent;
+import com.github.sujankumarmitra.notificationservice.v1.model.DefaultNotification;
+import com.github.sujankumarmitra.notificationservice.v1.model.Notification;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -36,7 +36,7 @@ public class KafkaNotificationEventService implements NotificationEventService, 
 
     private final KafkaSender<String, String> kafkaSender;
     private final Disposable notificationEventFluxDisposable;
-    private Flux<NewNotificationEvent> notificationEventFlux;
+    private Flux<Notification> notificationEventFlux;
     private final ObjectMapper mapper;
     private final KafkaProperties properties;
 
@@ -47,7 +47,7 @@ public class KafkaNotificationEventService implements NotificationEventService, 
         this.kafkaSender = kafkaSender;
         this.mapper = mapper;
         this.properties = properties;
-        ConnectableFlux<NewNotificationEvent> notificationEventConnectableFlux = KafkaReceiver.create(receiverOptions
+        ConnectableFlux<Notification> notificationEventConnectableFlux = KafkaReceiver.create(receiverOptions
                         .commitBatchSize(0)
                         .commitInterval(ZERO)
                         .subscription(Collections.singleton(properties.getNotificationTopicName())))
@@ -63,11 +63,11 @@ public class KafkaNotificationEventService implements NotificationEventService, 
     }
 
     @Override
-    public Mono<Void> publishEvent(NewNotificationEvent event) {
+    public Mono<Void> publishEvent(Notification event) {
         return Mono.just(event)
                 .handle(this::serialize)
                 .map(value -> new ProducerRecord<String, String>(properties.getNotificationTopicName(), value))
-                .map(_record -> create(_record, event.getNotificationId()))
+                .map(_record -> create(_record, event.getId()))
                 .as(kafkaSender::send)
                 .next()
                 .handle((sendResult, sink) -> {
@@ -79,11 +79,11 @@ public class KafkaNotificationEventService implements NotificationEventService, 
     }
 
     @Override
-    public Flux<NewNotificationEvent> consumeEvents() {
+    public Flux<Notification> consumeEvents() {
         return this.notificationEventFlux;
     }
 
-    private void serialize(NewNotificationEvent event, SynchronousSink<String> sink) {
+    private void serialize(Notification event, SynchronousSink<String> sink) {
         try {
             sink.next(mapper.writeValueAsString(event));
             sink.complete();
@@ -92,16 +92,16 @@ public class KafkaNotificationEventService implements NotificationEventService, 
         }
     }
 
-    private void deserialize(String value, SynchronousSink<NewNotificationEvent> sink) {
+    private void deserialize(String value, SynchronousSink<Notification> sink) {
         try {
-            sink.next(mapper.readValue(value, DefaultNewNotificationEvent.class));
+            sink.next(mapper.readValue(value, DefaultNotification.class));
         } catch (Exception th) {
             sink.error(th);
         }
     }
 
     @Override
-    public void destroy() throws Exception {
+    public void destroy() {
         kafkaSender.close();
         try {
             notificationEventFluxDisposable.dispose();

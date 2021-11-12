@@ -7,7 +7,7 @@ import com.github.sujankumarmitra.notificationservice.v1.controller.dto.Notifica
 import com.github.sujankumarmitra.notificationservice.v1.dao.NotificationDao;
 import com.github.sujankumarmitra.notificationservice.v1.exception.ErrorDetails;
 import com.github.sujankumarmitra.notificationservice.v1.exception.NotificationNotFoundException;
-import com.github.sujankumarmitra.notificationservice.v1.model.DefaultNewNotificationEvent;
+import com.github.sujankumarmitra.notificationservice.v1.model.DefaultNotification;
 import com.github.sujankumarmitra.notificationservice.v1.model.Notification;
 import com.github.sujankumarmitra.notificationservice.v1.service.events.NotificationEventService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -67,10 +67,17 @@ public class NotificationController {
     @PreAuthorize("hasAuthority('NOTIFICATION_PRODUCE')")
     public Mono<ResponseEntity<Void>> createNotification(@RequestBody @Valid CreateNotificationRequest request) {
         return notificationDao.insert(request)
-                .map(notificationId -> new DefaultNewNotificationEvent(notificationId, request.getConsumerId()))
+                .map(notificationId -> DefaultNotification
+                        .newBuilder()
+                        .id(notificationId)
+                        .consumerId(request.getConsumerId())
+                        .createdAt(request.getCreatedAt())
+                        .payload(request.getPayload())
+                        .acknowledged(request.isAcknowledged())
+                        .build())
                 .flatMap(event -> eventService
                         .publishEvent(event)
-                        .thenReturn(created(create(event.getNotificationId())).build()));
+                        .thenReturn(created(create(event.getId())).build()));
     }
 
 
