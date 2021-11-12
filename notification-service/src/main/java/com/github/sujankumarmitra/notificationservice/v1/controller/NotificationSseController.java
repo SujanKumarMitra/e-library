@@ -1,7 +1,12 @@
 package com.github.sujankumarmitra.notificationservice.v1.controller;
 
+import com.github.sujankumarmitra.notificationservice.v1.config.OpenApiConfiguration;
 import com.github.sujankumarmitra.notificationservice.v1.model.Notification;
 import com.github.sujankumarmitra.notificationservice.v1.service.events.NotificationEventService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.springframework.http.codec.ServerSentEvent;
@@ -22,6 +27,12 @@ import static org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/v1/sse")
+@Tag(
+        name = "NotificationSseController",
+        description = "### Controller for subscribing to Server-Sent Events of Notifications"
+)
+@OpenApiConfiguration.ApiSecurityScheme
+@OpenApiConfiguration.ApiSecurityResponse
 public class NotificationSseController {
 
     @NonNull
@@ -29,6 +40,12 @@ public class NotificationSseController {
 
 
     @GetMapping(produces = TEXT_EVENT_STREAM_VALUE)
+    @Operation(description = "# Subscribe to notification events")
+    @ApiResponse(
+            responseCode = "200",
+            description = "Server acknowledged the request",
+            content = @Content(mediaType = TEXT_EVENT_STREAM_VALUE)
+    )
     @PreAuthorize("hasAuthority('NOTIFICATION_CONSUME')")
     public Flux<ServerSentEvent<Notification>> createNotificationSse(Authentication authentication) {
         return Flux.create(sink -> {
@@ -41,7 +58,7 @@ public class NotificationSseController {
                             .data(notification)
                             .build())
                     .subscribe(sink::next, sink::error, sink::complete);
-            sink.onDispose(disposable::dispose);
+            sink.onDispose(disposable);
         });
     }
 
