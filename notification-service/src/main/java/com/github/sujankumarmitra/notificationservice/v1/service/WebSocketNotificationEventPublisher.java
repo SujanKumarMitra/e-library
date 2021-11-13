@@ -25,7 +25,7 @@ import reactor.util.function.Tuples;
 @Component
 @AllArgsConstructor
 @Slf4j
-public class NotificationWebSocketEventPublisher implements InitializingBean {
+public class WebSocketNotificationEventPublisher implements InitializingBean {
 
     @NonNull
     private final NotificationEventService eventService;

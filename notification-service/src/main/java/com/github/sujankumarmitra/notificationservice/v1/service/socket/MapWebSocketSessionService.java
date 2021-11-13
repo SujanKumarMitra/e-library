@@ -39,7 +39,7 @@ public class MapWebSocketSessionService implements WebSocketSessionService {
 
     private Set<WebSocketSession> addSessionToMap(WebSocketSession session, Set<WebSocketSession> sessions) {
         if (sessions == null)
-            sessions = new HashSet<>();
+            sessions = Collections.synchronizedSet(new HashSet<>());
         sessions.add(session);
         return sessions;
     }
@@ -50,13 +50,17 @@ public class MapWebSocketSessionService implements WebSocketSessionService {
                 .getPrincipal()
                 .cast(Authentication.class)
                 .map(Authentication::getName)
-                .handle((consumerId, sink) -> handleGetSocketSessions(consumerId, session, sink));
+                .handle((consumerId, sink) -> handleRemoveSocketSessions(consumerId, session, sink));
     }
 
-    private void handleGetSocketSessions(String consumerId, WebSocketSession session, SynchronousSink<Void> sink) {
-        Set<WebSocketSession> webSocketSessions = sessionMap.getOrDefault(consumerId, null);
-        if (webSocketSessions != null)
-            webSocketSessions.remove(session);
+    private void handleRemoveSocketSessions(String consumerId, WebSocketSession session, SynchronousSink<Void> sink) {
+        sessionMap.compute(consumerId, (__, sessions) -> {
+            if (sessions == null) return null;
+            sessions.remove(session);
+            if (sessions.size() == 0) return null;
+            return sessions;
+        });
+
         sink.complete();
     }
 
