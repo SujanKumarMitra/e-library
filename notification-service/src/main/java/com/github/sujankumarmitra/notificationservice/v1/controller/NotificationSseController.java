@@ -2,6 +2,9 @@ package com.github.sujankumarmitra.notificationservice.v1.controller;
 
 import com.github.sujankumarmitra.notificationservice.v1.config.OpenApiConfiguration;
 import com.github.sujankumarmitra.notificationservice.v1.model.Notification;
+import com.github.sujankumarmitra.notificationservice.v1.security.VerifiedAuth0JwtAuthenticationToken;
+import com.github.sujankumarmitra.notificationservice.v1.service.scheduler.Cancellable;
+import com.github.sujankumarmitra.notificationservice.v1.service.scheduler.JobScheduler;
 import com.github.sujankumarmitra.notificationservice.v1.service.sse.FluxSinkNotificationSseEmitter;
 import com.github.sujankumarmitra.notificationservice.v1.service.sse.NotificationSseEmitter;
 import com.github.sujankumarmitra.notificationservice.v1.service.sse.NotificationSseEmitterService;
@@ -14,7 +17,6 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,6 +25,8 @@ import reactor.core.publisher.Mono;
 
 import java.util.function.Consumer;
 
+import static java.lang.System.currentTimeMillis;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE;
 
 /**
@@ -43,6 +47,9 @@ public class NotificationSseController {
 
     @NonNull
     private final NotificationSseEmitterService sseEmitterService;
+    @NonNull
+    private final JobScheduler jobScheduler;
+
     private static final Consumer<? super Object> NO_OP = __ -> {
     };
 
@@ -55,15 +62,22 @@ public class NotificationSseController {
             content = @Content(mediaType = TEXT_EVENT_STREAM_VALUE)
     )
     @PreAuthorize("hasAuthority('NOTIFICATION_CONSUME')")
-    public Flux<ServerSentEvent<Notification>> createNotificationSse(Authentication authentication) {
+    public Flux<ServerSentEvent<Notification>> createNotificationSse(VerifiedAuth0JwtAuthenticationToken authentication) {
         return Flux.create(sink -> {
+
+            long delay = authentication.getExpiresAt() - currentTimeMillis();
+            Cancellable cancellable = jobScheduler.scheduleJob(sink::complete, delay, MILLISECONDS);
+
             NotificationSseEmitter emitter = new FluxSinkNotificationSseEmitter(
                     Mono.just(authentication.getName()), sink);
+
             sseEmitterService.addEmitter(emitter)
                     .subscribe(NO_OP,
                             th -> log.warn("Failed to add NotificationSseEmitter", th),
                             () -> log.info("Added SseEmitter for " + authentication.getName()));
+
             sink.onDispose(() -> {
+                cancellable.cancel();
                 sseEmitterService.removeEmitter(emitter)
                         .subscribe(NO_OP,
                                 th -> log.warn("Failed to remove NotificationSseEmitter", th),

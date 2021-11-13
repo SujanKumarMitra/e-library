@@ -37,8 +37,7 @@ public class Auth0JwtTokenExtractor implements JwtTokenExtractor {
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
 
-        long expiresAt = decodedJWT.getExpiresAt().getTime();
-
+        long expiresAt = decodedJWT.getClaim("exp").asLong();
         return new VerifiedAuth0JwtAuthenticationToken(username, scopes, expiresAt);
     }
 }
