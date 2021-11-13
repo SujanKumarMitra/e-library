@@ -40,6 +40,7 @@ public class SseNotificationEventPublisher implements InitializingBean {
         ServerSentEvent<Notification> serverSentEvent = ServerSentEvent
                 .<Notification>builder()
                 .id(notification.getId())
+                .event("new_notification")
                 .data(notification)
                 .build();
         emitter.emitSse(serverSentEvent);

@@ -38,7 +38,7 @@ import static org.springframework.http.ResponseEntity.*;
 @AllArgsConstructor
 @RequestMapping("/api/v1/notifications")
 @Tag(
-        name = "NotificationController",
+        name = "NotificationHttpController",
         description = "### Controller for creating and acknowledging notifications"
 )
 @OpenApiConfiguration.ApiSecurityScheme
