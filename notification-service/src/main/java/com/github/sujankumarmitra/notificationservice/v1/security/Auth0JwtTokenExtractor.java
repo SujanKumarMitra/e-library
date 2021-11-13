@@ -2,7 +2,6 @@ package com.github.sujankumarmitra.notificationservice.v1.security;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -38,6 +37,8 @@ public class Auth0JwtTokenExtractor implements JwtTokenExtractor {
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
 
-        return new UsernamePasswordAuthenticationToken(username, "", scopes);
+        long expiresAt = decodedJWT.getExpiresAt().getTime();
+
+        return new VerifiedAuth0JwtAuthenticationToken(username, scopes, expiresAt);
     }
 }
