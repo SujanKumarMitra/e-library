@@ -1,4 +1,6 @@
 app:
+  job-scheduler:
+    maxThreadCapacity: 50
   auth:
     baseUrl: "${AUTH_SERVER_URL:http://localhost:5000}"
   kafka:
