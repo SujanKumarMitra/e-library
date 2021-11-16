@@ -1,6 +1,6 @@
 package com.github.sujankumarmitra.notificationservice.v1.service.socket;
 
-import com.github.sujankumarmitra.notificationservice.v1.security.VerifiedAuth0JwtAuthenticationToken;
+import com.github.sujankumarmitra.notificationservice.v1.security.VerifiedJwtAuthenticationToken;
 import com.github.sujankumarmitra.notificationservice.v1.service.scheduler.Cancellable;
 import com.github.sujankumarmitra.notificationservice.v1.service.scheduler.JobScheduler;
 import lombok.AllArgsConstructor;
@@ -10,8 +10,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.socket.WebSocketHandler;
 import org.springframework.web.reactive.socket.WebSocketSession;
 import reactor.core.publisher.Mono;
-
-import java.time.Duration;
 
 import static java.lang.System.currentTimeMillis;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -41,8 +39,8 @@ public class NotificationWebSocketHandler implements WebSocketHandler {
         Mono<Cancellable> cancellable = session
                 .getHandshakeInfo()
                 .getPrincipal()
-                .cast(VerifiedAuth0JwtAuthenticationToken.class)
-                .map(VerifiedAuth0JwtAuthenticationToken::getExpiresAt)
+                .cast(VerifiedJwtAuthenticationToken.class)
+                .map(VerifiedJwtAuthenticationToken::getExpiresAt)
                 .map(expiresAt -> expiresAt - currentTimeMillis())
 //                .doOnNext(delay -> System.out.println("Duration: " + Duration.ofMillis(delay)))
                 .map(delay -> jobScheduler

@@ -39,6 +39,6 @@ public class Auth0JwtTokenExtractor implements JwtTokenExtractor {
 
         long expiresAt = decodedJWT.getExpiresAt().getTime();
 
-        return new VerifiedAuth0JwtAuthenticationToken(username, scopes, expiresAt);
+        return new VerifiedJwtAuthenticationToken(username, scopes, expiresAt);
     }
 }

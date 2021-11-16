@@ -38,6 +38,6 @@ public class Auth0JwtTokenExtractor implements JwtTokenExtractor {
                 .collect(Collectors.toList());
 
         long expiresAt = decodedJWT.getClaim("exp").asLong();
-        return new VerifiedAuth0JwtAuthenticationToken(username, scopes, expiresAt);
+        return new VerifiedJwtAuthenticationToken(username, scopes, expiresAt);
     }
 }
