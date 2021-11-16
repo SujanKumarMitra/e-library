@@ -8,5 +8,7 @@ public abstract class KafkaProperties {
 
     public abstract String getBootstrapServers();
 
-    public abstract String getNotificationTopicName();
+    public abstract String getNewNotificationsTopicName();
+
+    public abstract String getCreateNotificationsTopicName();
 }

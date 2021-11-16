@@ -47,7 +47,7 @@ public class KafkaNotificationEventService implements NotificationEventService, 
         ConnectableFlux<Notification> notificationEventConnectableFlux = KafkaReceiver.create(receiverOptions
                         .commitBatchSize(0)
                         .commitInterval(ZERO)
-                        .subscription(Collections.singleton(properties.getNotificationTopicName())))
+                        .subscription(Collections.singleton(properties.getNewNotificationsTopicName())))
                 .receiveAutoAck()
                 .concatMap(Function.identity())
                 .map(ConsumerRecord::value)
@@ -63,7 +63,7 @@ public class KafkaNotificationEventService implements NotificationEventService, 
     public Mono<Void> publishEvent(Notification event) {
         return Mono.just(event)
                 .handle(this::serialize)
-                .map(value -> new ProducerRecord<String, String>(properties.getNotificationTopicName(), value))
+                .map(value -> new ProducerRecord<String, String>(properties.getNewNotificationsTopicName(), value))
                 .map(_record -> create(_record, event.getId()))
                 .as(kafkaSender::send)
                 .next()

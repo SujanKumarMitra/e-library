@@ -12,5 +12,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class DefaultKafkaProperties extends KafkaProperties {
 
     private String bootstrapServers;
-    private String notificationTopicName;
+    private String newNotificationsTopicName;
+    private String createNotificationsTopicName;
 }

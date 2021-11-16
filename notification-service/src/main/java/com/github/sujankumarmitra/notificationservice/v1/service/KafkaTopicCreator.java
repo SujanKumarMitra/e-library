@@ -1,5 +1,6 @@
-package com.github.sujankumarmitra.notificationservice.v1.config;
+package com.github.sujankumarmitra.notificationservice.v1.service;
 
+import com.github.sujankumarmitra.notificationservice.v1.config.KafkaProperties;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
@@ -38,11 +39,15 @@ public class KafkaTopicCreator implements InitializingBean {
                 kafkaProperties.getBootstrapServers());
 
         AdminClient adminClient = AdminClient.create(adminClientProps);
-        NewTopic notificationTopic = new NewTopic(
-                kafkaProperties.getNotificationTopicName(),
+        NewTopic newNotificationsTopic = new NewTopic(
+                kafkaProperties.getNewNotificationsTopicName(),
                 empty(), empty());
 
-        adminClient.createTopics(List.of(notificationTopic))
+        NewTopic createNotificationsTopic = new NewTopic(
+                kafkaProperties.getCreateNotificationsTopicName(),
+                empty(), empty());
+
+        adminClient.createTopics(List.of(newNotificationsTopic, createNotificationsTopic))
                 .all()
                 .whenComplete(this::logResult);
 
