@@ -14,7 +14,7 @@ import java.util.Optional;
 public class OpenAPITokenIntrospectionResponse extends TokenIntrospectionResponse {
     @Override
     @Schema(required = true)
-    public boolean isValid() {
+    public boolean isActive() {
         return false;
     }
 

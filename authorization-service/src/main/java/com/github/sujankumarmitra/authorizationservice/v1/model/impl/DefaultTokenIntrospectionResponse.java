@@ -16,7 +16,7 @@ import static java.util.Optional.ofNullable;
 
 @Getter
 public class DefaultTokenIntrospectionResponse extends TokenIntrospectionResponse {
-    private boolean valid;
+    private boolean active;
 
     @NonNull
     private final Optional<String> subject;
@@ -30,8 +30,8 @@ public class DefaultTokenIntrospectionResponse extends TokenIntrospectionRespons
     @NonNull
     private final Optional<Long> notBefore;
 
-    DefaultTokenIntrospectionResponse(boolean valid, @NonNull Optional<String> subject, @NonNull Optional<Collection<String>> scopes, @NonNull Optional<Long> expiry, @NonNull Optional<Long> notBefore) {
-        this.valid = valid;
+    DefaultTokenIntrospectionResponse(boolean active, @NonNull Optional<String> subject, @NonNull Optional<Collection<String>> scopes, @NonNull Optional<Long> expiry, @NonNull Optional<Long> notBefore) {
+        this.active = active;
         this.subject = subject;
         this.scopes = scopes;
         this.expiry = expiry;
@@ -43,7 +43,7 @@ public class DefaultTokenIntrospectionResponse extends TokenIntrospectionRespons
     }
 
     public static class DefaultTokenIntrospectionResponseBuilder {
-        private boolean valid;
+        private boolean active;
         private String subject;
         private Collection<String> scopes;
         private Long expiry;
@@ -52,8 +52,8 @@ public class DefaultTokenIntrospectionResponse extends TokenIntrospectionRespons
         DefaultTokenIntrospectionResponseBuilder() {
         }
 
-        public DefaultTokenIntrospectionResponseBuilder valid(boolean valid) {
-            this.valid = valid;
+        public DefaultTokenIntrospectionResponseBuilder active(boolean active) {
+            this.active = active;
             return this;
         }
 
@@ -99,7 +99,7 @@ public class DefaultTokenIntrospectionResponse extends TokenIntrospectionRespons
 
         public DefaultTokenIntrospectionResponse build() {
             return new DefaultTokenIntrospectionResponse(
-                    valid,
+                    active,
                     ofNullable(subject),
                     ofNullable(scopes),
                     ofNullable(expiry),
@@ -107,7 +107,7 @@ public class DefaultTokenIntrospectionResponse extends TokenIntrospectionRespons
         }
 
         public String toString() {
-            return "DefaultTokenIntrospectionResponse.DefaultTokenIntrospectionResponseBuilder(valid=" + this.valid + ", subject=" + this.subject + ", scopes=" + this.scopes + ", expiry=" + this.expiry + ", notBefore=" + this.notBefore + ")";
+            return "DefaultTokenIntrospectionResponse.DefaultTokenIntrospectionResponseBuilder(valid=" + this.active + ", subject=" + this.subject + ", scopes=" + this.scopes + ", expiry=" + this.expiry + ", notBefore=" + this.notBefore + ")";
         }
     }
 }

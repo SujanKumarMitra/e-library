@@ -9,7 +9,7 @@ import java.util.Optional;
  */
 public abstract class TokenIntrospectionResponse {
 
-    public abstract boolean isValid();
+    public abstract boolean isActive();
 
     public abstract Optional<String> getSubject();
 

@@ -23,9 +23,9 @@ public class JacksonTokenIntrospectionResponse extends TokenIntrospectionRespons
     private final TokenIntrospectionResponse response;
 
     @Override
-    @JsonProperty("valid")
-    public boolean isValid() {
-        return response.isValid();
+    @JsonProperty("active")
+    public boolean isActive() {
+        return response.isActive();
     }
 
     @Override

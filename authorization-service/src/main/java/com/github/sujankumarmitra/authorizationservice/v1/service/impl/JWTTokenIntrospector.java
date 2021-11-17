@@ -26,7 +26,7 @@ import static java.util.Optional.empty;
 @Slf4j
 public class JWTTokenIntrospector implements TokenIntrospector {
 
-    private static final TokenIntrospectionResponse INVALID_TOKEN_RESPONSE;
+    private static final TokenIntrospectionResponse INACTIVE_TOKEN_RESPONSE;
 
     public static final String SUBJECT_CLAIM_KEY = "sub";
     public static final String SCOPES_CLAIM_KEY = "scopes";
@@ -34,9 +34,9 @@ public class JWTTokenIntrospector implements TokenIntrospector {
     public static final String EXPIRY_CLAIM_KEY = "exp";
 
     static {
-        INVALID_TOKEN_RESPONSE = DefaultTokenIntrospectionResponse
+        INACTIVE_TOKEN_RESPONSE = DefaultTokenIntrospectionResponse
                 .newBuilder()
-                .valid(false)
+                .active(false)
                 .subject(empty())
                 .scopes(empty())
                 .expiry(empty())
@@ -55,15 +55,15 @@ public class JWTTokenIntrospector implements TokenIntrospector {
 
         String token = request.getToken();
         if (token == null) {
-            log.debug("token is null, returning invalid response");
-            return INVALID_TOKEN_RESPONSE;
+            log.debug("token is null, returning inactive response");
+            return INACTIVE_TOKEN_RESPONSE;
         }
 
         try {
             DecodedJWT decode = JWT.decode(token);
             if (decode == null) {
-                log.debug("JWT.decode() returned null, returning invalid token");
-                return INVALID_TOKEN_RESPONSE;
+                log.debug("JWT.decode() returned null, returning inactive token");
+                return INACTIVE_TOKEN_RESPONSE;
             }
 
             String subject = decode.getClaim(SUBJECT_CLAIM_KEY).asString();
@@ -76,13 +76,13 @@ public class JWTTokenIntrospector implements TokenIntrospector {
                     .anyMatch(Objects::isNull);
 
             if (hasNulls) {
-                log.debug("All required fields are not present in JWT, returning invalid response");
-                return INVALID_TOKEN_RESPONSE;
+                log.debug("All required fields are not present in JWT, returning inactive response");
+                return INACTIVE_TOKEN_RESPONSE;
             }
 
             return DefaultTokenIntrospectionResponse
                     .newBuilder()
-                    .valid(true)
+                    .active(true)
                     .subject(subject)
                     .scopes(scopes)
                     .expiry(expiry)
@@ -90,8 +90,8 @@ public class JWTTokenIntrospector implements TokenIntrospector {
                     .build();
 
         } catch (JWTDecodeException ex) {
-            log.debug("Exception thrown while decoding jwt, returning invalid response", ex);
-            return INVALID_TOKEN_RESPONSE;
+            log.debug("Exception thrown while decoding jwt, returning inactive response", ex);
+            return INACTIVE_TOKEN_RESPONSE;
         }
     }
 }

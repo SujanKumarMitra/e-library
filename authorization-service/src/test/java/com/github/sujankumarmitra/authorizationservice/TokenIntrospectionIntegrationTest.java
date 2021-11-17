@@ -29,7 +29,7 @@ class TokenIntrospectionIntegrationTest {
     private WebTestClient client = null;
 
     @Test
-    void validJWTIntrospectionTest() {
+    void activeJWTIntrospectionTest() {
         TokenIntrospectionResponse response = client.post()
                 .uri("/introspect")
                 .accept(APPLICATION_JSON)
@@ -42,7 +42,7 @@ class TokenIntrospectionIntegrationTest {
                 .returnResult()
                 .getResponseBody();
 
-        assertThat(response.isValid()).isTrue();
+        assertThat(response.isActive()).isTrue();
         assertThat(response.getSubject()).contains("1234567890");
         assertThat(response.getExpiry()).contains(1637154940522L);
         assertThat(response.getNotBefore()).contains(1637154540522L);
@@ -65,7 +65,7 @@ class TokenIntrospectionIntegrationTest {
                 .returnResult()
                 .getResponseBody();
 
-        assertThat(response.isValid()).isFalse();
+        assertThat(response.isActive()).isFalse();
     }
 
 
@@ -88,7 +88,7 @@ class TokenIntrospectionIntegrationTest {
     @Setter
     @ToString
     static class TokenIntrospectionResponseImpl extends TokenIntrospectionResponse {
-        boolean valid;
+        boolean active;
         @JsonProperty("sub")
         Optional<String> subject;
         Optional<Collection<String>> scopes;

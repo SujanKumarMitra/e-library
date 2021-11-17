@@ -19,8 +19,8 @@ class JWTTokenIntrospectorTest {
 
     private JWTTokenIntrospector introspector = new JWTTokenIntrospector();
 
-    private boolean isInvalidToken(TokenIntrospectionResponse res) {
-        return !res.isValid();
+    private boolean isInactiveToken(TokenIntrospectionResponse res) {
+        return !res.isActive();
     }
 
     @Test
@@ -39,7 +39,7 @@ class JWTTokenIntrospectorTest {
                 .expectSubscription()
                 .consumeNextWith(response -> {
                     assertThat(response).isNotNull();
-                    assertThat(response.isValid()).isTrue();
+                    assertThat(response.isActive()).isTrue();
                     assertThat(response.getSubject()).contains("subject");
                     assertThat(response.getScopes()).contains(List.of("scope1", "scope2"));
                     assertThat(response.getNotBefore()).contains(1637154540522L);
@@ -51,14 +51,14 @@ class JWTTokenIntrospectorTest {
 
 
     @Test
-    void givenMalformedJWTToken_whenDecoded_shouldReturnInvalidResponse() {
+    void givenMalformedJWTToken_whenDecoded_shouldReturnInactiveResponse() {
         String malformedToken = "malformed";
         TokenIntrospectionRequest request = new DefaultTokenIntrospectionRequest(malformedToken);
 
         introspector.introspect(request)
                 .as(StepVerifier::create)
                 .expectSubscription()
-                .expectNextMatches(this::isInvalidToken)
+                .expectNextMatches(this::isInactiveToken)
                 .verifyComplete();
 
     }
@@ -77,7 +77,7 @@ class JWTTokenIntrospectorTest {
         introspector.introspect(request)
                 .as(StepVerifier::create)
                 .expectSubscription()
-                .expectNextMatches(this::isInvalidToken)
+                .expectNextMatches(this::isInactiveToken)
                 .verifyComplete();
 
 

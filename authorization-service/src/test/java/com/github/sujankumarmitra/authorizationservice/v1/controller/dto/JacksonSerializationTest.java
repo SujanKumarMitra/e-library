@@ -29,14 +29,14 @@ class JacksonSerializationTest {
 
         DefaultTokenIntrospectionResponse invalidTokenResponse = DefaultTokenIntrospectionResponse
                 .newBuilder()
-                .valid(false)
+                .active(false)
                 .build();
 
         JacksonTokenIntrospectionResponse jacksonResponse = new JacksonTokenIntrospectionResponse(invalidTokenResponse);
 
         String jsonResponse = mapper.writeValueAsString(jacksonResponse);
 
-        assertThat(jsonResponse).isEqualTo("{\"valid\":false}");
+        assertThat(jsonResponse).isEqualTo("{\"active\":false}");
 
     }
 
@@ -50,7 +50,7 @@ class JacksonSerializationTest {
 
         DefaultTokenIntrospectionResponse validResponse = DefaultTokenIntrospectionResponse
                 .newBuilder()
-                .valid(true)
+                .active(true)
                 .scopes(List.of("scope1"))
                 .notBefore(1637154940522L)
                 .expiry(1637154940522L)
@@ -65,7 +65,7 @@ class JacksonSerializationTest {
 
         JsonNode root = mapper.reader().readTree(jsonResponse);
 
-        assertThat(root.get("valid").asBoolean()).isTrue();
+        assertThat(root.get("active").asBoolean()).isTrue();
         assertThat(root.get("nbf").asLong()).isEqualTo(1637154940522L);
         assertThat(root.get("exp").asLong()).isEqualTo(1637154940522L);
         assertThat(root.get("sub").asText()).isEqualTo("subject");
