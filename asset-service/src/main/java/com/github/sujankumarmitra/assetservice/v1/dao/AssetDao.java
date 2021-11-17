@@ -10,7 +10,7 @@ import reactor.core.publisher.Mono;
 public interface AssetDao {
     Mono<Asset> insert(Asset asset);
 
-    Mono<Void> remove(String assetId);
+    Mono<Void> delete(String assetId);
 
     Mono<Asset> findOne(String assetId);
 }

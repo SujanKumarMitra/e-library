@@ -1,4 +1,4 @@
 spring:
-  mongodb:
-    embedded:
-      features: "SYNC_DELAY"
+  sql:
+    init:
+      mode: "ALWAYS"

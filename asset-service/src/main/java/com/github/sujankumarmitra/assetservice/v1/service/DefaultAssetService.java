@@ -25,7 +25,7 @@ public class DefaultAssetService implements AssetService {
 
     @Override
     public Mono<Void> deleteAsset(String assetId) {
-        return assetDao.remove(assetId);
+        return assetDao.delete(assetId);
     }
 
     @Override

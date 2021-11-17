@@ -1,0 +1,1 @@
+/home/skmitra/Coding/e-library/asset-service/src/main/resources/schema.sql

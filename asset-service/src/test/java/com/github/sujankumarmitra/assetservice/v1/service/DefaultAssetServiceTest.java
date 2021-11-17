@@ -51,7 +51,7 @@ class DefaultAssetServiceTest {
     @Test
     void deleteAsset() {
         Mockito.doReturn(Mono.empty())
-                .when(assetDao).remove(any());
+                .when(assetDao).delete(any());
 
         Mono<Void> voidMono = serviceUnderTest.deleteAsset("someId");
 
