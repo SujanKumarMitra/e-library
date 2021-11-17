@@ -1,6 +1,6 @@
 package com.github.sujankumarmitra.assetservice.v1.security;
 
-import com.github.sujankumarmitra.assetservice.v1.exception.MalformedBearerTokenException;
+import com.github.sujankumarmitra.assetservice.v1.exception.MalformedTokenException;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.server.authentication.ServerAuthenticationConverter;
@@ -27,7 +27,7 @@ public class AuthenticationRequestTokenConverter implements ServerAuthentication
             String tokenValue = request.getHeaders().getFirst(AUTHORIZATION_PARAM);
             return Mono.create(sink -> {
                 if (tokenValue.length() < AUTHORIZATION_PARAM_PREFIX.length())
-                    sink.error(new MalformedBearerTokenException(tokenValue));
+                    sink.error(new MalformedTokenException(tokenValue));
                 sink.success(
                         new AuthenticationRequestToken(
                                 tokenValue.substring(AUTHORIZATION_PARAM_PREFIX.length())));

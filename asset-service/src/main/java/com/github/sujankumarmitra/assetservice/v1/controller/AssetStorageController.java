@@ -168,6 +168,7 @@ public class AssetStorageController {
             }
     )
     @GetMapping("/assets/{assetId}")
+    @PreAuthorize("hasAuthority('READ_ASSET')")
     public Mono<ResponseEntity<InputStreamSource>> retrieveAsset(Authentication authenticatedUser,
                                                                  @PathVariable String assetId) {
         return assetPermissionService
