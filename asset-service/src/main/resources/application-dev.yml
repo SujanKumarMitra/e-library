@@ -1,9 +1,13 @@
 app:
   storage:
-    baseDir: "${STORAGE_DIR:/tmp}"
+    baseDir: "/tmp"
   auth:
-    baseUrl: "${AUTH_SERVER_URL:http://localhost:5000}"
+    baseUrl: "http://localhost:5000"
 spring:
-  data:
-    mongodb:
-      uri: "${DB_URL:mongodb://localhost:27017/asset_service}"
+  r2dbc:
+    url: "r2dbc:postgres://localhost:5432/asset_service_db"
+    username: "asset_service"
+    password: "asset_service"
+  sql:
+    init:
+      mode: "ALWAYS"

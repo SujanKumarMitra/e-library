@@ -4,6 +4,7 @@ app:
   auth:
     baseUrl: "${AUTH_SERVER_URL}"
 spring:
-  data:
-    mongodb:
-      uri: "${DB_URL}"
+  r2dbc:
+    url: "${DB_URL}"
+    username: "${DB_USERNAME}"
+    password: "${DB_PASSWORD}"
