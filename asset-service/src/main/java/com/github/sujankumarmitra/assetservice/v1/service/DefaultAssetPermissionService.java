@@ -37,6 +37,8 @@ public class DefaultAssetPermissionService implements AssetPermissionService {
     }
 
     private boolean checkPermission(long currentTimestamp, AssetPermission permission) {
+
+        if (currentTimestamp < permission.getGrantStartEpochMilliseconds()) return false;
         if (permission.getGrantDurationInMilliseconds() == AssetPermission.INFINITE_GRANT_DURATION) return true;
 
         long permissionExpiryTimestamp = 0L;
@@ -45,6 +47,7 @@ public class DefaultAssetPermissionService implements AssetPermissionService {
         permissionExpiryTimestamp += permission.getGrantDurationInMilliseconds();
 
         return currentTimestamp <= permissionExpiryTimestamp;
+
     }
 
 }
