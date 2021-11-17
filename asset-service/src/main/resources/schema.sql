@@ -12,5 +12,5 @@ CREATE TABLE IF NOT EXISTS asset_permissions(
     grant_start bigint,
     grant_duration bigint,
     CONSTRAINT asset_permissions_pk PRIMARY KEY (asset_id, subject_id),
-    CONSTRAINT asset_permissions_fk FOREIGN KEY (asset_id) REFERENCES assets(id)
+    CONSTRAINT asset_permissions_fk FOREIGN KEY (asset_id) REFERENCES assets(id) ON DELETE CASCADE
 );

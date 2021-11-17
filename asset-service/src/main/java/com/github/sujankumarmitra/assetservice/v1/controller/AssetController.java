@@ -97,6 +97,8 @@ public class AssetController {
     public Mono<ResponseEntity<Void>> deleteAsset(@PathVariable String assetId) {
         return assetService
                 .deleteAsset(assetId)
+                .thenReturn(assetId)
+                .flatMap(assetStorageService::purgeAsset)
                 .thenReturn(accepted().build());
     }
 
