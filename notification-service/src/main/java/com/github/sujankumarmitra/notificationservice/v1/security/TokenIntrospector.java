@@ -1,13 +1,12 @@
 package com.github.sujankumarmitra.notificationservice.v1.security;
 
-import org.springframework.security.core.Authentication;
 import reactor.core.publisher.Mono;
 
 /**
  * @author skmitra
  * @since Sep 27/09/21, 2021
  */
-public interface JwtTokenExtractor {
+public interface TokenIntrospector {
 
-    Mono<Authentication> extractToken(String token);
+    Mono<AuthenticationToken> introspectToken(String token);
 }

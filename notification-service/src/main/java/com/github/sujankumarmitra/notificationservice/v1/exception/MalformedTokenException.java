@@ -10,11 +10,11 @@ import java.util.List;
  * @since Sep 27/09/21, 2021
  */
 @Getter
-public class MalformedBearerTokenException extends ApiOperationException {
+public class MalformedTokenException extends ApiOperationException {
 
     private final Collection<ErrorDetails> errors;
 
-    public MalformedBearerTokenException(String tokenValue) {
+    public MalformedTokenException(String tokenValue) {
         errors = List.of(new DefaultErrorDetails("Malformed token '" + tokenValue + "'"));
     }
 }

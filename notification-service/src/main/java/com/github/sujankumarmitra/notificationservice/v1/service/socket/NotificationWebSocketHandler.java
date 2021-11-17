@@ -1,6 +1,6 @@
 package com.github.sujankumarmitra.notificationservice.v1.service.socket;
 
-import com.github.sujankumarmitra.notificationservice.v1.security.VerifiedJwtAuthenticationToken;
+import com.github.sujankumarmitra.notificationservice.v1.security.AuthenticationToken;
 import com.github.sujankumarmitra.notificationservice.v1.service.scheduler.Cancellable;
 import com.github.sujankumarmitra.notificationservice.v1.service.scheduler.JobScheduler;
 import lombok.AllArgsConstructor;
@@ -39,10 +39,9 @@ public class NotificationWebSocketHandler implements WebSocketHandler {
         Mono<Cancellable> cancellable = session
                 .getHandshakeInfo()
                 .getPrincipal()
-                .cast(VerifiedJwtAuthenticationToken.class)
-                .map(VerifiedJwtAuthenticationToken::getExpiresAt)
+                .cast(AuthenticationToken.class)
+                .map(AuthenticationToken::getExpiresAt)
                 .map(expiresAt -> expiresAt - currentTimeMillis())
-//                .doOnNext(delay -> System.out.println("Duration: " + Duration.ofMillis(delay)))
                 .map(delay -> jobScheduler
                         .scheduleJob(() -> session.close(POLICY_VIOLATION).subscribe(), delay, MILLISECONDS));
 

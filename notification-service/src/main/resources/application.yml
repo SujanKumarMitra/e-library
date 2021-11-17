@@ -1,6 +1,7 @@
 spring:
   application:
     name: "notification-service"
-  data:
-    mongodb:
-      autoIndexCreation: "true"
+app:
+  kafka:
+    newNotificationsTopicName: "new_notifications"
+    createNotificationsTopicName: "create_notifications"

@@ -2,7 +2,7 @@ package com.github.sujankumarmitra.notificationservice.v1.controller;
 
 import com.github.sujankumarmitra.notificationservice.v1.config.OpenApiConfiguration;
 import com.github.sujankumarmitra.notificationservice.v1.model.Notification;
-import com.github.sujankumarmitra.notificationservice.v1.security.VerifiedJwtAuthenticationToken;
+import com.github.sujankumarmitra.notificationservice.v1.security.AuthenticationToken;
 import com.github.sujankumarmitra.notificationservice.v1.service.scheduler.Cancellable;
 import com.github.sujankumarmitra.notificationservice.v1.service.scheduler.JobScheduler;
 import com.github.sujankumarmitra.notificationservice.v1.service.sse.FluxSinkNotificationSseEmitter;
@@ -62,7 +62,7 @@ public class NotificationSseController {
             content = @Content(mediaType = TEXT_EVENT_STREAM_VALUE)
     )
     @PreAuthorize("hasAuthority('NOTIFICATION_CONSUME')")
-    public Flux<ServerSentEvent<Notification>> createNotificationSse(VerifiedJwtAuthenticationToken authentication) {
+    public Flux<ServerSentEvent<Notification>> createNotificationSse(AuthenticationToken authentication) {
         return Flux.create(sink -> {
 
             long delay = authentication.getExpiresAt() - currentTimeMillis();

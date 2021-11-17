@@ -2,12 +2,10 @@ app:
   job-scheduler:
     maxThreadCapacity: 50
   auth:
-    baseUrl: "${AUTH_SERVER_URL:http://localhost:5000}"
+    baseUrl: "http://localhost:8000"
   kafka:
-    bootstrapServers: "${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}"
-    newNotificationsTopicName: "${KAFKA_NEW_NOTIFICATION_TOPIC_NAME:new_notifications}"
-    createNotificationsTopicName: "${KAFKA_CREATE_NOTIFICATION_TOPIC_NAME:create_notifications}"
+    bootstrapServers: "localhost:9092"
 spring:
   data:
     mongodb:
-      uri: "${DB_URL:mongodb://localhost:27017/notification_service}"
+      uri: "mongodb://localhost:27017/notification_service"

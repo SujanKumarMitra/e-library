@@ -1,56 +1,58 @@
 package com.github.sujankumarmitra.notificationservice.v1.security;
 
 import lombok.AllArgsConstructor;
-import lombok.NonNull;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Collection;
 
-import static java.util.Collections.emptyList;
-
 /**
  * @author skmitra
- * @since Sep 27/09/21, 2021
+ * @since Nov 13/11/21, 2021
  */
 @AllArgsConstructor
-public class JwtAuthenticationToken implements Authentication {
+public final class AuthenticationToken implements Authentication {
 
-    @NonNull
-    private final String tokenValue;
+    private final String subject;
+    private final Collection<GrantedAuthority> credentials;
+    private final long expiresAt;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return emptyList();
+        return credentials;
+    }
+
+    public long getExpiresAt() {
+        return expiresAt;
     }
 
     @Override
     public Object getCredentials() {
-        return tokenValue;
+        return subject;
     }
 
     @Override
     public Object getDetails() {
-        return tokenValue;
+        return null;
     }
 
     @Override
     public Object getPrincipal() {
-        return tokenValue;
+        return subject;
     }
 
     @Override
     public boolean isAuthenticated() {
-        return false;
+        return true;
     }
 
     @Override
     public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
-        throw new IllegalArgumentException("Operation not allowed here.");
+        throw new IllegalArgumentException("Operation not allowed");
     }
 
     @Override
     public String getName() {
-        return tokenValue;
+        return subject;
     }
 }

@@ -1,6 +1,10 @@
 app:
+  job-scheduler:
+    maxThreadCapacity: 100
   auth:
     baseUrl: "${AUTH_SERVER_URL}"
+  kafka:
+    bootstrapServers: "${KAFKA_BOOTSTRAP_SERVERS}"
 spring:
   data:
     mongodb:
