@@ -1,4 +1,6 @@
 spring:
+  application:
+    name: "asset-service"
   sql:
     init:
       mode: "ALWAYS"

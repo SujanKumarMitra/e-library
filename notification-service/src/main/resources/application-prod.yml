@@ -1,6 +1,6 @@
 app:
   job-scheduler:
-    maxThreadCapacity: 100
+    maxThreadCapacity: "${JOB_SCHEDULER_MAX_THREAD_CAPACITY}"
   auth:
     baseUrl: "${AUTH_SERVER_URL}"
   kafka:
