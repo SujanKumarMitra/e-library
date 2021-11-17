@@ -1,6 +1,7 @@
 package com.github.sujankumarmitra.assetservice.v1.security;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NonNull;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -14,7 +15,8 @@ import static java.util.Collections.emptyList;
  * @since Sep 27/09/21, 2021
  */
 @AllArgsConstructor
-public class JwtAuthenticationToken implements Authentication {
+@Getter
+public final class AuthenticationRequestToken implements Authentication {
 
     @NonNull
     private final String tokenValue;

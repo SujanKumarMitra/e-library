@@ -12,6 +12,7 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.ServerAuthenticationEntryPoint;
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
 import org.springframework.security.web.server.authentication.ServerAuthenticationConverter;
+import org.springframework.security.web.server.authentication.ServerAuthenticationEntryPointFailureHandler;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher;
 
 import static org.springframework.core.Ordered.HIGHEST_PRECEDENCE;
@@ -28,17 +29,19 @@ import static org.springframework.security.web.server.util.matcher.ServerWebExch
 public class SecurityConfiguration {
 
     @NonNull
-    private ReactiveAuthenticationManager jwtAuthenticationManager;
+    private ReactiveAuthenticationManager tokenAuthenticationManager;
     @NonNull
-    private ServerAuthenticationConverter jwtAuthenticationConverter;
+    private ServerAuthenticationConverter tokenAuthenticationConverter;
     @NonNull
-    private ServerAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private ServerAuthenticationEntryPoint tokenAuthenticationEntryPoint;
 
     @Bean
-    public SecurityWebFilterChain jwtFilterChain(ServerHttpSecurity httpSecurity) {
+    public SecurityWebFilterChain tokenFilterChain(ServerHttpSecurity httpSecurity) {
 
-        AuthenticationWebFilter jwtFilter = new AuthenticationWebFilter(jwtAuthenticationManager);
-        jwtFilter.setServerAuthenticationConverter(jwtAuthenticationConverter);
+        AuthenticationWebFilter tokenFilter = new AuthenticationWebFilter(tokenAuthenticationManager);
+
+        tokenFilter.setServerAuthenticationConverter(tokenAuthenticationConverter);
+        tokenFilter.setAuthenticationFailureHandler(new ServerAuthenticationEntryPointFailureHandler(tokenAuthenticationEntryPoint));
 
 
 //        @formatter:off
@@ -52,9 +55,9 @@ public class SecurityConfiguration {
                     .formLogin().disable()
                     .csrf().disable()
                     .logout().disable()
-                    .addFilterAt(jwtFilter, AUTHENTICATION)
+                    .addFilterAt(tokenFilter, AUTHENTICATION)
                     .exceptionHandling()
-                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                        .authenticationEntryPoint(tokenAuthenticationEntryPoint)
                     .and()
                 .build();
 //        @formatter:on
@@ -66,7 +69,7 @@ public class SecurityConfiguration {
 //        @formatter:off
 
         return httpSecurity
-                .securityMatcher(getPathMatchers())
+                .securityMatcher(getSwaggerMatchers())
                 .authorizeExchange()
                     .anyExchange()
                     .permitAll()
@@ -81,7 +84,7 @@ public class SecurityConfiguration {
 
     }
 
-    private ServerWebExchangeMatcher getPathMatchers() {
+    private ServerWebExchangeMatcher getSwaggerMatchers() {
         return pathMatchers(
                 "/v3/api-docs/**",
                 "/swagger-ui.html",

@@ -6,7 +6,7 @@ import reactor.core.publisher.Mono;
  * @author skmitra
  * @since Sep 27/09/21, 2021
  */
-public interface JwtTokenValidator {
+public interface TokenIntrospector {
 
-    Mono<Boolean> validateToken(String token);
+    Mono<AuthenticationToken> introspectToken(String token);
 }

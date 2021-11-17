@@ -17,9 +17,9 @@ import static org.springframework.http.HttpStatus.UNAUTHORIZED;
  */
 @Component
 @AllArgsConstructor
-public class JwtServerAuthenticationEntryPoint implements ServerAuthenticationEntryPoint {
+public class TokenAuthenticationEntryPoint implements ServerAuthenticationEntryPoint {
 
-    private final byte[] responseBody = "{\"errors\":[{\"message\":\"token missing from request\"}]}".getBytes();
+    private final byte[] responseBody = "{\"errors\":[{\"message\":\"token missing or invalid\"}]}".getBytes();
 
     @Override
     public Mono<Void> commence(ServerWebExchange exchange, AuthenticationException ex) {

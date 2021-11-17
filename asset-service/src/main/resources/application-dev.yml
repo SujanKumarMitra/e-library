@@ -2,7 +2,7 @@ app:
   storage:
     baseDir: "/tmp"
   auth:
-    baseUrl: "http://localhost:5000"
+    baseUrl: "http://localhost:8000"
 spring:
   r2dbc:
     url: "r2dbc:postgres://localhost:5432/asset_service_db"

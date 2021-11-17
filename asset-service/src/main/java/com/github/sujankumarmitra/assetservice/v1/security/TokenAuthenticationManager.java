@@ -13,17 +13,20 @@ import reactor.core.publisher.Mono;
  */
 @Component
 @AllArgsConstructor
-public class JwtAuthenticationManager implements ReactiveAuthenticationManager {
+public class TokenAuthenticationManager implements ReactiveAuthenticationManager {
 
     @NonNull
-    private JwtTokenValidator tokenValidator;
-    @NonNull
-    private JwtTokenExtractor tokenExtractor;
+    private final TokenIntrospector tokenIntrospector;
 
     @Override
     public Mono<Authentication> authenticate(Authentication authentication) {
-        String token = (String) authentication.getCredentials();
-        return tokenValidator.validateToken(token)
-                .then(tokenExtractor.extractToken(token));
+
+        if (!AuthenticationRequestToken.class.isAssignableFrom(authentication.getClass()))
+            return Mono.empty();
+
+        String token = ((AuthenticationRequestToken) authentication).getTokenValue();
+        return tokenIntrospector
+                .introspectToken(token)
+                .cast(Authentication.class);
     }
 }

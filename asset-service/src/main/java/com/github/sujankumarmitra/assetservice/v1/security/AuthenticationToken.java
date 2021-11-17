@@ -11,7 +11,7 @@ import java.util.Collection;
  * @since Nov 13/11/21, 2021
  */
 @AllArgsConstructor
-public final class VerifiedJwtAuthenticationToken implements Authentication {
+public final class AuthenticationToken implements Authentication {
 
     private final String subject;
     private final Collection<GrantedAuthority> credentials;

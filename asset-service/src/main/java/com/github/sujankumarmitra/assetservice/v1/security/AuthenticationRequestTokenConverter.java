@@ -1,7 +1,6 @@
 package com.github.sujankumarmitra.assetservice.v1.security;
 
 import com.github.sujankumarmitra.assetservice.v1.exception.MalformedBearerTokenException;
-import org.springframework.http.HttpCookie;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.server.authentication.ServerAuthenticationConverter;
@@ -14,7 +13,7 @@ import reactor.core.publisher.Mono;
  * @since Sep 27/09/21, 2021
  */
 @Component
-public class JwtTokenServerAuthenticationConverter implements ServerAuthenticationConverter {
+public class AuthenticationRequestTokenConverter implements ServerAuthenticationConverter {
 
     private static final String AUTHORIZATION_PARAM = "Authorization";
     private static final String AUTHORIZATION_PARAM_PREFIX = "Bearer ";
@@ -30,14 +29,14 @@ public class JwtTokenServerAuthenticationConverter implements ServerAuthenticati
                 if (tokenValue.length() < AUTHORIZATION_PARAM_PREFIX.length())
                     sink.error(new MalformedBearerTokenException(tokenValue));
                 sink.success(
-                        new JwtAuthenticationToken(
+                        new AuthenticationRequestToken(
                                 tokenValue.substring(AUTHORIZATION_PARAM_PREFIX.length())));
             });
         }
 
         if (request.getQueryParams().containsKey(ACCESS_TOKEN_PARAM)) {
             String tokenValue = request.getQueryParams().getFirst(ACCESS_TOKEN_PARAM);
-            return Mono.just(new JwtAuthenticationToken(tokenValue));
+            return Mono.just(new AuthenticationRequestToken(tokenValue));
         }
 
         return Mono.empty();
