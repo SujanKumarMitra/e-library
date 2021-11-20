@@ -14,10 +14,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author skmitra
  * @since Nov 17/11/21, 2021
  */
-class JWTTokenIntrospectorTest {
+class JwtTokenIntrospectorTest {
 
 
-    private JWTTokenIntrospector introspector = new JWTTokenIntrospector();
+    private JwtTokenIntrospector introspector = new JwtTokenIntrospector();
 
     private boolean isInactiveToken(TokenIntrospectionResponse res) {
         return !res.isActive();

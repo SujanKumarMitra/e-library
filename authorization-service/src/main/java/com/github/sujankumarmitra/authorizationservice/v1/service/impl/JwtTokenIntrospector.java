@@ -24,7 +24,7 @@ import static java.util.Optional.empty;
  */
 @Service
 @Slf4j
-public class JWTTokenIntrospector implements TokenIntrospector {
+public class JwtTokenIntrospector implements TokenIntrospector {
 
     private static final TokenIntrospectionResponse INACTIVE_TOKEN_RESPONSE;
 
