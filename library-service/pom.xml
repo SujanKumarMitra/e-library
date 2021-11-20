@@ -15,6 +15,7 @@
 	<description>Service for CRUD operations on Books</description>
 	<properties>
 		<java.version>11</java.version>
+		<openapi.version>1.5.12</openapi.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -30,6 +31,11 @@
 			<artifactId>spring-boot-devtools</artifactId>
 			<scope>runtime</scope>
 			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-webflux-ui</artifactId>
+			<version>${openapi.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
