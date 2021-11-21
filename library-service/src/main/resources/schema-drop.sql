@@ -1,0 +1,10 @@
+DROP TABLE IF EXISTS physical_books;
+DROP TABLE IF EXISTS e_book_segments;
+DROP TABLE IF EXISTS tags;
+DROP TABLE IF EXISTS package_items;
+DROP TABLE IF EXISTS packages;
+DROP TABLE IF EXISTS lease_records;
+DROP TABLE IF EXISTS lease_requests;
+DROP TABLE IF EXISTS authors;
+DROP TABLE IF EXISTS books;
+DROP EXTENSION IF EXISTS "uuid-ossp";
