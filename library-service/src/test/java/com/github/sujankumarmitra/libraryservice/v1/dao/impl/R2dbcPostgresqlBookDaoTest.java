@@ -72,7 +72,6 @@ class R2dbcPostgresqlBookDaoTest {
 
         bookDao = new R2dbcPostgresqlBookDao(
                 entityTemplate.getDatabaseClient(),
-                entityTemplate.getDatabaseClient(),
                 mockAuthorDao,
                 mockTagDao);
     }

@@ -14,7 +14,6 @@ import io.r2dbc.spi.RowMetadata;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.r2dbc.core.ConnectionAccessor;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
@@ -35,8 +34,6 @@ public class R2dbcPostgresqlBookDao implements BookDao {
     public static final String SELECT_STATEMENT = "SELECT title,publisher,edition FROM books WHERE id=$1";
     public static final String UPDATE_STATEMENT = "UPDATE books SET title=$1, publisher=$2, edition=$3 WHERE id=$4";
 
-    @NonNull
-    private final ConnectionAccessor connectionAccessor;
     @NonNull
     private final DatabaseClient databaseClient;
     @NonNull
@@ -70,23 +67,6 @@ public class R2dbcPostgresqlBookDao implements BookDao {
                             .thenReturn(bookId))
                     .map(Object::toString);
 
-//            return this.connectionAccessor.inConnection(connection ->
-//                            Mono.from(connection.createStatement(INSERT_STATEMENT)
-//                                    .bind("$1", r2dbcBook.getTitle())
-//                                    .bind("$2", r2dbcBook.getPublisher())
-//                                    .bind("$3", r2dbcBook.getEdition())
-//                                    .execute()))
-//                    .flatMap(result ->
-//                            Mono.from(result.map((row, rowMetadata) -> row.get("id", UUID.class))))
-//                    .doOnNext(bookId -> log.debug("New bookId : {}", bookId))
-//                    .doOnNext(bookId -> setBookIds(bookId, r2dbcBook))
-//                    .flatMap(bookId -> authorDao
-//                            .insertAuthors(r2dbcBook.getAuthors())
-//                            .thenReturn(bookId))
-//                    .flatMap(bookId -> tagDao
-//                            .insertTags(r2dbcBook.getTags())
-//                            .thenReturn(bookId))
-//                    .map(Object::toString);
         });
     }
 
@@ -136,15 +116,6 @@ public class R2dbcPostgresqlBookDao implements BookDao {
                 .fetch()
                 .rowsUpdated()
                 .thenReturn(book);
-//        return connectionAccessor.inConnection(connection ->
-//                        Mono.from(connection.createStatement(UPDATE_STATEMENT)
-//                                .bind("$1", book.getTitle())
-//                                .bind("$2", book.getPublisher())
-//                                .bind("$3", book.getEdition())
-//                                .bind("$4", book.getUuid())
-//                                .execute()))
-//                .flatMap(result -> Mono.from(result.getRowsUpdated()))
-//                .thenReturn(book);
     }
 
     private R2dbcBook applyUpdates(Book oldBook, R2dbcBook newBook) {
@@ -181,16 +152,6 @@ public class R2dbcPostgresqlBookDao implements BookDao {
                 .one()
                 .doOnNext(book -> book.setId(bookId));
 
-//        return this.connectionAccessor
-//                .inConnection(connection ->
-//                        Mono.from(connection
-//                                .createStatement(SELECT_STATEMENT)
-//                                .bind("$1", bookId)
-//                                .execute()))
-//                .flatMap(result -> Mono.from(result
-//                        .map(this::mapToR2dbcBook)))
-//                .doOnNext(book -> book.setId(bookId));
-
     }
 
     private R2dbcBook mapToR2dbcBook(Row row, RowMetadata rowMetadata) {
@@ -225,22 +186,6 @@ public class R2dbcPostgresqlBookDao implements BookDao {
                         else
                             log.debug("No book with id {} present in DB", bookId);
                     }).then();
-
-
-//            return connectionAccessor.inConnection(connection ->
-//                            Mono.from(connection
-//                                    .createStatement(DELETE_STATEMENT)
-//                                    .bind("$1", uuid)
-//                                    .execute()))
-//                    .flatMap(result -> Mono.from(result.getRowsUpdated()))
-//                    .doOnNext(updateCount -> {
-//                        if (updateCount == 1)
-//                            log.debug("Deleted book of id {}", bookId);
-//                        else
-//                            log.debug("No book with id {} present in DB", bookId);
-//                    }).then();
-
-
         });
     }
 
