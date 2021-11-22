@@ -11,6 +11,8 @@ public interface BookDao {
 
     Mono<String> insertBook(Book book);
 
+    Mono<Book> selectBook(String bookId);
+
     Mono<Void> updateBook(Book book);
 
     Mono<Void> deleteBook(String bookId);

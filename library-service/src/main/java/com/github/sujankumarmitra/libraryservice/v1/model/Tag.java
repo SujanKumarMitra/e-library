@@ -1,5 +1,7 @@
 package com.github.sujankumarmitra.libraryservice.v1.model;
 
+import java.util.Objects;
+
 /**
  * @author skmitra
  * @since Nov 20/11/21, 2021
@@ -14,16 +16,17 @@ public abstract class Tag {
 
     @Override
     public int hashCode() {
-        return getKey().hashCode();
+        return Objects.hash(getBookId(), getKey());
     }
 
     @Override
     public boolean equals(Object obj) {
-        if(obj == null) return false;
+        if (obj == null) return false;
         if (!Tag.class.isAssignableFrom(obj.getClass())) return false;
 
         Tag other = Tag.class.cast(obj);
-        return getKey().equals(other.getKey()) &&
-                getValue().equals(other.getValue());
+        return Objects.equals(getBookId(), other.getBookId()) &&
+                Objects.equals(getKey(), other.getKey()) &&
+                Objects.equals(getValue(), other.getValue());
     }
 }

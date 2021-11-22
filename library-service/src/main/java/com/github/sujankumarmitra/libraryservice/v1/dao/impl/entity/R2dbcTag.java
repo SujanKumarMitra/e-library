@@ -18,6 +18,9 @@ public final class R2dbcTag extends Tag {
     private String key;
     private String value;
 
+    public R2dbcTag() {
+    }
+
     public R2dbcTag(@NonNull Tag tag) {
         String bookId = tag.getBookId();
         this.bookId = bookId == null ? null : UUID.fromString(bookId);
@@ -29,4 +32,5 @@ public final class R2dbcTag extends Tag {
     public String getBookId() {
         return bookId == null ? null : bookId.toString();
     }
+
 }

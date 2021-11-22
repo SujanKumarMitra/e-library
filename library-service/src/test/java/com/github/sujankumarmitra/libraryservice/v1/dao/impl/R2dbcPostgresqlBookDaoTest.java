@@ -3,8 +3,12 @@ package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 import com.github.javafaker.Faker;
 import com.github.sujankumarmitra.libraryservice.v1.dao.AuthorDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.TagDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcAuthor;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBook;
+import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcTag;
+import com.github.sujankumarmitra.libraryservice.v1.model.Author;
 import com.github.sujankumarmitra.libraryservice.v1.model.Book;
+import com.github.sujankumarmitra.libraryservice.v1.model.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,12 +22,15 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anySet;
 
 /**
@@ -35,14 +42,16 @@ import static org.mockito.ArgumentMatchers.anySet;
 @Slf4j
 class R2dbcPostgresqlBookDaoTest {
 
-    private R2dbcPostgresqlBookDao bookDao = null;
+    private R2dbcPostgresqlBookDao bookDao;
+    private TagDao mockTagDao = null;
+    private AuthorDao mockAuthorDao = null;
     @Autowired
     private R2dbcEntityTemplate entityTemplate = null;
 
-    private Faker faker = new Faker();
+    private final Faker faker = new Faker();
 
     @Container
-    private static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres");
+    private static final PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres");
 
     @DynamicPropertySource
     static void registerDynamicProperties(DynamicPropertyRegistry registry) {
@@ -55,8 +64,8 @@ class R2dbcPostgresqlBookDaoTest {
 
     @BeforeEach
     void setUp() {
-        AuthorDao mockAuthorDao = Mockito.mock(AuthorDao.class);
-        TagDao mockTagDao = Mockito.mock(TagDao.class);
+        mockAuthorDao = Mockito.mock(AuthorDao.class);
+        mockTagDao = Mockito.mock(TagDao.class);
 
         Mockito.doReturn(Mono.empty())
                 .when(mockAuthorDao).insertAuthors(anySet());
@@ -69,6 +78,7 @@ class R2dbcPostgresqlBookDaoTest {
 
         Mockito.doReturn(Mono.empty())
                 .when(mockTagDao).updateTags(anySet());
+
 
         bookDao = new R2dbcPostgresqlBookDao(
                 entityTemplate.getDatabaseClient(),
@@ -92,6 +102,115 @@ class R2dbcPostgresqlBookDaoTest {
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .consumeNextWith(log::info)
+                .verifyComplete();
+    }
+
+    @Test
+    void givenValidBookId_whenSelect_shouldSelect() {
+
+        R2dbcBook book = getBook();
+
+        entityTemplate
+                .getDatabaseClient()
+                .sql(R2dbcPostgresqlBookDao.INSERT_STATEMENT)
+                .bind("$1", book.getTitle())
+                .bind("$2", book.getPublisher())
+                .bind("$3", book.getEdition())
+                .map(row -> row.get("id", UUID.class))
+                .one()
+                .doOnNext(book::setId)
+                .then()
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .verifyComplete();
+
+
+        log.info("Inserted book {}", book);
+
+        String expectedId = book.getId();
+        String expectedTitle = book.getTitle();
+        String expectedPublisher = book.getPublisher();
+        String expectedEdition = book.getEdition();
+
+        R2dbcAuthor author1 = new R2dbcAuthor();
+        author1.setBookId(book.getUuid());
+        author1.setName(faker.book().author());
+
+        R2dbcAuthor author2 = new R2dbcAuthor();
+        author1.setBookId(book.getUuid());
+        author1.setName(faker.book().author());
+
+        Set<R2dbcAuthor> expectedAuthors = Set.of(author1, author2);
+
+        R2dbcTag tag1 = new R2dbcTag();
+        tag1.setBookId(book.getUuid());
+        tag1.setKey("key1");
+        tag1.setValue("value1");
+
+        R2dbcTag tag2 = new R2dbcTag();
+        tag2.setBookId(book.getUuid());
+        tag2.setKey("key2");
+        tag2.setValue("value2");
+
+        Set<R2dbcTag> expectedTags = Set.of(tag1, tag2);
+
+
+        book.getAuthors().addAll(expectedAuthors);
+        book.getTags().addAll(expectedTags);
+
+
+        Mockito.doReturn(Flux.fromIterable(expectedAuthors).cast(Author.class))
+                .when(mockAuthorDao).selectAuthors(any());
+
+        Mockito.doReturn(Flux.fromIterable(expectedTags).cast(Tag.class))
+                .when(mockTagDao).selectTags(any());
+
+        log.info("Expected book:: {}", book);
+
+        bookDao.selectBook(book.getId())
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .consumeNextWith(actualBook -> {
+                    log.info("Actual book:: {}", actualBook);
+                    assertThat(actualBook.getId()).isEqualTo(expectedId);
+                    assertThat(actualBook.getTitle()).isEqualTo(expectedTitle);
+                    assertThat(actualBook.getPublisher()).isEqualTo(expectedPublisher);
+                    assertThat(actualBook.getEdition()).isEqualTo(expectedEdition);
+                    assertThat(actualBook.getAuthors()).isEqualTo(expectedAuthors);
+                    assertThat(actualBook.getTags()).isEqualTo(expectedTags);
+                })
+                .verifyComplete();
+
+
+    }
+
+    @Test
+    void givenInvalidBookId_whenSelect_shouldEmitNothing() {
+        Mockito.doReturn(Flux.empty())
+                .when(mockAuthorDao).selectAuthors(any());
+
+        Mockito.doReturn(Flux.empty())
+                .when(mockTagDao).selectTags(any());
+
+        bookDao.selectBook(UUID.randomUUID().toString())
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectNextCount(0L)
+                .verifyComplete();
+    }
+
+    @Test
+    void givenMalformedBookId_whenSelect_shouldEmitNothing() {
+        Mockito.doReturn(Flux.empty())
+                .when(mockAuthorDao).selectAuthors(any());
+
+        Mockito.doReturn(Flux.empty())
+                .when(mockTagDao).selectTags(any());
+
+        bookDao.selectBook("malformed_uuid")
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectNextCount(0L)
                 .verifyComplete();
     }
 

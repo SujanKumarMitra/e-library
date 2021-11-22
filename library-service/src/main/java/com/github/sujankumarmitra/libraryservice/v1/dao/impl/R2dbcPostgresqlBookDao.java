@@ -17,7 +17,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple3;
 
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -40,6 +43,25 @@ public class R2dbcPostgresqlBookDao implements BookDao {
     private final AuthorDao authorDao;
     @NonNull
     private final TagDao tagDao;
+
+    private R2dbcBook assembleResult(Tuple3<R2dbcBook, List<Author>, List<Tag>> tuple3) {
+        R2dbcBook r2dbcBook = tuple3.getT1();
+        List<Author> authorList = tuple3.getT2();
+        List<Tag> tagList = tuple3.getT3();
+
+        Set<R2dbcAuthor> authorSet = r2dbcBook.getAuthors();
+        Set<R2dbcTag> tagSet = r2dbcBook.getTags();
+
+        for (Author author : authorList) {
+            authorSet.add(new R2dbcAuthor(author));
+        }
+
+        for (Tag tag : tagList) {
+
+            tagSet.add(new R2dbcTag(tag));
+        }
+        return r2dbcBook;
+    }
 
     @Override
     public Mono<String> insertBook(Book book) {
@@ -66,6 +88,44 @@ public class R2dbcPostgresqlBookDao implements BookDao {
                             .insertTags(r2dbcBook.getTags())
                             .thenReturn(bookId))
                     .map(Object::toString);
+
+        });
+    }
+
+    @Override
+    public Mono<Book> selectBook(String bookId) {
+        return Mono.defer(() -> {
+            if (bookId == null) {
+                log.debug("bookId is null");
+                return Mono.error(new NullPointerException("bookId can't be null"));
+            }
+
+            UUID id;
+            try {
+                id = UUID.fromString(bookId);
+            } catch (IllegalArgumentException ex) {
+                log.debug("given bookId is not valid uuid");
+                return Mono.empty();
+            }
+
+            UUID finalId = id;
+            Mono<R2dbcBook> book = databaseClient
+                    .sql(SELECT_STATEMENT)
+                    .bind("$1", id)
+                    .map(this::mapToR2dbcBook)
+                    .one()
+                    .doOnNext(r2dbcBook -> r2dbcBook.setId(finalId));
+
+            Mono<List<Author>> authors = authorDao
+                    .selectAuthors(bookId)
+                    .collectList();
+
+            Mono<List<Tag>> tags = tagDao
+                    .selectTags(bookId)
+                    .collectList();
+
+            return Mono.zip(book, authors, tags)
+                    .map(this::assembleResult);
 
         });
     }

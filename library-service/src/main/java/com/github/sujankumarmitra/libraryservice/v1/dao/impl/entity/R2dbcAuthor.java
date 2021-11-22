@@ -17,6 +17,9 @@ public final class R2dbcAuthor extends Author {
     private UUID bookId;
     private String name;
 
+    public R2dbcAuthor() {
+    }
+
     public R2dbcAuthor(@NonNull Author author) {
         String bookId = author.getBookId();
         this.bookId = bookId == null ? null : UUID.fromString(bookId);
