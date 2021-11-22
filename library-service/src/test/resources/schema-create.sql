@@ -1,0 +1,1 @@
+/home/skmitra/Coding/e-library/library-service/src/main/resources/schema-create.sql

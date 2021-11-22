@@ -1,0 +1,11 @@
+logging:
+  level:
+    com.github.sujankumarmitra.libraryservice: "DEBUG"
+    io.r2dbc.postgresql.QUERY: "DEBUG"
+    io.r2dbc.postgresql.PARAM: "DEBUG"
+spring:
+  sql:
+    init:
+      mode: "ALWAYS"
+      schemaLocations:
+        - "classpath:schema-create.sql"

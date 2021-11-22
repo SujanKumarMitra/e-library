@@ -2,12 +2,12 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE IF NOT EXISTS books(
 	id uuid DEFAULT uuid_generate_v4(),
-	name text,
+	title text,
 	publisher text,
 	edition text,
 	CONSTRAINT pk_books PRIMARY KEY (id),
-	CONSTRAINT chk_books_name_not_null CHECK (name IS NOT NULL),
-	CONSTRAINT chk_books_name_not_empty CHECK (LENGTH(name) > 0),
+	CONSTRAINT chk_books_title_not_null CHECK (title IS NOT NULL),
+	CONSTRAINT chk_books_title_not_empty CHECK (LENGTH(title) > 0),
 	CONSTRAINT chk_books_publisher_not_null CHECK (publisher IS NOT NULL),
 	CONSTRAINT chk_books_publisher_not_empty CHECK (LENGTH(publisher) > 0),
 	CONSTRAINT chk_books_edition_not_null CHECK (edition IS NOT NULL),

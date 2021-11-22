@@ -10,14 +10,25 @@ public abstract class Book {
 
     public abstract String getId();
 
-    public abstract String getName();
+    public abstract String getTitle();
 
-    public abstract Set<Author> getAuthors();
+    public abstract Set<? extends Author> getAuthors();
 
     public abstract String getPublisher();
 
     public abstract String getEdition();
 
-    public abstract Set<Tag> getTags();
+    public abstract Set<? extends Tag> getTags();
 
+    @Override
+    public String toString() {
+        return "Book{" +
+                "id=" + getId() +
+                ", title='" + getTitle() + '\'' +
+                ", authors=" + getAuthors() +
+                ", publisher='" + getPublisher() + '\'' +
+                ", edition='" + getEdition() + '\'' +
+                ", tags=" + getTags() +
+                '}';
+    }
 }
