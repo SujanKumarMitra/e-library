@@ -33,4 +33,7 @@ public final class R2dbcTag extends Tag {
         return bookId == null ? null : bookId.toString();
     }
 
+    public UUID getBookUuid() {
+        return bookId;
+    }
 }

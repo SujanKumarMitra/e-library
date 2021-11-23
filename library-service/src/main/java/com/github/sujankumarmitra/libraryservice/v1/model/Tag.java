@@ -29,4 +29,13 @@ public abstract class Tag {
                 Objects.equals(getKey(), other.getKey()) &&
                 Objects.equals(getValue(), other.getValue());
     }
+
+    @Override
+    public String toString() {
+        return "Tag{" +
+                "bookId=" + getBookId() +
+                ", key='" + getKey() + '\'' +
+                ", value='" + getValue() + '\'' +
+                '}';
+    }
 }

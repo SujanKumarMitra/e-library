@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS physical_books(
 	CONSTRAINT chk_physical_book_currency_code_valid CHECK(LENGTH(currency_code) = 3)
 );
 
-CREATE TABLE e_book_segments(
+CREATE TABLE IF NOT EXISTS e_book_segments(
 	id text,
 	book_id uuid,
 	start_page bigint,
