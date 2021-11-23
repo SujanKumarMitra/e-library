@@ -21,6 +21,12 @@ public final class R2dbcTag extends Tag {
     public R2dbcTag() {
     }
 
+    public R2dbcTag(UUID bookId, String key, String value) {
+        this.bookId = bookId;
+        this.key = key;
+        this.value = value;
+    }
+
     public R2dbcTag(@NonNull Tag tag) {
         String bookId = tag.getBookId();
         this.bookId = bookId == null ? null : UUID.fromString(bookId);

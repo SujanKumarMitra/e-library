@@ -32,10 +32,10 @@ import java.util.UUID;
 @Slf4j
 public class R2dbcPostgresqlBookDao implements BookDao {
 
-    public static final String INSERT_STATEMENT = "INSERT INTO books (title,publisher,edition) values ($1,$2,$3) RETURNING id";
+    public static final String INSERT_STATEMENT = "INSERT INTO books (title,publisher,edition,cover_page_image_id) values ($1,$2,$3,$4) RETURNING id";
     public static final String DELETE_STATEMENT = "DELETE FROM books WHERE id=$1";
-    public static final String SELECT_STATEMENT = "SELECT title,publisher,edition FROM books WHERE id=$1";
-    public static final String UPDATE_STATEMENT = "UPDATE books SET title=$1, publisher=$2, edition=$3 WHERE id=$4";
+    public static final String SELECT_STATEMENT = "SELECT title,publisher,edition,cover_page_image_id FROM books WHERE id=$1";
+    public static final String UPDATE_STATEMENT = "UPDATE books SET title=$1, publisher=$2, edition=$3, cover_page_image_id=$4 WHERE id=$5";
 
     @NonNull
     private final DatabaseClient databaseClient;
@@ -57,7 +57,6 @@ public class R2dbcPostgresqlBookDao implements BookDao {
         }
 
         for (Tag tag : tagList) {
-
             tagSet.add(new R2dbcTag(tag));
         }
         return r2dbcBook;
@@ -72,11 +71,20 @@ public class R2dbcPostgresqlBookDao implements BookDao {
             }
             R2dbcBook r2dbcBook = buildR2dbcBook(book);
 
-            return this.databaseClient
-                    .sql(INSERT_STATEMENT)
+            DatabaseClient.GenericExecuteSpec executeSpec = this.databaseClient
+                    .sql(INSERT_STATEMENT);
+
+            executeSpec = executeSpec
                     .bind("$1", r2dbcBook.getTitle())
                     .bind("$2", r2dbcBook.getPublisher())
-                    .bind("$3", r2dbcBook.getEdition())
+                    .bind("$3", r2dbcBook.getEdition());
+
+            if (r2dbcBook.getCoverPageImageId() == null) {
+                executeSpec = executeSpec.bindNull("$4", String.class);
+            } else {
+                executeSpec = executeSpec.bind("$4", r2dbcBook.getCoverPageImageId());
+            }
+            return executeSpec
                     .map(row -> row.get("id", UUID.class))
                     .one()
                     .doOnNext(bookId -> log.debug("New bookId : {}", bookId))
@@ -167,12 +175,19 @@ public class R2dbcPostgresqlBookDao implements BookDao {
 
     private Mono<R2dbcBook> updateR2dbcBook(R2dbcBook book) {
         log.debug("Saving updates to db");
-        return this.databaseClient
+        DatabaseClient.GenericExecuteSpec executeSpec = this.databaseClient
                 .sql(UPDATE_STATEMENT)
                 .bind("$1", book.getTitle())
                 .bind("$2", book.getPublisher())
-                .bind("$3", book.getEdition())
-                .bind("$4", book.getUuid())
+                .bind("$3", book.getEdition());
+
+        if (book.getCoverPageImageId() == null)
+            executeSpec = executeSpec.bindNull("$4", String.class);
+        else
+            executeSpec = executeSpec.bind("$4", book.getCoverPageImageId());
+
+        return executeSpec
+                .bind("$5", book.getUuid())
                 .fetch()
                 .rowsUpdated()
                 .thenReturn(book);
@@ -187,6 +202,9 @@ public class R2dbcPostgresqlBookDao implements BookDao {
 
         if (oldBook.getEdition() != null)
             newBook.setEdition(oldBook.getEdition());
+
+        if (oldBook.getCoverPageImageId() != null)
+            newBook.setCoverPageImageId(oldBook.getCoverPageImageId());
 
         if (oldBook.getAuthors() != null) {
             for (Author author : oldBook.getAuthors()) {
@@ -220,6 +238,7 @@ public class R2dbcPostgresqlBookDao implements BookDao {
         book.setTitle(row.get("title", String.class));
         book.setEdition(row.get("edition", String.class));
         book.setPublisher(row.get("publisher", String.class));
+        book.setCoverPageImageId(row.get("cover_page_image_id", String.class));
 
         return book;
     }

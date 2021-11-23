@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS books(
 	title text,
 	publisher text,
 	edition text,
+	cover_page_image_id text,
 	CONSTRAINT pk_books PRIMARY KEY (id),
 	CONSTRAINT chk_books_title_not_null CHECK (title IS NOT NULL),
 	CONSTRAINT chk_books_title_not_empty CHECK (LENGTH(title) > 0),

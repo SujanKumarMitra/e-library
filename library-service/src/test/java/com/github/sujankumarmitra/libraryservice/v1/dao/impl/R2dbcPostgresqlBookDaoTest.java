@@ -60,6 +60,7 @@ class R2dbcPostgresqlBookDaoTest {
                 postgreSQLContainer.getJdbcUrl().replace("jdbc", "r2dbc"));
         registry.add("spring.r2dbc.username", postgreSQLContainer::getUsername);
         registry.add("spring.r2dbc.password", postgreSQLContainer::getPassword);
+
     }
 
     @BeforeEach
@@ -106,9 +107,22 @@ class R2dbcPostgresqlBookDaoTest {
     }
 
     @Test
-    void givenValidBookId_whenSelect_shouldSelect() {
+    void givenValidBookWithNullCoverImageId_whenInsert_shouldHandleNull() {
+        R2dbcBook book = getBook();
+        book.setCoverPageImageId(null);
+
+        bookDao.insertBook(book)
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .consumeNextWith(log::info)
+                .verifyComplete();
+    }
+
+    @Test
+    void givenValidBookWithNullCoverImagePage_whenSelect_shouldHandleNull() {
 
         R2dbcBook book = getBook();
+        book.setCoverPageImageId(null);
 
         entityTemplate
                 .getDatabaseClient()
@@ -116,6 +130,7 @@ class R2dbcPostgresqlBookDaoTest {
                 .bind("$1", book.getTitle())
                 .bind("$2", book.getPublisher())
                 .bind("$3", book.getEdition())
+                .bindNull("$4", String.class)
                 .map(row -> row.get("id", UUID.class))
                 .one()
                 .doOnNext(book::setId)
@@ -175,7 +190,90 @@ class R2dbcPostgresqlBookDaoTest {
                     assertThat(actualBook.getId()).isEqualTo(expectedId);
                     assertThat(actualBook.getTitle()).isEqualTo(expectedTitle);
                     assertThat(actualBook.getPublisher()).isEqualTo(expectedPublisher);
+                    assertThat(actualBook.getCoverPageImageId()).isNull();
                     assertThat(actualBook.getEdition()).isEqualTo(expectedEdition);
+                    assertThat(actualBook.getAuthors()).isEqualTo(expectedAuthors);
+                    assertThat(actualBook.getTags()).isEqualTo(expectedTags);
+                })
+                .verifyComplete();
+
+
+    }
+
+    @Test
+    void givenValidBookId_whenSelect_shouldSelect() {
+
+        R2dbcBook book = getBook();
+
+        entityTemplate
+                .getDatabaseClient()
+                .sql(R2dbcPostgresqlBookDao.INSERT_STATEMENT)
+                .bind("$1", book.getTitle())
+                .bind("$2", book.getPublisher())
+                .bind("$3", book.getEdition())
+                .bind("$4", book.getCoverPageImageId())
+                .map(row -> row.get("id", UUID.class))
+                .one()
+                .doOnNext(book::setId)
+                .then()
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .verifyComplete();
+
+
+        log.info("Inserted book {}", book);
+
+        String expectedId = book.getId();
+        String expectedTitle = book.getTitle();
+        String expectedPublisher = book.getPublisher();
+        String expectedEdition = book.getEdition();
+        String expectedCoverPageImageId = book.getCoverPageImageId();
+
+        R2dbcAuthor author1 = new R2dbcAuthor();
+        author1.setBookId(book.getUuid());
+        author1.setName(faker.book().author());
+
+        R2dbcAuthor author2 = new R2dbcAuthor();
+        author1.setBookId(book.getUuid());
+        author1.setName(faker.book().author());
+
+        Set<R2dbcAuthor> expectedAuthors = Set.of(author1, author2);
+
+        R2dbcTag tag1 = new R2dbcTag();
+        tag1.setBookId(book.getUuid());
+        tag1.setKey("key1");
+        tag1.setValue("value1");
+
+        R2dbcTag tag2 = new R2dbcTag();
+        tag2.setBookId(book.getUuid());
+        tag2.setKey("key2");
+        tag2.setValue("value2");
+
+        Set<R2dbcTag> expectedTags = Set.of(tag1, tag2);
+
+
+        book.getAuthors().addAll(expectedAuthors);
+        book.getTags().addAll(expectedTags);
+
+
+        Mockito.doReturn(Flux.fromIterable(expectedAuthors).cast(Author.class))
+                .when(mockAuthorDao).selectAuthors(any());
+
+        Mockito.doReturn(Flux.fromIterable(expectedTags).cast(Tag.class))
+                .when(mockTagDao).selectTags(any());
+
+        log.info("Expected book:: {}", book);
+
+        bookDao.selectBook(book.getId())
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .consumeNextWith(actualBook -> {
+                    log.info("Actual book:: {}", actualBook);
+                    assertThat(actualBook.getId()).isEqualTo(expectedId);
+                    assertThat(actualBook.getTitle()).isEqualTo(expectedTitle);
+                    assertThat(actualBook.getPublisher()).isEqualTo(expectedPublisher);
+                    assertThat(actualBook.getEdition()).isEqualTo(expectedEdition);
+                    assertThat(actualBook.getCoverPageImageId()).isEqualTo(expectedCoverPageImageId);
                     assertThat(actualBook.getAuthors()).isEqualTo(expectedAuthors);
                     assertThat(actualBook.getTags()).isEqualTo(expectedTags);
                 })
@@ -225,6 +323,7 @@ class R2dbcPostgresqlBookDaoTest {
                 .bind("$1", book.getTitle())
                 .bind("$2", book.getPublisher())
                 .bind("$3", book.getEdition())
+                .bind("$4", book.getCoverPageImageId())
                 .fetch()
                 .one()
                 .map(map -> map.get("id"))
@@ -240,10 +339,12 @@ class R2dbcPostgresqlBookDaoTest {
         String expectedTitle = faker.book().title();
         String expectedPublisher = faker.book().publisher();
         String expectedEdition = "2nd";
+        String expectedCoverPageImageId = faker.idNumber().valid();
 
         book.setTitle(expectedTitle);
         book.setPublisher(expectedPublisher);
         book.setEdition(expectedEdition);
+        book.setCoverPageImageId(expectedCoverPageImageId);
 
         log.info("Expected book:: {}", book);
 
@@ -259,6 +360,7 @@ class R2dbcPostgresqlBookDaoTest {
                             actualBook.setTitle(row.get("title", String.class));
                             actualBook.setPublisher(row.get("publisher", String.class));
                             actualBook.setEdition(row.get("edition", String.class));
+                            actualBook.setCoverPageImageId(row.get("cover_page_image_id", String.class));
 
                             return actualBook;
                         })
@@ -271,16 +373,18 @@ class R2dbcPostgresqlBookDaoTest {
                     String actualTitle = actualBook.getTitle();
                     String actualPublisher = actualBook.getPublisher();
                     String actualEdition = actualBook.getEdition();
+                    String actualCoverPageImageId = actualBook.getCoverPageImageId();
 
-                    assertThat(expectedTitle).isEqualTo(actualTitle);
-                    assertThat(expectedEdition).isEqualTo(actualEdition);
-                    assertThat(expectedPublisher).isEqualTo(actualPublisher);
+                    assertThat(actualTitle).isEqualTo(expectedTitle);
+                    assertThat(actualEdition).isEqualTo(expectedEdition);
+                    assertThat(actualPublisher).isEqualTo(expectedPublisher);
+                    assertThat(actualCoverPageImageId).isEqualTo(expectedCoverPageImageId);
 
                 }).verifyComplete();
     }
 
     @Test
-    void givenNonExistingBookId_whenUpdate_shouldUpdate() {
+    void givenNonExistingBookId_whenUpdate_shouldEmitComplete() {
         R2dbcBook book = getBook();
         book.setId(UUID.randomUUID());
 
@@ -297,6 +401,7 @@ class R2dbcPostgresqlBookDaoTest {
                 .bind("$1", faker.book().title())
                 .bind("$2", faker.book().publisher())
                 .bind("$3", "1st")
+                .bind("$4", faker.idNumber().valid())
                 .fetch()
                 .one()
                 .map(map -> map.get("id"))
@@ -319,7 +424,7 @@ class R2dbcPostgresqlBookDaoTest {
     }
 
     @Test
-    void givenInvalidId_whenDelete_shouldEmitEmptyMono() {
+    void givenInvalidId_whenDelete_shouldEmitEmpty() {
         bookDao.deleteBook(UUID.randomUUID().toString())
                 .as(StepVerifier::create)
                 .expectSubscription()
@@ -340,6 +445,7 @@ class R2dbcPostgresqlBookDaoTest {
         book.setTitle(faker.book().title());
         book.setPublisher(faker.book().publisher());
         book.setEdition("1st");
+        book.setCoverPageImageId(faker.idNumber().valid());
 
         return book;
 

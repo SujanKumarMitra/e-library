@@ -28,6 +28,8 @@ public final class R2dbcBook extends Book {
 
     private String edition;
 
+    private String coverPageImageId;
+
     private Set<R2dbcTag> tags = new HashSet<>();
 
     @Override
@@ -47,19 +49,30 @@ public final class R2dbcBook extends Book {
         this.title = book.getTitle();
         this.publisher = book.getPublisher();
         this.edition = book.getEdition();
+        this.coverPageImageId = book.getCoverPageImageId();
 
         String id = book.getId();
         this.id = id == null ? null : UUID.fromString(id);
 
         Set<? extends Author> authors = book.getAuthors();
         if (authors != null) {
-            for (Author author : authors)
-                this.authors.add(new R2dbcAuthor(author));
+            for (Author author : authors) {
+                if (R2dbcAuthor.class.isAssignableFrom(author.getClass())) {
+                    this.authors.add(R2dbcAuthor.class.cast(author));
+                } else {
+                    this.authors.add(new R2dbcAuthor(author));
+                }
+            }
+
         }
         Set<? extends Tag> tags = book.getTags();
         if (tags != null) {
             for (Tag tag : tags) {
-                this.tags.add(new R2dbcTag(tag));
+                if (R2dbcTag.class.isAssignableFrom(tag.getClass())) {
+                    this.tags.add(R2dbcTag.class.cast(tag));
+                } else {
+                    this.tags.add(new R2dbcTag(tag));
+                }
             }
         }
     }
