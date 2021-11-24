@@ -92,15 +92,8 @@ class R2dbcPostgresqlTagDaoTest {
         tags.add(tag3);
 
 
-        entityTemplate.getDatabaseClient()
-                .sql(R2dbcPostgresqlBookDao.INSERT_STATEMENT)
-                .bind("$1", "title")
-                .bind("$2", "publisher")
-                .bind("$3", "edition")
-                .bindNull("$4", String.class)
-                .map(row -> row.get("id", UUID.class))
-                .one()
-                .doOnSuccess(bookId -> tags.forEach(tag -> tag.setBookId(bookId)))
+        BookDaoUtils.insertDummyBook(entityTemplate.getDatabaseClient())
+                .doOnSuccess(book -> tags.forEach(tag -> tag.setBookId(book.getUuid())))
                 .thenReturn(tags)
                 .flatMap(tagDao::insertTags)
                 .then(
@@ -212,46 +205,37 @@ class R2dbcPostgresqlTagDaoTest {
         R2dbcTag tag3 = tags.get(8);
         tag3.setValue("value99");
 
+        Set<R2dbcTag> expectedTags = new HashSet<>(tags);
+
         Set<R2dbcTag> tagsToUpdate = new LinkedHashSet<>();
         tagsToUpdate.add(tag1);
         tagsToUpdate.add(tag2);
         tagsToUpdate.add(tag3);
-
-        Collections.sort(tags, Comparator.comparing(R2dbcTag::getKey));
-
 
         tagDao.updateTags(tagsToUpdate)
                 .thenMany(entityTemplate
                         .select(R2dbcTag.class)
                         .from("tags")
                         .all())
-                .collectSortedList(Comparator.comparing(R2dbcTag::getKey))
+                .collect(Collectors.toSet())
                 .as(StepVerifier::create)
                 .consumeNextWith(actualTags -> {
-                    log.info("Expected:: {}", tags);
-                    log.info("Actual:: {}", tags);
+                    log.info("Expected:: {}", expectedTags);
+                    log.info("Actual:: {}", actualTags);
 
-                    assertThat(actualTags).isEqualTo(tags);
+                    assertThat(actualTags).isEqualTo(expectedTags);
                 })
                 .verifyComplete();
 
     }
 
     private void insertTags(List<R2dbcTag> tags) {
-        entityTemplate
-                .getDatabaseClient()
-                .sql(R2dbcPostgresqlBookDao.INSERT_STATEMENT)
-                .bind("$1", "title")
-                .bind("$2", "publisher")
-                .bind("$3", "edition")
-                .bindNull("$4", String.class)
-                .map(row -> row.get("id", UUID.class))
-                .one()
-                .doOnSuccess(bookId -> tags.forEach(tag -> tag.setBookId(bookId)))
+        BookDaoUtils.insertDummyBook(entityTemplate.getDatabaseClient())
+                .doOnSuccess(book -> tags.forEach(tag -> tag.setBookId(book.getUuid())))
                 .thenMany(Flux.fromIterable(tags))
                 .flatMap(tag -> entityTemplate
                         .getDatabaseClient()
-                        .sql("INSERT INTO tags(book_id,key,value) VALUES ($1,$2,$3)")
+                        .sql(R2dbcPostgresqlTagDao.UPSERT_STATEMENT)
                         .bind("$1", tag.getBookUuid())
                         .bind("$2", tag.getKey())
                         .bind("$3", tag.getValue())
