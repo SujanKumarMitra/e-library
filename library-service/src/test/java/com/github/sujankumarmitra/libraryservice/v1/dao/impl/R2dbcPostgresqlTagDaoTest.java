@@ -1,6 +1,7 @@
 package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcAuthor;
+import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBook;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcTag;
 import com.github.sujankumarmitra.libraryservice.v1.exception.BookNotFoundException;
 import com.github.sujankumarmitra.libraryservice.v1.model.Tag;
@@ -54,8 +55,8 @@ class R2dbcPostgresqlTagDaoTest {
                 .block();
 
         entityTemplate
-                .delete(R2dbcAuthor.class)
-                .from("authors")
+                .delete(R2dbcBook.class)
+                .from("books")
                 .all()
                 .block();
     }
