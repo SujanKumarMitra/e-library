@@ -27,6 +27,7 @@ public abstract class Book {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Book)) return false;
+
         Book book = (Book) o;
         return Objects.equals(getId(), book.getId()) &&
                 Objects.equals(getTitle(), book.getTitle()) &&
@@ -51,7 +52,7 @@ public abstract class Book {
     @Override
     public String toString() {
         return "Book{" +
-                "id=" + getId() +
+                "id='" + getId() + '\'' +
                 ", title='" + getTitle() + '\'' +
                 ", authors=" + getAuthors() +
                 ", publisher='" + getPublisher() + '\'' +

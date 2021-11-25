@@ -14,6 +14,7 @@ import java.util.UUID;
 @Getter
 @Setter
 public final class R2dbcTag extends Tag {
+    private UUID id;
     private UUID bookId;
     private String key;
     private String value;
@@ -21,17 +22,20 @@ public final class R2dbcTag extends Tag {
     public R2dbcTag() {
     }
 
-    public R2dbcTag(UUID bookId, String key, String value) {
-        this.bookId = bookId;
-        this.key = key;
-        this.value = value;
-    }
-
     public R2dbcTag(@NonNull Tag tag) {
-        String bookId = tag.getBookId();
-        this.bookId = bookId == null ? null : UUID.fromString(bookId);
+        this.id = tag.getId() == null ? null : UUID.fromString(tag.getId());
+        this.bookId = tag.getBookId() == null ? null : UUID.fromString(tag.getBookId());
         this.key = tag.getKey();
         this.value = tag.getValue();
+    }
+
+    public UUID getUuidId() {
+        return id;
+    }
+
+    @Override
+    public String getId() {
+        return id == null ? null : id.toString();
     }
 
     @Override
@@ -42,4 +46,5 @@ public final class R2dbcTag extends Tag {
     public UUID getBookUuid() {
         return bookId;
     }
+
 }

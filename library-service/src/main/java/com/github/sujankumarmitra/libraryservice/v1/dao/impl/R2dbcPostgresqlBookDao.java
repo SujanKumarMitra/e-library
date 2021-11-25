@@ -15,6 +15,7 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.r2dbc.core.DatabaseClient;
+import org.springframework.r2dbc.core.DatabaseClient.GenericExecuteSpec;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple3;
@@ -63,7 +64,7 @@ public class R2dbcPostgresqlBookDao implements BookDao {
     }
 
     @Override
-    public Mono<String> insertBook(Book book) {
+    public Mono<String> createBook(Book book) {
         return Mono.defer(() -> {
             if (book == null) {
                 log.debug("book is null");
@@ -71,8 +72,7 @@ public class R2dbcPostgresqlBookDao implements BookDao {
             }
             R2dbcBook r2dbcBook = buildR2dbcBook(book);
 
-            DatabaseClient.GenericExecuteSpec executeSpec = this.databaseClient
-                    .sql(INSERT_STATEMENT);
+            GenericExecuteSpec executeSpec = this.databaseClient.sql(INSERT_STATEMENT);
 
             executeSpec = executeSpec
                     .bind("$1", r2dbcBook.getTitle())
@@ -90,10 +90,12 @@ public class R2dbcPostgresqlBookDao implements BookDao {
                     .doOnNext(bookId -> log.debug("New bookId : {}", bookId))
                     .doOnNext(bookId -> setBookIds(bookId, r2dbcBook))
                     .flatMap(bookId -> authorDao
-                            .insertAuthors(r2dbcBook.getAuthors())
+                            .createAuthors(r2dbcBook.getAuthors())
+                            .then()
                             .thenReturn(bookId))
                     .flatMap(bookId -> tagDao
-                            .insertTags(r2dbcBook.getTags())
+                            .createTags(r2dbcBook.getTags())
+                            .then()
                             .thenReturn(bookId))
                     .map(Object::toString);
 
@@ -101,7 +103,7 @@ public class R2dbcPostgresqlBookDao implements BookDao {
     }
 
     @Override
-    public Mono<Book> selectBook(String bookId) {
+    public Mono<Book> getBook(String bookId) {
         return Mono.defer(() -> {
             if (bookId == null) {
                 log.debug("bookId is null");
@@ -125,11 +127,11 @@ public class R2dbcPostgresqlBookDao implements BookDao {
                     .doOnNext(r2dbcBook -> r2dbcBook.setId(finalId));
 
             Mono<List<Author>> authors = authorDao
-                    .selectAuthors(bookId)
+                    .getAuthorsByBookId(bookId)
                     .collectList();
 
             Mono<List<Tag>> tags = tagDao
-                    .selectTags(bookId)
+                    .getTagsByBookId(bookId)
                     .collectList();
 
             return Mono.zip(book, authors, tags)
@@ -175,7 +177,7 @@ public class R2dbcPostgresqlBookDao implements BookDao {
 
     private Mono<R2dbcBook> updateR2dbcBook(R2dbcBook book) {
         log.debug("Saving updates to db");
-        DatabaseClient.GenericExecuteSpec executeSpec = this.databaseClient
+        GenericExecuteSpec executeSpec = this.databaseClient
                 .sql(UPDATE_STATEMENT)
                 .bind("$1", book.getTitle())
                 .bind("$2", book.getPublisher())
@@ -208,13 +210,17 @@ public class R2dbcPostgresqlBookDao implements BookDao {
 
         if (oldBook.getAuthors() != null) {
             for (Author author : oldBook.getAuthors()) {
-                newBook.getAuthors().add(new R2dbcAuthor(author));
+                R2dbcAuthor r2dbcAuthor = new R2dbcAuthor(author);
+                r2dbcAuthor.setBookId(newBook.getUuid());
+                newBook.getAuthors().add(r2dbcAuthor);
             }
         }
 
         if (oldBook.getTags() != null) {
             for (Tag tag : oldBook.getTags()) {
-                newBook.getTags().add(new R2dbcTag(tag));
+                R2dbcTag r2dbcTag = new R2dbcTag(tag);
+                r2dbcTag.setBookId(newBook.getUuid());
+                newBook.getTags().add(r2dbcTag);
             }
         }
 
@@ -254,17 +260,21 @@ public class R2dbcPostgresqlBookDao implements BookDao {
                 return Mono.empty();
             }
 
-            return this.databaseClient
-                    .sql(DELETE_STATEMENT)
-                    .bind("$1", uuid)
-                    .fetch()
-                    .rowsUpdated()
-                    .doOnNext(updateCount -> {
-                        if (updateCount == 1)
-                            log.debug("Deleted book of id {}", bookId);
-                        else
-                            log.debug("No book with id {} present in DB", bookId);
-                    }).then();
+            return Mono.just(bookId)
+                    .flatMap(authorDao::deleteAuthorsByBookId)
+                    .thenReturn(bookId)
+                    .flatMap(tagDao::deleteTagsByBookId)
+                    .then(this.databaseClient
+                            .sql(DELETE_STATEMENT)
+                            .bind("$1", uuid)
+                            .fetch()
+                            .rowsUpdated()
+                            .doOnNext(updateCount -> {
+                                if (updateCount == 1)
+                                    log.debug("Deleted book of id {}", bookId);
+                                else
+                                    log.debug("No book with id {} present in DB", bookId);
+                            })).then();
         });
     }
 

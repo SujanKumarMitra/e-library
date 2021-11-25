@@ -4,7 +4,7 @@ import com.github.sujankumarmitra.libraryservice.v1.model.Author;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.Set;
+import java.util.Collection;
 
 /**
  * @author skmitra
@@ -12,9 +12,11 @@ import java.util.Set;
  */
 public interface AuthorDao {
 
-    Mono<Void> insertAuthors(Set<? extends Author> authors);
+    Flux<String> createAuthors(Collection<? extends Author> authors);
 
-    Flux<Author> selectAuthors(String bookId);
+    Flux<Author> getAuthorsByBookId(String bookId);
 
-    Mono<Void> updateAuthors(Set<? extends Author> authors);
+    Mono<Void> updateAuthors(Collection<? extends Author> authors);
+
+    Mono<Void> deleteAuthorsByBookId(String bookId);
 }

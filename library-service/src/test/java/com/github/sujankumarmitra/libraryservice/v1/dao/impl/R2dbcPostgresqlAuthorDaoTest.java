@@ -1,6 +1,7 @@
 package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcAuthor;
+import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBook;
 import com.github.sujankumarmitra.libraryservice.v1.exception.BookNotFoundException;
 import com.github.sujankumarmitra.libraryservice.v1.model.Author;
 import lombok.extern.slf4j.Slf4j;
@@ -15,11 +16,10 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -54,8 +54,8 @@ class R2dbcPostgresqlAuthorDaoTest {
                 .block();
 
         entityTemplate
-                .delete(R2dbcAuthor.class)
-                .from("authors")
+                .delete(R2dbcBook.class)
+                .from("books")
                 .all()
                 .block();
     }
@@ -73,45 +73,37 @@ class R2dbcPostgresqlAuthorDaoTest {
 
     @Test
     void givenValidBookId_whenInsert_ShouldInsert() {
-        Set<R2dbcAuthor> expectedAuthors = new HashSet<>();
 
         R2dbcAuthor author1 = new R2dbcAuthor();
         author1.setName("name1");
 
         R2dbcAuthor author2 = new R2dbcAuthor();
-        author2.setName("name1");
+        author2.setName("name2");
 
         R2dbcAuthor author3 = new R2dbcAuthor();
-        author3.setName("name1");
+        author3.setName("name3");
 
-        expectedAuthors.add(author1);
-        expectedAuthors.add(author2);
-        expectedAuthors.add(author3);
+        Collection<R2dbcAuthor> authors = List.of(author1, author2, author3);
 
 
-        BookDaoUtils.insertDummyBook(entityTemplate.getDatabaseClient())
-                .doOnSuccess(book -> expectedAuthors.forEach(author -> author.setBookId(book.getUuid())))
-                .thenReturn(expectedAuthors)
-                .flatMap(authorDao::insertAuthors)
+        BookDaoTestUtils.insertDummyBook(entityTemplate.getDatabaseClient())
+                .doOnSuccess(book -> authors.forEach(author -> author.setBookId(book.getUuid())))
+                .thenReturn(authors)
+                .flatMapMany(authorDao::createAuthors)
                 .then(
                         entityTemplate
                                 .select(R2dbcAuthor.class)
                                 .from("authors")
                                 .all()
-                                .collect(Collectors.toCollection(HashSet::new)))
+                                .count())
                 .as(StepVerifier::create)
-                .consumeNextWith(actualAuthors -> {
-                    log.info("Expected Authors {}", expectedAuthors);
-                    log.info("Actual Authors {}", actualAuthors);
-
-                    assertThat(actualAuthors).isEqualTo(expectedAuthors);
-                })
+                .expectNext(3L)
                 .verifyComplete();
     }
 
     @Test
     void givenNonExistingBookId_whenSelect_shouldEmitEmpty() {
-        authorDao.selectAuthors(UUID.randomUUID().toString())
+        authorDao.getAuthorsByBookId(UUID.randomUUID().toString())
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .expectNextCount(0L)
@@ -120,7 +112,7 @@ class R2dbcPostgresqlAuthorDaoTest {
 
     @Test
     void givenMalformedUuid_whenSelect_shouldEmitEmpty() {
-        authorDao.selectAuthors("malformed-uuid")
+        authorDao.getAuthorsByBookId("malformed-uuid")
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .expectNextCount(0L)
@@ -131,6 +123,11 @@ class R2dbcPostgresqlAuthorDaoTest {
     void givenMalformedUuidBookId_whenInsert_shouldEmitError() {
 
         Set<Author> tags = Set.of(new Author() {
+            @Override
+            public String getId() {
+                return null;
+            }
+
             @Override
             public String getBookId() {
                 return "malformed";
@@ -143,7 +140,7 @@ class R2dbcPostgresqlAuthorDaoTest {
 
         });
 
-        authorDao.insertAuthors(tags)
+        authorDao.createAuthors(tags)
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .expectError(BookNotFoundException.class)
@@ -162,7 +159,7 @@ class R2dbcPostgresqlAuthorDaoTest {
 
         Set<R2dbcAuthor> tags = Set.of(author1, author2);
 
-        authorDao.insertAuthors(tags)
+        authorDao.createAuthors(tags)
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .expectErrorSatisfies(th -> {
@@ -171,69 +168,121 @@ class R2dbcPostgresqlAuthorDaoTest {
                 })
                 .verify();
     }
-//    @Test
-//    void givenValidBookId_whenUpdateShouldUpdate() {
-//        List<R2dbcTag> tags = new ArrayList<>();
-//        for (int i = 1; i <= 10; i++) {
-//            R2dbcTag tag = new R2dbcTag();
-//
-//            tag.setKey("key" + i);
-//            tag.setValue("value" + i);
-//
-//            tags.add(tag);
-//        }
-//
-//        insertTags(tags);
-//
-//        R2dbcTag tag1 = tags.get(2);
-//        tag1.setValue("value33");
-//
-//        R2dbcTag tag2 = tags.get(5);
-//        tag2.setValue("value66");
-//
-//        R2dbcTag tag3 = tags.get(8);
-//        tag3.setValue("value99");
-//
-//        Set<R2dbcTag> expectedTags = new HashSet<>(tags);
-//
-//        Set<R2dbcTag> tagsToUpdate = new LinkedHashSet<>();
-//        tagsToUpdate.add(tag1);
-//        tagsToUpdate.add(tag2);
-//        tagsToUpdate.add(tag3);
-//
-//        authorDao.updateTags(tagsToUpdate)
-//                .thenMany(entityTemplate
-//                        .select(R2dbcTag.class)
-//                        .from("tags")
-//                        .all())
-//                .collect(Collectors.toSet())
-//                .as(StepVerifier::create)
-//                .consumeNextWith(actualTags -> {
-//                    log.info("Expected:: {}", expectedTags);
-//                    log.info("Actual:: {}", actualTags);
-//
-//                    assertThat(actualTags).isEqualTo(expectedTags);
-//                })
-//                .verifyComplete();
-//
-//    }
-//
-//    private void insertTags(List<R2dbcTag> tags) {
-//        BookDaoUtils.insertDummyBook(entityTemplate.getDatabaseClient())
-//                .doOnSuccess(book -> tags.forEach(tag -> tag.setBookId(book.getUuid())))
-//                .thenMany(Flux.fromIterable(tags))
-//                .flatMap(tag -> entityTemplate
-//                        .getDatabaseClient()
-//                        .sql(R2dbcPostgresqlTagDao.UPSERT_STATEMENT)
-//                        .bind("$1", tag.getBookUuid())
-//                        .bind("$2", tag.getKey())
-//                        .bind("$3", tag.getValue())
-//                        .fetch()
-//                        .rowsUpdated())
-//                .as(StepVerifier::create)
-//                .expectNextCount(tags.size())
-//                .verifyComplete();
-//    }
+
+    @Test
+    void givenValidBookId_whenUpdate_shouldUpdate() {
+        List<R2dbcAuthor> authors = new ArrayList<>();
+        for (int i = 1; i <= 10; i++) {
+            R2dbcAuthor author = new R2dbcAuthor();
+            author.setName("name" + i);
+            authors.add(author);
+        }
+
+        insertAuthors(authors);
+
+        R2dbcAuthor tag1 = authors.get(2);
+        tag1.setName("value33");
+
+        R2dbcAuthor tag2 = authors.get(5);
+        tag2.setName("value66");
+
+        R2dbcAuthor tag3 = authors.get(8);
+        tag3.setName("value99");
+
+        Set<R2dbcAuthor> expectedAuthors = new HashSet<>(authors);
+
+        Set<R2dbcAuthor> tagsToUpdate = new LinkedHashSet<>();
+        tagsToUpdate.add(tag1);
+        tagsToUpdate.add(tag2);
+        tagsToUpdate.add(tag3);
+
+        authorDao.updateAuthors(tagsToUpdate)
+                .thenMany(entityTemplate
+                        .select(R2dbcAuthor.class)
+                        .from("authors")
+                        .all())
+                .collect(Collectors.toSet())
+                .as(StepVerifier::create)
+                .consumeNextWith(actualTags -> {
+                    log.info("Expected:: {}", expectedAuthors);
+                    log.info("Actual:: {}", actualTags);
+
+                    assertThat(actualTags).isEqualTo(expectedAuthors);
+                })
+                .verifyComplete();
+
+    }
+
+    private void insertAuthors(List<R2dbcAuthor> authors) {
+        BookDaoTestUtils
+                .insertDummyBook(entityTemplate.getDatabaseClient())
+                .doOnSuccess(book -> authors.forEach(author -> author.setBookId(book.getUuid())))
+                .thenMany(Flux.fromIterable(authors))
+                .flatMap(author -> entityTemplate
+                        .getDatabaseClient()
+                        .sql(R2dbcPostgresqlAuthorDao.INSERT_STATEMENT)
+                        .bind("$1", author.getBookUuid())
+                        .bind("$2", author.getName())
+                        .map(row -> row.get("id", UUID.class))
+                        .all())
+                .collectList()
+                .doOnSuccess(authorIds -> {
+                    Iterator<UUID> idIterator = authorIds.iterator();
+                    Iterator<R2dbcAuthor> authorIterator = authors.iterator();
+
+                    while (idIterator.hasNext()) {
+                        authorIterator
+                                .next()
+                                .setId(idIterator.next());
+                    }
+
+                })
+                .then()
+                .as(StepVerifier::create)
+                .verifyComplete();
+    }
 
 
+    @Test
+    void givenValidBookId_whenDelete_shouldDelete() {
+        List<R2dbcAuthor> authors = new ArrayList<>();
+        for (int i = 1; i <= 5; i++) {
+            R2dbcAuthor author = new R2dbcAuthor();
+            author.setName("name" + i);
+            authors.add(author);
+        }
+
+        insertAuthors(authors);
+        String bookId = authors.get(0).getBookId();
+
+        authorDao
+                .deleteAuthorsByBookId(bookId)
+                .then(entityTemplate
+                        .getDatabaseClient()
+                        .sql("SELECT * from authors")
+                        .fetch()
+                        .all()
+                        .count())
+                .as(StepVerifier::create)
+                .expectNext(0L)
+                .verifyComplete();
+    }
+
+    @Test
+    void givenNonExistingBookId_whenDelete_shouldEmitEmpty() {
+        authorDao.deleteAuthorsByBookId(UUID.randomUUID().toString())
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectNextCount(0L)
+                .verifyComplete();
+    }
+
+    @Test
+    void givenMalformedUuid_whenDelete_shouldEmitEmpty() {
+        authorDao.deleteAuthorsByBookId("malformed-uuid")
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectNextCount(0L)
+                .verifyComplete();
+    }
 }

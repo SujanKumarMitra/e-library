@@ -8,6 +8,8 @@ import java.util.Objects;
  */
 public abstract class Tag {
 
+    public abstract String getId();
+
     public abstract String getBookId();
 
     public abstract String getKey();
@@ -16,16 +18,21 @@ public abstract class Tag {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getBookId(), getKey());
+        return Objects.hash(
+                getId(),
+                getBookId(),
+                getKey(),
+                getValue());
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) return false;
-        if (!Tag.class.isAssignableFrom(obj.getClass())) return false;
+        if (this == obj) return true;
+        if (!(obj instanceof Tag)) return false;
 
-        Tag other = Tag.class.cast(obj);
-        return Objects.equals(getBookId(), other.getBookId()) &&
+        Tag other = (Tag) obj;
+        return Objects.equals(getId(), other.getId()) &&
+                Objects.equals(getBookId(), other.getBookId()) &&
                 Objects.equals(getKey(), other.getKey()) &&
                 Objects.equals(getValue(), other.getValue());
     }
@@ -33,7 +40,8 @@ public abstract class Tag {
     @Override
     public String toString() {
         return "Tag{" +
-                "bookId=" + getBookId() +
+                "id='" + getId() + '\'' +
+                ", bookId='" + getBookId() + '\'' +
                 ", key='" + getKey() + '\'' +
                 ", value='" + getValue() + '\'' +
                 '}';

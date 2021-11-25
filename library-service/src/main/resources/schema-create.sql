@@ -16,20 +16,24 @@ CREATE TABLE IF NOT EXISTS books(
 );
 
 CREATE TABLE IF NOT EXISTS authors(
+    id uuid DEFAULT uuid_generate_v4(),
 	book_id uuid,
 	name text,
-	CONSTRAINT pk_authors PRIMARY KEY(book_id,name),
+	CONSTRAINT pk_authors PRIMARY KEY(id),
 	CONSTRAINT fk_authors_books FOREIGN KEY(book_id) REFERENCES books(id),
+	CONSTRAINT unq_authors_book_id_name UNIQUE(book_id, name),
 	CONSTRAINT chk_authors_name_not_null CHECK(name IS NOT NULL),
 	CONSTRAINT chk_authors_name_not_empty CHECK(LENGTH(name) > 0)
 );
 
 CREATE TABLE IF NOT EXISTS tags(
+    id uuid DEFAULT uuid_generate_v4(),
 	book_id uuid,
 	key varchar(255),
 	value text,
-	CONSTRAINT pk_tags PRIMARY KEY(book_id, key),
+	CONSTRAINT pk_tags PRIMARY KEY(id),
 	CONSTRAINT fk_tags_books FOREIGN KEY(book_id) REFERENCES books(id),
+	CONSTRAINT unq_tags_book_id_key UNIQUE(book_id,key),
 	CONSTRAINT chk_tags_key_not_null CHECK(key IS NOT NULL),
 	CONSTRAINT chk_tags_key_not_empty CHECK(LENGTH(key) > 0),
 	CONSTRAINT chk_tags_value_not_null CHECK(value IS NOT NULL),

@@ -4,8 +4,8 @@ import com.github.sujankumarmitra.libraryservice.v1.dao.TagDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcTag;
 import com.github.sujankumarmitra.libraryservice.v1.exception.BookNotFoundException;
 import com.github.sujankumarmitra.libraryservice.v1.exception.DefaultErrorDetails;
+import com.github.sujankumarmitra.libraryservice.v1.exception.DuplicateTagKeyException;
 import com.github.sujankumarmitra.libraryservice.v1.model.Tag;
-import io.r2dbc.postgresql.api.ErrorDetails;
 import io.r2dbc.spi.R2dbcDataIntegrityViolationException;
 import io.r2dbc.spi.Result;
 import io.r2dbc.spi.Row;
@@ -18,10 +18,8 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -33,124 +31,146 @@ import java.util.UUID;
 @Slf4j
 public class R2dbcPostgresqlTagDao implements TagDao {
 
-    public static final String UPSERT_STATEMENT = "INSERT into tags(book_id,key,value) VALUES($1,$2,$3) ON CONFLICT ON CONSTRAINT pk_tags DO UPDATE SET value=$3";
-    public static final String SELECT_STATEMENT = "SELECT book_id,key,value FROM tags WHERE book_id=$1";
-    public static final BookNotFoundException DEFAULT_EXCEPTION = new BookNotFoundException(List.of(new DefaultErrorDetails("some book_id(s) is/are invalid")));
+    public static final String INSERT_STATEMENT = "INSERT INTO tags(book_id,key,value) VALUES ($1,$2,$3) RETURNING id";
+    public static final String SELECT_STATEMENT = "SELECT id, book_id, key, value FROM tags WHERE book_id=$1";
+    public static final String UPDATE_STATEMENT = "UPDATE tags SET value=$1 WHERE id=$2";
+    public static final String DELETE_STATEMENT = "DELETE FROM tags WHERE book_id=$1";
+
     @NonNull
     private final DatabaseClient databaseClient;
 
     @Override
-    public Mono<Void> insertTags(Set<? extends Tag> tags) {
-        return updateTags(tags);
+    public Flux<String> createTags(Collection<? extends Tag> tags) {
+        return Flux.defer(() -> {
+            if (tags == null) {
+                log.debug("given tags is null");
+                return Flux.error(new NullPointerException("given tags is null"));
+            }
+            return databaseClient.inConnectionMany(connection -> {
+                        Statement statement = connection.createStatement(INSERT_STATEMENT);
+
+                        for (Tag tag : tags) {
+                            String bookId = tag.getBookId();
+                            UUID uuid;
+                            try {
+                                uuid = UUID.fromString(bookId);
+                            } catch (IllegalArgumentException ex) {
+                                log.debug("{} is not a valid uuid, returning Flux.error(BookNotFoundException)", bookId);
+                                return Flux.error(new BookNotFoundException(bookId));
+                            }
+                            statement = statement
+                                    .bind("$1", uuid)
+                                    .bind("$2", tag.getKey())
+                                    .bind("$3", tag.getValue())
+                                    .add();
+                        }
+
+                        return Flux.from(statement.execute());
+                    })
+                    .flatMap(result -> result.map((row, rowMetadata) -> row.get("id", UUID.class)))
+                    .onErrorMap(R2dbcDataIntegrityViolationException.class, err -> {
+                        log.debug("DB integrity error {}", err.getMessage());
+                        String message = err.getMessage();
+
+                        if (message.contains("unq_tags_book_id_key"))
+                            return new DuplicateTagKeyException("tag with given key already exists for given bookId");
+                        else
+                            return new BookNotFoundException(
+                                    List.of(new DefaultErrorDetails("some bookId(s) is/are invalid")));
+                    })
+                    .map(Object::toString);
+        });
     }
 
     @Override
-    public Flux<Tag> selectTags(String bookId) {
+    public Flux<Tag> getTagsByBookId(String bookId) {
         return Flux.defer(() -> {
             if (bookId == null) {
                 log.debug("given bookId is null");
-                return Flux.error(new NullPointerException());
+                return Flux.error(new NullPointerException("given bookId is null"));
             }
-
-            UUID id;
+            UUID uuid;
             try {
-                id = UUID.fromString(bookId);
-            } catch (IllegalArgumentException ex) {
-                log.debug("{} is not a valid uuid, returning empty flux", bookId);
+                uuid = UUID.fromString(bookId);
+            } catch (IllegalArgumentException e) {
+                log.debug("{} is not valid uuid, return Flux.empty()", bookId);
                 return Flux.empty();
             }
-
             return databaseClient
                     .sql(SELECT_STATEMENT)
-                    .bind("$1", id)
+                    .bind("$1", uuid)
                     .map(this::mapToR2dbcTag)
                     .all()
                     .cast(Tag.class);
+        });
+
+    }
+
+    @Override
+    public Mono<Void> updateTags(Collection<? extends Tag> tags) {
+        return Mono.defer(() -> {
+            if (tags == null) {
+                log.debug("given tags is null");
+                return Mono.error(new NullPointerException("given tags is null"));
+            }
+            return databaseClient.inConnectionMany(connection -> {
+                        Statement statement = connection.createStatement(UPDATE_STATEMENT);
+                        for (Tag tag : tags) {
+                            String id = tag.getId();
+                            UUID uuid;
+                            try {
+                                uuid = UUID.fromString(id);
+                            } catch (Exception e) {
+                                log.debug("{} is not valid uuid, skipping update", id);
+                                continue;
+                            }
+                            statement = statement
+                                    .bind("$1", tag.getValue())
+                                    .bind("$2", uuid)
+                                    .add();
+                        }
+
+                        return Flux.from(statement.execute());
+                    }).flatMap(Result::getRowsUpdated)
+                    .reduce(Integer::sum)
+                    .doOnSuccess(updateCount -> log.debug("author update count {}", updateCount))
+                    .then();
+        });
+    }
+
+    @Override
+    public Mono<Void> deleteTagsByBookId(String bookId) {
+        return Mono.defer(() -> {
+            if (bookId == null) {
+                log.debug("null bookId, return Mono.error(NullPointerException)");
+                return Mono.error(new NullPointerException("bookId must be non-null"));
+            }
+            UUID uuid;
+            try {
+                uuid = UUID.fromString(bookId);
+            } catch (IllegalArgumentException e) {
+                log.debug("{} is invalid uuid, returning Mono.empty()", bookId);
+                return Mono.empty();
+            }
+
+            return this.databaseClient
+                    .sql(DELETE_STATEMENT)
+                    .bind("$1", uuid)
+                    .fetch()
+                    .rowsUpdated()
+                    .doOnSuccess(deleteCount -> log.debug("tags delete count: {}", deleteCount))
+                    .then();
         });
     }
 
     private R2dbcTag mapToR2dbcTag(Row row) {
         R2dbcTag tag = new R2dbcTag();
 
+        tag.setId(row.get("id", UUID.class));
         tag.setBookId(row.get("book_id", UUID.class));
         tag.setKey(row.get("key", String.class));
         tag.setValue(row.get("value", String.class));
 
         return tag;
-    }
-
-    @Override
-    public Mono<Void> updateTags(Set<? extends Tag> tags) {
-        return Mono.defer(() -> {
-            if (tags == null) {
-                log.debug("given tags in param is null");
-                return Mono.error(new NullPointerException("tags can't be null"));
-            }
-            return databaseClient.inConnectionMany(connection -> {
-                        Statement statement = connection.createStatement(UPSERT_STATEMENT);
-                        for (Tag tag : tags) {
-                            String id = tag.getBookId();
-                            String key = tag.getKey();
-                            String value = tag.getValue();
-
-                            UUID uuid;
-                            try {
-                                uuid = UUID.fromString(id);
-                            } catch (IllegalArgumentException ex) {
-                                log.debug("{} in {} is an invalid uuid, returning Flux.error()", id, tag);
-                                return Flux.error(new BookNotFoundException(id));
-                            }
-
-                            statement = statement
-                                    .bind("$1", uuid)
-                                    .bind("$2", key)
-                                    .bind("$3", value)
-                                    .add();
-                        }
-                        return Flux.from(statement.execute());
-                    }).flatMap(Result::getRowsUpdated)
-                    .onErrorMap(R2dbcDataIntegrityViolationException.class, this::translateException)
-                    .then();
-        });
-    }
-
-    /**
-     * Decodes io.r2dbc.postgresql.ExceptionFactory.PostgresqlDataIntegrityViolationException
-     * The pattern of detail field is
-     * <p>
-     * Key ({primaryKeyName})=({UUID}) is not present in table "{tableName}".
-     * </p>
-     *
-     * @see {@link ErrorDetails}
-     */
-    private BookNotFoundException translateException(R2dbcDataIntegrityViolationException err) {
-
-        try {
-            Method getErrorDetailsMethod = err.getClass().getDeclaredMethod("getErrorDetails");
-            getErrorDetailsMethod.setAccessible(true); // class is package private
-
-            ErrorDetails errorDetails = (ErrorDetails) getErrorDetailsMethod.invoke(err);
-
-            String detail = errorDetails.getDetail().orElse(null);
-            if (detail == null) {
-                log.debug("ErrorDetails.getDetail() was empty");
-                return DEFAULT_EXCEPTION;
-            }
-
-            int start = detail.lastIndexOf('(');
-            int end = detail.lastIndexOf(')');
-            String bookId = detail.substring(start + 1, end);
-
-            return new BookNotFoundException(bookId);
-        } catch (NoSuchMethodException e) {
-            log.warn("getErrorDetails() is not present in exception class", e);
-            return DEFAULT_EXCEPTION;
-        } catch (InvocationTargetException e) {
-            log.warn("getErrorDetails() threw an exception", e);
-            return DEFAULT_EXCEPTION;
-        } catch (IllegalAccessException e) {
-            log.warn("", e);
-            return DEFAULT_EXCEPTION;
-        }
     }
 }

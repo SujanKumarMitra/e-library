@@ -1,9 +1,9 @@
 package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 
-import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcAuthor;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBook;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcTag;
 import com.github.sujankumarmitra.libraryservice.v1.exception.BookNotFoundException;
+import com.github.sujankumarmitra.libraryservice.v1.exception.DuplicateTagKeyException;
 import com.github.sujankumarmitra.libraryservice.v1.model.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
@@ -73,8 +73,7 @@ class R2dbcPostgresqlTagDaoTest {
 
 
     @Test
-    void givenValidBookId_whenInsertShouldInsert() {
-        Set<R2dbcTag> tags = new HashSet<>();
+    void givenValidBookId_whenInsert_ShouldInsert() {
 
         R2dbcTag tag1 = new R2dbcTag();
         tag1.setKey("key1");
@@ -88,34 +87,54 @@ class R2dbcPostgresqlTagDaoTest {
         tag3.setKey("key3");
         tag3.setValue("value3");
 
-        tags.add(tag1);
-        tags.add(tag2);
-        tags.add(tag3);
+        Collection<R2dbcTag> tags = List.of(tag1, tag2, tag3);
 
 
-        BookDaoUtils.insertDummyBook(entityTemplate.getDatabaseClient())
+        BookDaoTestUtils.insertDummyBook(entityTemplate.getDatabaseClient())
                 .doOnSuccess(book -> tags.forEach(tag -> tag.setBookId(book.getUuid())))
                 .thenReturn(tags)
-                .flatMap(tagDao::insertTags)
-                .then(
-                        entityTemplate
-                                .select(R2dbcTag.class)
-                                .from("tags")
-                                .all()
-                                .collect(Collectors.toCollection(HashSet::new)))
+                .flatMapMany(tagDao::createTags)
+                .then(entityTemplate
+                        .select(R2dbcTag.class)
+                        .from("tags")
+                        .all()
+                        .count())
                 .as(StepVerifier::create)
-                .consumeNextWith(actualTags -> {
-                    log.info("Expected Tags {}", tags);
-                    log.info("Actual Tags {}", actualTags);
-
-                    assertThat(actualTags).isEqualTo(tags);
-                })
+                .expectNext(3L)
                 .verifyComplete();
     }
 
     @Test
+    void givenDuplicateTagKeys_whenInsert_ShouldEmitError() {
+
+        R2dbcTag tag1 = new R2dbcTag();
+        tag1.setKey("key1");
+        tag1.setValue("value1");
+
+        R2dbcTag tag2 = new R2dbcTag();
+        tag2.setKey("key1");
+        tag2.setValue("value2");
+
+        Collection<R2dbcTag> tags = List.of(tag1, tag2);
+
+
+        BookDaoTestUtils.insertDummyBook(entityTemplate.getDatabaseClient())
+                .doOnSuccess(book -> tags.forEach(tag -> tag.setBookId(book.getUuid())))
+                .thenReturn(tags)
+                .flatMapMany(tagDao::createTags)
+                .then(entityTemplate
+                        .select(R2dbcTag.class)
+                        .from("tags")
+                        .all()
+                        .count())
+                .as(StepVerifier::create)
+                .expectError(DuplicateTagKeyException.class)
+                .verify();
+    }
+
+    @Test
     void givenNonExistingBookId_whenSelect_shouldEmitEmpty() {
-        tagDao.selectTags(UUID.randomUUID().toString())
+        tagDao.getTagsByBookId(UUID.randomUUID().toString())
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .expectNextCount(0L)
@@ -124,18 +143,22 @@ class R2dbcPostgresqlTagDaoTest {
 
     @Test
     void givenMalformedUuid_whenSelect_shouldEmitEmpty() {
-        tagDao.selectTags("malformed-uuid")
+        tagDao.getTagsByBookId("malformed-uuid")
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .expectNextCount(0L)
                 .verifyComplete();
     }
 
-
     @Test
     void givenMalformedUuidBookId_whenInsert_shouldEmitError() {
 
         Set<Tag> tags = Set.of(new Tag() {
+            @Override
+            public String getId() {
+                return null;
+            }
+
             @Override
             public String getBookId() {
                 return "malformed";
@@ -150,9 +173,10 @@ class R2dbcPostgresqlTagDaoTest {
             public String getValue() {
                 return "value";
             }
+
         });
 
-        tagDao.insertTags(tags)
+        tagDao.createTags(tags)
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .expectError(BookNotFoundException.class)
@@ -163,17 +187,17 @@ class R2dbcPostgresqlTagDaoTest {
     void givenNonExistingBookId_whenInsert_shouldEmitError() {
         R2dbcTag tag1 = new R2dbcTag();
         tag1.setBookId(UUID.randomUUID());
-        tag1.setKey("key");
-        tag1.setValue("value");
+        tag1.setKey("key1");
+        tag1.setValue("value1");
 
         R2dbcTag tag2 = new R2dbcTag();
         tag2.setBookId(UUID.randomUUID());
-        tag2.setKey("key");
-        tag2.setValue("value");
+        tag2.setKey("key2");
+        tag2.setValue("value2");
 
         Set<R2dbcTag> tags = Set.of(tag1, tag2);
 
-        tagDao.insertTags(tags)
+        tagDao.createTags(tags)
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .expectErrorSatisfies(th -> {
@@ -188,10 +212,8 @@ class R2dbcPostgresqlTagDaoTest {
         List<R2dbcTag> tags = new ArrayList<>();
         for (int i = 1; i <= 10; i++) {
             R2dbcTag tag = new R2dbcTag();
-
             tag.setKey("key" + i);
             tag.setValue("value" + i);
-
             tags.add(tag);
         }
 
@@ -231,21 +253,77 @@ class R2dbcPostgresqlTagDaoTest {
     }
 
     private void insertTags(List<R2dbcTag> tags) {
-        BookDaoUtils.insertDummyBook(entityTemplate.getDatabaseClient())
+        BookDaoTestUtils
+                .insertDummyBook(entityTemplate.getDatabaseClient())
                 .doOnSuccess(book -> tags.forEach(tag -> tag.setBookId(book.getUuid())))
                 .thenMany(Flux.fromIterable(tags))
-                .flatMap(tag -> entityTemplate
+                .flatMap(author -> entityTemplate
                         .getDatabaseClient()
-                        .sql(R2dbcPostgresqlTagDao.UPSERT_STATEMENT)
-                        .bind("$1", tag.getBookUuid())
-                        .bind("$2", tag.getKey())
-                        .bind("$3", tag.getValue())
-                        .fetch()
-                        .rowsUpdated())
+                        .sql(R2dbcPostgresqlTagDao.INSERT_STATEMENT)
+                        .bind("$1", author.getBookUuid())
+                        .bind("$2", author.getKey())
+                        .bind("$3", author.getValue())
+                        .map(row -> row.get("id", UUID.class))
+                        .all())
+                .collectList()
+                .doOnSuccess(authorIds -> {
+                    Iterator<UUID> idIterator = authorIds.iterator();
+                    Iterator<R2dbcTag> authorIterator = tags.iterator();
+
+                    while (idIterator.hasNext()) {
+                        authorIterator
+                                .next()
+                                .setId(idIterator.next());
+                    }
+
+                })
+                .then()
                 .as(StepVerifier::create)
-                .expectNextCount(tags.size())
                 .verifyComplete();
     }
 
 
+    @Test
+    void givenValidBookId_whenDelete_shouldDelete() {
+        List<R2dbcTag> tags = new ArrayList<>();
+        for (int i = 1; i <= 5; i++) {
+            R2dbcTag tag = new R2dbcTag();
+            tag.setKey("key" + i);
+            tag.setValue("value" + i);
+            tags.add(tag);
+        }
+
+        insertTags(tags);
+        String bookId = tags.get(0).getBookId();
+
+        tagDao
+                .deleteTagsByBookId(bookId)
+                .then(entityTemplate
+                        .getDatabaseClient()
+                        .sql("SELECT * FROM tags")
+                        .fetch()
+                        .all()
+                        .count())
+                .as(StepVerifier::create)
+                .expectNext(0L)
+                .verifyComplete();
+    }
+
+    @Test
+    void givenNonExistingBookId_whenDelete_shouldEmitEmpty() {
+        tagDao.deleteTagsByBookId(UUID.randomUUID().toString())
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectNextCount(0L)
+                .verifyComplete();
+    }
+
+    @Test
+    void givenMalformedUuid_whenDelete_shouldEmitEmpty() {
+        tagDao.deleteTagsByBookId("malformed-uuid")
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectNextCount(0L)
+                .verifyComplete();
+    }
 }

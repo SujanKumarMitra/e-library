@@ -4,7 +4,7 @@ import com.github.sujankumarmitra.libraryservice.v1.model.Tag;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.Set;
+import java.util.Collection;
 
 /**
  * @author skmitra
@@ -12,9 +12,12 @@ import java.util.Set;
  */
 public interface TagDao {
 
-    Mono<Void> insertTags(Set<? extends Tag> tags);
+    Flux<String> createTags(Collection<? extends Tag> tags);
 
-    Flux<Tag> selectTags(String bookId);
+    Flux<Tag> getTagsByBookId(String bookId);
 
-    Mono<Void> updateTags(Set<? extends Tag> tags);
+    Mono<Void> updateTags(Collection<? extends Tag> tags);
+
+    Mono<Void> deleteTagsByBookId(String bookId);
+
 }

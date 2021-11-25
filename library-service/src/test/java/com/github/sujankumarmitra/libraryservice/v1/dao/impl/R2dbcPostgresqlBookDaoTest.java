@@ -68,17 +68,23 @@ class R2dbcPostgresqlBookDaoTest {
         mockAuthorDao = Mockito.mock(AuthorDao.class);
         mockTagDao = Mockito.mock(TagDao.class);
 
-        Mockito.doReturn(Mono.empty())
-                .when(mockAuthorDao).insertAuthors(anySet());
+        Mockito.doReturn(Flux.empty())
+                .when(mockAuthorDao).createAuthors(anySet());
 
-        Mockito.doReturn(Mono.empty())
-                .when(mockTagDao).insertTags(anySet());
+        Mockito.doReturn(Flux.empty())
+                .when(mockTagDao).createTags(anySet());
 
         Mockito.doReturn(Mono.empty())
                 .when(mockAuthorDao).updateAuthors(anySet());
 
         Mockito.doReturn(Mono.empty())
                 .when(mockTagDao).updateTags(anySet());
+
+        Mockito.doReturn(Mono.empty())
+                .when(mockTagDao).deleteTagsByBookId(any());
+
+        Mockito.doReturn(Mono.empty())
+                .when(mockAuthorDao).deleteAuthorsByBookId(any());
 
 
         bookDao = new R2dbcPostgresqlBookDao(
@@ -99,7 +105,7 @@ class R2dbcPostgresqlBookDaoTest {
     @Test
     void givenValidBook_whenInsert_shouldInsert() {
         Book book = getBook();
-        bookDao.insertBook(book)
+        bookDao.createBook(book)
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .consumeNextWith(log::info)
@@ -111,7 +117,7 @@ class R2dbcPostgresqlBookDaoTest {
         R2dbcBook book = getBook();
         book.setCoverPageImageId(null);
 
-        bookDao.insertBook(book)
+        bookDao.createBook(book)
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .consumeNextWith(log::info)
@@ -175,14 +181,14 @@ class R2dbcPostgresqlBookDaoTest {
 
 
         Mockito.doReturn(Flux.fromIterable(expectedAuthors).cast(Author.class))
-                .when(mockAuthorDao).selectAuthors(any());
+                .when(mockAuthorDao).getAuthorsByBookId(any());
 
         Mockito.doReturn(Flux.fromIterable(expectedTags).cast(Tag.class))
-                .when(mockTagDao).selectTags(any());
+                .when(mockTagDao).getTagsByBookId(any());
 
         log.info("Expected book:: {}", book);
 
-        bookDao.selectBook(book.getId())
+        bookDao.getBook(book.getId())
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .consumeNextWith(actualBook -> {
@@ -257,14 +263,14 @@ class R2dbcPostgresqlBookDaoTest {
 
 
         Mockito.doReturn(Flux.fromIterable(expectedAuthors).cast(Author.class))
-                .when(mockAuthorDao).selectAuthors(any());
+                .when(mockAuthorDao).getAuthorsByBookId(any());
 
         Mockito.doReturn(Flux.fromIterable(expectedTags).cast(Tag.class))
-                .when(mockTagDao).selectTags(any());
+                .when(mockTagDao).getTagsByBookId(any());
 
         log.info("Expected book:: {}", book);
 
-        bookDao.selectBook(book.getId())
+        bookDao.getBook(book.getId())
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .consumeNextWith(actualBook -> {
@@ -285,12 +291,12 @@ class R2dbcPostgresqlBookDaoTest {
     @Test
     void givenInvalidBookId_whenSelect_shouldEmitNothing() {
         Mockito.doReturn(Flux.empty())
-                .when(mockAuthorDao).selectAuthors(any());
+                .when(mockAuthorDao).getAuthorsByBookId(any());
 
         Mockito.doReturn(Flux.empty())
-                .when(mockTagDao).selectTags(any());
+                .when(mockTagDao).getTagsByBookId(any());
 
-        bookDao.selectBook(UUID.randomUUID().toString())
+        bookDao.getBook(UUID.randomUUID().toString())
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .expectNextCount(0L)
@@ -300,12 +306,12 @@ class R2dbcPostgresqlBookDaoTest {
     @Test
     void givenMalformedBookId_whenSelect_shouldEmitNothing() {
         Mockito.doReturn(Flux.empty())
-                .when(mockAuthorDao).selectAuthors(any());
+                .when(mockAuthorDao).getAuthorsByBookId(any());
 
         Mockito.doReturn(Flux.empty())
-                .when(mockTagDao).selectTags(any());
+                .when(mockTagDao).getTagsByBookId(any());
 
-        bookDao.selectBook("malformed_uuid")
+        bookDao.getBook("malformed_uuid")
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .expectNextCount(0L)

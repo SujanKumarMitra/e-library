@@ -13,12 +13,12 @@ import java.util.UUID;
  * @author skmitra
  * @since Nov 24/11/21, 2021
  */
-public class BookDaoUtils {
+public class BookDaoTestUtils {
 
 
     private static Faker faker = new Faker();
 
-    private BookDaoUtils() {
+    private BookDaoTestUtils() {
     }
 
     public static Mono<R2dbcBook> insertDummyBook(@NonNull ConnectionAccessor connAccessor) {

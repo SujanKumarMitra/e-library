@@ -9,9 +9,9 @@ import reactor.core.publisher.Mono;
  */
 public interface BookDao {
 
-    Mono<String> insertBook(Book book);
+    Mono<String> createBook(Book book);
 
-    Mono<Book> selectBook(String bookId);
+    Mono<Book> getBook(String bookId);
 
     Mono<Void> updateBook(Book book);
 

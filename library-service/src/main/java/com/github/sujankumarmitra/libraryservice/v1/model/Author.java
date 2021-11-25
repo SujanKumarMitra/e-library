@@ -8,24 +8,39 @@ import java.util.Objects;
  */
 public abstract class Author {
 
+    public abstract String getId();
+
     public abstract String getBookId();
 
     public abstract String getName();
 
     @Override
     public boolean equals(Object o) {
-        if(o == null) return false;
-        if (!Author.class.isAssignableFrom(o.getClass()))
-            return false;
+        if (this == o) return true;
+        if (!(o instanceof Author)) return false;
 
         Author other = (Author) o;
-        return Objects.equals(getBookId(), other.getBookId()) &&
+        return Objects.equals(getId(), other.getId()) &&
+                Objects.equals(getBookId(), other.getBookId()) &&
                 Objects.equals(getName(), other.getName());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getBookId(), getName());
+        return Objects.hash(
+                getId(),
+                getBookId(),
+                getName());
     }
+
+    @Override
+    public String toString() {
+        return "Author{" +
+                "id='" + getId() + '\'' +
+                ", bookId='" + getBookId() + '\'' +
+                ", name='" + getName() + '\'' +
+                '}';
+    }
+
 
 }

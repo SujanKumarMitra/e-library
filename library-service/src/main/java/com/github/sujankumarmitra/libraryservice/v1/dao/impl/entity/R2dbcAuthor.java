@@ -14,20 +14,34 @@ import java.util.UUID;
 @Getter
 @Setter
 public final class R2dbcAuthor extends Author {
+    private UUID id;
     private UUID bookId;
     private String name;
+
 
     public R2dbcAuthor() {
     }
 
     public R2dbcAuthor(@NonNull Author author) {
-        String bookId = author.getBookId();
-        this.bookId = bookId == null ? null : UUID.fromString(bookId);
+        this.id = author.getId() == null ? null : UUID.fromString(author.getId());
+        this.bookId = author.getBookId() == null ? null : UUID.fromString(author.getBookId());
         this.name = author.getName();
+    }
+
+    public String getId() {
+        return id == null ? null : id.toString();
+    }
+
+    public UUID getUuid() {
+        return id;
     }
 
     @Override
     public String getBookId() {
         return bookId == null ? null : bookId.toString();
+    }
+
+    public UUID getBookUuid() {
+        return bookId;
     }
 }
