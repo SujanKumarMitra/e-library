@@ -78,11 +78,13 @@ CREATE TABLE IF NOT EXISTS packages(
 );
 
 CREATE TABLE IF NOT EXISTS package_items(
+    id uuid DEFAULT uuid_generate_v4(),
 	package_id uuid,
 	book_id uuid,
-	CONSTRAINT pk_package_items PRIMARY KEY (package_id,book_id),
-	CONSTRAINT fk_package_items_book_packages FOREIGN KEY(package_id) REFERENCES packages(id),
+	CONSTRAINT pk_package_items PRIMARY KEY (id),
+	CONSTRAINT fk_package_items_packages FOREIGN KEY(package_id) REFERENCES packages(id),
 	CONSTRAINT fk_package_items_books FOREIGN KEY(book_id) REFERENCES books(id),
+	CONSTRAINT unq_package_items_package_id_book_id UNIQUE (package_id,book_id),
 	CONSTRAINT chk_package_items_package_id_not_null CHECK(package_id IS NOT NULL),
 	CONSTRAINT chk_package_items_book_id_not_null CHECK(book_id IS NOT NULL)
 );
