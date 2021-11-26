@@ -1,7 +1,9 @@
 package com.github.sujankumarmitra.assetservice.v1.dao;
 
+import com.github.sujankumarmitra.assetservice.v1.exception.AssetNotFoundException;
 import com.github.sujankumarmitra.assetservice.v1.model.AssetPermission;
 import com.github.sujankumarmitra.assetservice.v1.model.DefaultAssetPermission;
+import io.r2dbc.spi.R2dbcDataIntegrityViolationException;
 import io.r2dbc.spi.Result;
 import io.r2dbc.spi.Row;
 import io.r2dbc.spi.RowMetadata;
@@ -31,20 +33,29 @@ public class R2dbcPostgresqlAssetPermissionDao implements AssetPermissionDao {
 
     @Override
     public Mono<Void> upsert(AssetPermission permission) {
-        return connectionAccessor.inConnection(conn ->
-                        Mono.from(conn.createStatement(UPSERT_STATEMENT)
-                                .bind("$1", UUID.fromString(permission.getAssetId()))
-                                .bind("$2", permission.getSubjectId())
-                                .bind("$3", permission.getGrantStartEpochMilliseconds())
-                                .bind("$4", permission.getGrantDurationInMilliseconds())
-                                .execute()))
-                .flatMapMany(Result::getRowsUpdated)
-                .then();
+        return Mono.defer(() -> {
+            final UUID assetUuid;
+            String assetId = permission.getAssetId();
+            try {
+                assetUuid = UUID.fromString(assetId);
+            } catch (IllegalArgumentException e) {
+                return Mono.error(new AssetNotFoundException(assetId));
+            }
+            return connectionAccessor.inConnection(conn ->
+                            Mono.from(conn.createStatement(UPSERT_STATEMENT)
+                                    .bind("$1", assetUuid)
+                                    .bind("$2", permission.getSubjectId())
+                                    .bind("$3", permission.getGrantStartEpochMilliseconds())
+                                    .bind("$4", permission.getGrantDurationInMilliseconds())
+                                    .execute()))
+                    .flatMapMany(Result::getRowsUpdated)
+                    .onErrorMap(R2dbcDataIntegrityViolationException.class, err -> new AssetNotFoundException(assetId))
+                    .then();
+        });
     }
 
     @Override
     public Mono<AssetPermission> findOne(String assetId, String subjectId) {
-
         return connectionAccessor.inConnection(conn ->
                         Mono.from(conn.createStatement(SELECT_STATEMENT)
                                 .bind("$1", UUID.fromString(assetId))

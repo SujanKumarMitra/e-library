@@ -2,6 +2,7 @@ package com.github.sujankumarmitra.assetservice.v1.dao;
 
 import com.github.javafaker.Faker;
 import com.github.sujankumarmitra.assetservice.TestcontainersExtension;
+import com.github.sujankumarmitra.assetservice.v1.exception.AssetNotFoundException;
 import com.github.sujankumarmitra.assetservice.v1.model.AssetPermission;
 import com.github.sujankumarmitra.assetservice.v1.model.DefaultAssetPermission;
 import io.r2dbc.spi.Result;
@@ -72,9 +73,6 @@ public class R2dbcPostgresqlAssetPermissionDaoTest {
         registry.add("spring.r2dbc.username", container::getUsername);
         registry.add("spring.r2dbc.password", container::getPassword);
 
-//        registry.add("spring.r2dbc.url", () -> "r2dbc:postgres://localhost:5432/asset_service_db");
-//        registry.add("spring.r2dbc.username", () -> "asset_service");
-//        registry.add("spring.r2dbc.password", () -> "asset_service");
     }
 
 
@@ -228,11 +226,30 @@ public class R2dbcPostgresqlAssetPermissionDaoTest {
         UUID id = UUID.randomUUID();
         String subjectId = "subject_id";
 
-        permissionDao.findOne(id.toString() + "invalid chars", subjectId)
+        permissionDao.findOne(id + "invalid chars", subjectId)
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .expectNextCount(0L)
                 .verifyComplete();
+
+    }
+
+    @Test
+    void givenInvalidAssetId_whenUpsert_shouldEmitError() {
+
+        AssetPermission permission = DefaultAssetPermission
+                .newBuilder()
+                .assetId("invalid_id")
+                .subjectId("subjectId")
+                .grantStartEpochMilliseconds(System.currentTimeMillis())
+                .grantDurationInMilliseconds(INFINITE_GRANT_DURATION)
+                .build();
+
+        permissionDao.upsert(permission)
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectError(AssetNotFoundException.class)
+                .verify();
 
     }
 
