@@ -12,6 +12,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.MongoDBContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.core.publisher.Flux;
 
 import java.time.Duration;
@@ -27,6 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @since Sep 29/09/21, 2021
  */
 @DataMongoTest
+@Testcontainers
 @Slf4j
 class MongoNotificationDaoTest {
 
@@ -34,6 +40,14 @@ class MongoNotificationDaoTest {
     @Autowired
     private ReactiveMongoTemplate mongoTemplate;
     private MongoNotificationDao daoUnderTest;
+
+    @DynamicPropertySource
+    static void registerMongoProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.data.mongodb.uri", () -> container.getReplicaSetUrl());
+    }
+
+    @Container
+    private static MongoDBContainer container = new MongoDBContainer("mongo");
 
     @BeforeEach
     void setUp() {
