@@ -15,6 +15,8 @@ public abstract class Package {
 
     public abstract Set<? extends PackageItem> getItems();
 
+    public abstract Set<? extends PackageTag> getTags();
+
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof Package)) return false;
@@ -22,14 +24,16 @@ public abstract class Package {
         Package that = (Package) o;
         return Objects.equals(getId(), that.getId()) &&
                 Objects.equals(getName(), that.getName()) &&
-                Objects.equals(getItems(), that.getItems());
+                Objects.equals(getItems(), that.getItems()) &&
+                Objects.equals(getTags(), that.getTags());
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(getId(),
                 getName(),
-                getItems());
+                getItems(),
+                getTags());
     }
 
     @Override
@@ -38,6 +42,7 @@ public abstract class Package {
                 "id='" + getId() + '\'' +
                 ", name='" + getName() + '\'' +
                 ", items=" + getItems() +
+                ", tags=" + getTags() +
                 '}';
     }
 

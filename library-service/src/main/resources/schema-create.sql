@@ -77,6 +77,20 @@ CREATE TABLE IF NOT EXISTS packages(
 	CONSTRAINT chk_packages_name_not_empty CHECK(LENGTH(name) > 0)
 );
 
+CREATE TABLE IF NOT EXISTS package_tags(
+    id uuid DEFAULT uuid_generate_v4(),
+	package_id uuid,
+	key text,
+	value text,
+	CONSTRAINT pk_package_tags PRIMARY KEY(id),
+	CONSTRAINT fk_package_tags_packages FOREIGN KEY(package_id) REFERENCES packages(id),
+	CONSTRAINT unq_package_tags_book_id_key UNIQUE(package_id,key),
+	CONSTRAINT chk_package_tags_key_not_null CHECK(key IS NOT NULL),
+	CONSTRAINT chk_package_tags_key_not_empty CHECK(LENGTH(key) > 0),
+	CONSTRAINT chk_package_tags_value_not_null CHECK(value IS NOT NULL),
+	CONSTRAINT chk_package_tags_value_not_empty CHECK(LENGTH(value) > 0)
+);
+
 CREATE TABLE IF NOT EXISTS package_items(
     id uuid DEFAULT uuid_generate_v4(),
 	package_id uuid,

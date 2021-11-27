@@ -1,10 +1,12 @@
 package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 
 import com.github.sujankumarmitra.libraryservice.v1.dao.PackageItemDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.PackageTagDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcPackage;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcPackageItem;
 import com.github.sujankumarmitra.libraryservice.v1.model.Package;
 import com.github.sujankumarmitra.libraryservice.v1.model.PackageItem;
+import com.github.sujankumarmitra.libraryservice.v1.model.PackageTag;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,6 +44,8 @@ class R2dbcPostgresqlPackageDaoTest {
     private R2dbcPostgresqlPackageDao packageDao;
     @Mock
     private PackageItemDao mockPackageItemDao;
+    @Mock
+    private PackageTagDao mockPackageTagDao;
     @Autowired
     private R2dbcEntityTemplate entityTemplate = null;
 
@@ -60,7 +64,10 @@ class R2dbcPostgresqlPackageDaoTest {
 
     @BeforeEach
     void setUp() {
-        packageDao = new R2dbcPostgresqlPackageDao(entityTemplate.getDatabaseClient(), mockPackageItemDao);
+        packageDao = new R2dbcPostgresqlPackageDao(
+                entityTemplate.getDatabaseClient(),
+                mockPackageItemDao,
+                mockPackageTagDao);
     }
 
     @AfterEach
@@ -85,6 +92,8 @@ class R2dbcPostgresqlPackageDaoTest {
 
         Mockito.doReturn(Flux.empty())
                 .when(mockPackageItemDao).createPackageItems(any());
+        Mockito.doReturn(Flux.empty())
+                .when(mockPackageTagDao).createTags(any());
 
         packageDao.createPackage(r2dbcPackage)
                 .as(StepVerifier::create)
@@ -101,6 +110,9 @@ class R2dbcPostgresqlPackageDaoTest {
         Mockito.doReturn(Flux.empty())
                 .when(mockPackageItemDao)
                 .getPackageItemsByPackageId(any());
+        Mockito.doReturn(Flux.empty())
+                .when(mockPackageTagDao)
+                .getTagsByPackageId(any());
 
         PackageDaoTestUtils
                 .insertDummyPackage(this.entityTemplate.getDatabaseClient())
@@ -125,6 +137,10 @@ class R2dbcPostgresqlPackageDaoTest {
                 .when(mockPackageItemDao)
                 .getPackageItemsByPackageId(any());
 
+        Mockito.doReturn(Flux.empty())
+                .when(mockPackageTagDao)
+                .getTagsByPackageId(any());
+
         packageDao.getPackage(UUID.randomUUID().toString())
                 .as(StepVerifier::create)
                 .expectSubscription()
@@ -137,6 +153,9 @@ class R2dbcPostgresqlPackageDaoTest {
         Mockito.doReturn(Flux.empty())
                 .when(mockPackageItemDao)
                 .getPackageItemsByPackageId(any());
+        Mockito.doReturn(Flux.empty())
+                .when(mockPackageTagDao)
+                .getTagsByPackageId(any());
 
         packageDao.getPackage("malformed_uuid")
                 .as(StepVerifier::create)
@@ -151,6 +170,9 @@ class R2dbcPostgresqlPackageDaoTest {
         Mockito.doReturn(Mono.empty())
                 .when(mockPackageItemDao).updatePackageItems(any());
 
+        Mockito.doReturn(Mono.empty())
+                .when(mockPackageTagDao).updateTags(any());
+
         R2dbcPackage _package = new R2dbcPackage();
 
         PackageDaoTestUtils
@@ -164,7 +186,8 @@ class R2dbcPostgresqlPackageDaoTest {
                         .select(R2dbcPackage.class)
                         .from("packages")
                         .one()
-                        .doOnSuccess(aPackage -> aPackage.getItems().clear()))
+                        .doOnSuccess(aPackage -> aPackage.getItems().clear())
+                        .doOnSuccess(aPackage -> aPackage.getTags().clear()))
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .consumeNextWith(actualPackage -> {
@@ -184,6 +207,9 @@ class R2dbcPostgresqlPackageDaoTest {
         Mockito.doReturn(Mono.empty())
                 .when(mockPackageItemDao).updatePackageItems(any());
 
+        Mockito.doReturn(Mono.empty())
+                .when(mockPackageTagDao).updateTags(any());
+
         R2dbcPackage _package = new R2dbcPackage();
         _package.setId(UUID.randomUUID());
         _package.setName("name");
@@ -201,6 +227,8 @@ class R2dbcPostgresqlPackageDaoTest {
 
         Mockito.doReturn(Mono.empty())
                 .when(mockPackageItemDao).updatePackageItems(any());
+        Mockito.doReturn(Mono.empty())
+                .when(mockPackageTagDao).updateTags(any());
 
         Package _package = new Package() {
             @Override
@@ -215,6 +243,11 @@ class R2dbcPostgresqlPackageDaoTest {
 
             @Override
             public Set<? extends PackageItem> getItems() {
+                return Collections.emptySet();
+            }
+
+            @Override
+            public Set<? extends PackageTag> getTags() {
                 return Collections.emptySet();
             }
         };
@@ -234,6 +267,10 @@ class R2dbcPostgresqlPackageDaoTest {
                 .when(mockPackageItemDao)
                 .deletePackageItemsByPackageId(any());
 
+        Mockito.doReturn(Mono.empty())
+                .when(mockPackageTagDao)
+                .deleteTagsByPackageId(any());
+
         packageDao.deletePackage(UUID.randomUUID().toString())
                 .as(StepVerifier::create)
                 .expectSubscription()
@@ -246,6 +283,10 @@ class R2dbcPostgresqlPackageDaoTest {
         Mockito.doReturn(Mono.empty())
                 .when(mockPackageItemDao)
                 .deletePackageItemsByPackageId(any());
+
+        Mockito.doReturn(Mono.empty())
+                .when(mockPackageTagDao)
+                .deleteTagsByPackageId(any());
 
         packageDao.deletePackage("malformed_uuid")
                 .as(StepVerifier::create)

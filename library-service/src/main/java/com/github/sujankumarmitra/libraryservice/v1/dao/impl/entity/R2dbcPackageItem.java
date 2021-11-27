@@ -12,7 +12,7 @@ import java.util.UUID;
  */
 @Getter
 @Setter
-public class R2dbcPackageItem extends PackageItem {
+public final class R2dbcPackageItem extends PackageItem {
     private UUID id;
     private UUID packageId;
     private UUID bookId;
