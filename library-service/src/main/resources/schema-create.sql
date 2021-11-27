@@ -26,18 +26,18 @@ CREATE TABLE IF NOT EXISTS authors(
 	CONSTRAINT chk_authors_name_not_empty CHECK(LENGTH(name) > 0)
 );
 
-CREATE TABLE IF NOT EXISTS tags(
+CREATE TABLE IF NOT EXISTS book_tags(
     id uuid DEFAULT uuid_generate_v4(),
 	book_id uuid,
-	key varchar(255),
+	key text,
 	value text,
-	CONSTRAINT pk_tags PRIMARY KEY(id),
-	CONSTRAINT fk_tags_books FOREIGN KEY(book_id) REFERENCES books(id),
-	CONSTRAINT unq_tags_book_id_key UNIQUE(book_id,key),
-	CONSTRAINT chk_tags_key_not_null CHECK(key IS NOT NULL),
-	CONSTRAINT chk_tags_key_not_empty CHECK(LENGTH(key) > 0),
-	CONSTRAINT chk_tags_value_not_null CHECK(value IS NOT NULL),
-	CONSTRAINT chk_tags_value_not_empty CHECK(LENGTH(value) > 0)
+	CONSTRAINT pk_book_tags PRIMARY KEY(id),
+	CONSTRAINT fk_book_tags_books FOREIGN KEY(book_id) REFERENCES books(id),
+	CONSTRAINT unq_book_tags_book_id_key UNIQUE(book_id,key),
+	CONSTRAINT chk_book_tags_key_not_null CHECK(key IS NOT NULL),
+	CONSTRAINT chk_book_tags_key_not_empty CHECK(LENGTH(key) > 0),
+	CONSTRAINT chk_book_tags_value_not_null CHECK(value IS NOT NULL),
+	CONSTRAINT chk_book_tags_value_not_empty CHECK(LENGTH(value) > 0)
 );
 
 CREATE TABLE IF NOT EXISTS physical_books(

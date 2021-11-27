@@ -1,11 +1,11 @@
 package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 
-import com.github.sujankumarmitra.libraryservice.v1.dao.TagDao;
-import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcTag;
+import com.github.sujankumarmitra.libraryservice.v1.dao.BookTagDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBookTag;
 import com.github.sujankumarmitra.libraryservice.v1.exception.BookNotFoundException;
 import com.github.sujankumarmitra.libraryservice.v1.exception.DefaultErrorDetails;
 import com.github.sujankumarmitra.libraryservice.v1.exception.DuplicateTagKeyException;
-import com.github.sujankumarmitra.libraryservice.v1.model.Tag;
+import com.github.sujankumarmitra.libraryservice.v1.model.BookTag;
 import io.r2dbc.spi.R2dbcDataIntegrityViolationException;
 import io.r2dbc.spi.Result;
 import io.r2dbc.spi.Row;
@@ -29,18 +29,18 @@ import java.util.UUID;
 @Repository
 @AllArgsConstructor
 @Slf4j
-public class R2dbcPostgresqlTagDao implements TagDao {
+public class R2dbcPostgresqlBookTagDao implements BookTagDao {
 
-    public static final String INSERT_STATEMENT = "INSERT INTO tags(book_id,key,value) VALUES ($1,$2,$3) RETURNING id";
-    public static final String SELECT_STATEMENT = "SELECT id, book_id, key, value FROM tags WHERE book_id=$1";
-    public static final String UPDATE_STATEMENT = "UPDATE tags SET value=$1 WHERE id=$2";
-    public static final String DELETE_STATEMENT = "DELETE FROM tags WHERE book_id=$1";
+    public static final String INSERT_STATEMENT = "INSERT INTO book_tags(book_id,key,value) VALUES ($1,$2,$3) RETURNING id";
+    public static final String SELECT_STATEMENT = "SELECT id, book_id, key, value FROM book_tags WHERE book_id=$1";
+    public static final String UPDATE_STATEMENT = "UPDATE book_tags SET value=$1 WHERE id=$2";
+    public static final String DELETE_STATEMENT = "DELETE FROM book_tags WHERE book_id=$1";
 
     @NonNull
     private final DatabaseClient databaseClient;
 
     @Override
-    public Flux<String> createTags(Collection<? extends Tag> tags) {
+    public Flux<String> createTags(Collection<? extends BookTag> tags) {
         return Flux.defer(() -> {
             if (tags == null) {
                 log.debug("given tags is null");
@@ -49,7 +49,7 @@ public class R2dbcPostgresqlTagDao implements TagDao {
             return databaseClient.inConnectionMany(connection -> {
                         Statement statement = connection.createStatement(INSERT_STATEMENT);
 
-                        for (Tag tag : tags) {
+                        for (BookTag tag : tags) {
                             String bookId = tag.getBookId();
                             UUID uuid;
                             try {
@@ -72,7 +72,7 @@ public class R2dbcPostgresqlTagDao implements TagDao {
                         log.debug("DB integrity error {}", err.getMessage());
                         String message = err.getMessage();
 
-                        if (message.contains("unq_tags_book_id_key"))
+                        if (message.contains("unq_book_tags_book_id_key"))
                             return new DuplicateTagKeyException("tag with given key already exists for given bookId");
                         else
                             return new BookNotFoundException(
@@ -83,7 +83,7 @@ public class R2dbcPostgresqlTagDao implements TagDao {
     }
 
     @Override
-    public Flux<Tag> getTagsByBookId(String bookId) {
+    public Flux<BookTag> getTagsByBookId(String bookId) {
         return Flux.defer(() -> {
             if (bookId == null) {
                 log.debug("given bookId is null");
@@ -99,15 +99,15 @@ public class R2dbcPostgresqlTagDao implements TagDao {
             return databaseClient
                     .sql(SELECT_STATEMENT)
                     .bind("$1", uuid)
-                    .map(this::mapToR2dbcTag)
+                    .map(this::mapToR2dbcBookTag)
                     .all()
-                    .cast(Tag.class);
+                    .cast(BookTag.class);
         });
 
     }
 
     @Override
-    public Mono<Void> updateTags(Collection<? extends Tag> tags) {
+    public Mono<Void> updateTags(Collection<? extends BookTag> tags) {
         return Mono.defer(() -> {
             if (tags == null) {
                 log.debug("given tags is null");
@@ -115,7 +115,7 @@ public class R2dbcPostgresqlTagDao implements TagDao {
             }
             return databaseClient.inConnectionMany(connection -> {
                         Statement statement = connection.createStatement(UPDATE_STATEMENT);
-                        for (Tag tag : tags) {
+                        for (BookTag tag : tags) {
                             String id = tag.getId();
                             UUID uuid;
                             try {
@@ -163,8 +163,8 @@ public class R2dbcPostgresqlTagDao implements TagDao {
         });
     }
 
-    private R2dbcTag mapToR2dbcTag(Row row) {
-        R2dbcTag tag = new R2dbcTag();
+    private R2dbcBookTag mapToR2dbcBookTag(Row row) {
+        R2dbcBookTag tag = new R2dbcBookTag();
 
         tag.setId(row.get("id", UUID.class));
         tag.setBookId(row.get("book_id", UUID.class));

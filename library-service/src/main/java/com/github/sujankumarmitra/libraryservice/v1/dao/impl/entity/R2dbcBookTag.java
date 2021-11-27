@@ -1,6 +1,6 @@
 package com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity;
 
-import com.github.sujankumarmitra.libraryservice.v1.model.Tag;
+import com.github.sujankumarmitra.libraryservice.v1.model.BookTag;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -13,16 +13,16 @@ import java.util.UUID;
  */
 @Getter
 @Setter
-public final class R2dbcTag extends Tag {
+public final class R2dbcBookTag extends BookTag {
     private UUID id;
     private UUID bookId;
     private String key;
     private String value;
 
-    public R2dbcTag() {
+    public R2dbcBookTag() {
     }
 
-    public R2dbcTag(@NonNull Tag tag) {
+    public R2dbcBookTag(@NonNull BookTag tag) {
         this.id = tag.getId() == null ? null : UUID.fromString(tag.getId());
         this.bookId = tag.getBookId() == null ? null : UUID.fromString(tag.getBookId());
         this.key = tag.getKey();

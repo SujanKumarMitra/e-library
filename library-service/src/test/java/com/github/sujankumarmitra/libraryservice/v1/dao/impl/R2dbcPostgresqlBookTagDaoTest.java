@@ -1,10 +1,10 @@
 package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBook;
-import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcTag;
+import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBookTag;
 import com.github.sujankumarmitra.libraryservice.v1.exception.BookNotFoundException;
 import com.github.sujankumarmitra.libraryservice.v1.exception.DuplicateTagKeyException;
-import com.github.sujankumarmitra.libraryservice.v1.model.Tag;
+import com.github.sujankumarmitra.libraryservice.v1.model.BookTag;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,9 +32,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DataR2dbcTest
 @Testcontainers
 @Slf4j
-class R2dbcPostgresqlTagDaoTest {
+class R2dbcPostgresqlBookTagDaoTest {
 
-    private R2dbcPostgresqlTagDao tagDao = null;
+    private R2dbcPostgresqlBookTagDao tagDao = null;
     @Autowired
     private R2dbcEntityTemplate entityTemplate = null;
 
@@ -43,14 +43,14 @@ class R2dbcPostgresqlTagDaoTest {
 
     @BeforeEach
     void setUp() {
-        tagDao = new R2dbcPostgresqlTagDao(entityTemplate.getDatabaseClient());
+        tagDao = new R2dbcPostgresqlBookTagDao(entityTemplate.getDatabaseClient());
     }
 
     @AfterEach
     void tearDown() {
         entityTemplate
-                .delete(R2dbcTag.class)
-                .from("tags")
+                .delete(R2dbcBookTag.class)
+                .from("book_tags")
                 .all()
                 .block();
 
@@ -75,19 +75,19 @@ class R2dbcPostgresqlTagDaoTest {
     @Test
     void givenValidBookId_whenInsert_ShouldInsert() {
 
-        R2dbcTag tag1 = new R2dbcTag();
+        R2dbcBookTag tag1 = new R2dbcBookTag();
         tag1.setKey("key1");
         tag1.setValue("value1");
 
-        R2dbcTag tag2 = new R2dbcTag();
+        R2dbcBookTag tag2 = new R2dbcBookTag();
         tag2.setKey("key2");
         tag2.setValue("value2");
 
-        R2dbcTag tag3 = new R2dbcTag();
+        R2dbcBookTag tag3 = new R2dbcBookTag();
         tag3.setKey("key3");
         tag3.setValue("value3");
 
-        Collection<R2dbcTag> tags = List.of(tag1, tag2, tag3);
+        Collection<R2dbcBookTag> tags = List.of(tag1, tag2, tag3);
 
 
         BookDaoTestUtils.insertDummyBook(entityTemplate.getDatabaseClient())
@@ -95,8 +95,8 @@ class R2dbcPostgresqlTagDaoTest {
                 .thenReturn(tags)
                 .flatMapMany(tagDao::createTags)
                 .then(entityTemplate
-                        .select(R2dbcTag.class)
-                        .from("tags")
+                        .select(R2dbcBookTag.class)
+                        .from("book_tags")
                         .all()
                         .count())
                 .as(StepVerifier::create)
@@ -107,26 +107,22 @@ class R2dbcPostgresqlTagDaoTest {
     @Test
     void givenDuplicateTagKeys_whenInsert_ShouldEmitError() {
 
-        R2dbcTag tag1 = new R2dbcTag();
+        R2dbcBookTag tag1 = new R2dbcBookTag();
         tag1.setKey("key1");
         tag1.setValue("value1");
 
-        R2dbcTag tag2 = new R2dbcTag();
+        R2dbcBookTag tag2 = new R2dbcBookTag();
         tag2.setKey("key1");
         tag2.setValue("value2");
 
-        Collection<R2dbcTag> tags = List.of(tag1, tag2);
+        Collection<R2dbcBookTag> tags = List.of(tag1, tag2);
 
 
         BookDaoTestUtils.insertDummyBook(entityTemplate.getDatabaseClient())
                 .doOnSuccess(book -> tags.forEach(tag -> tag.setBookId(book.getUuid())))
                 .thenReturn(tags)
                 .flatMapMany(tagDao::createTags)
-                .then(entityTemplate
-                        .select(R2dbcTag.class)
-                        .from("tags")
-                        .all()
-                        .count())
+                .then()
                 .as(StepVerifier::create)
                 .expectError(DuplicateTagKeyException.class)
                 .verify();
@@ -153,7 +149,7 @@ class R2dbcPostgresqlTagDaoTest {
     @Test
     void givenMalformedUuidBookId_whenInsert_shouldEmitError() {
 
-        Set<Tag> tags = Set.of(new Tag() {
+        Set<BookTag> tags = Set.of(new BookTag() {
             @Override
             public String getId() {
                 return null;
@@ -185,17 +181,17 @@ class R2dbcPostgresqlTagDaoTest {
 
     @Test
     void givenNonExistingBookId_whenInsert_shouldEmitError() {
-        R2dbcTag tag1 = new R2dbcTag();
+        R2dbcBookTag tag1 = new R2dbcBookTag();
         tag1.setBookId(UUID.randomUUID());
         tag1.setKey("key1");
         tag1.setValue("value1");
 
-        R2dbcTag tag2 = new R2dbcTag();
+        R2dbcBookTag tag2 = new R2dbcBookTag();
         tag2.setBookId(UUID.randomUUID());
         tag2.setKey("key2");
         tag2.setValue("value2");
 
-        Set<R2dbcTag> tags = Set.of(tag1, tag2);
+        Set<R2dbcBookTag> tags = Set.of(tag1, tag2);
 
         tagDao.createTags(tags)
                 .as(StepVerifier::create)
@@ -209,9 +205,9 @@ class R2dbcPostgresqlTagDaoTest {
 
     @Test
     void givenValidBookId_whenUpdateShouldUpdate() {
-        List<R2dbcTag> tags = new ArrayList<>();
+        List<R2dbcBookTag> tags = new ArrayList<>();
         for (int i = 1; i <= 10; i++) {
-            R2dbcTag tag = new R2dbcTag();
+            R2dbcBookTag tag = new R2dbcBookTag();
             tag.setKey("key" + i);
             tag.setValue("value" + i);
             tags.add(tag);
@@ -219,26 +215,26 @@ class R2dbcPostgresqlTagDaoTest {
 
         insertTags(tags);
 
-        R2dbcTag tag1 = tags.get(2);
+        R2dbcBookTag tag1 = tags.get(2);
         tag1.setValue("value33");
 
-        R2dbcTag tag2 = tags.get(5);
+        R2dbcBookTag tag2 = tags.get(5);
         tag2.setValue("value66");
 
-        R2dbcTag tag3 = tags.get(8);
+        R2dbcBookTag tag3 = tags.get(8);
         tag3.setValue("value99");
 
-        Set<R2dbcTag> expectedTags = new HashSet<>(tags);
+        Set<R2dbcBookTag> expectedTags = new HashSet<>(tags);
 
-        Set<R2dbcTag> tagsToUpdate = new LinkedHashSet<>();
+        Set<R2dbcBookTag> tagsToUpdate = new LinkedHashSet<>();
         tagsToUpdate.add(tag1);
         tagsToUpdate.add(tag2);
         tagsToUpdate.add(tag3);
 
         tagDao.updateTags(tagsToUpdate)
                 .thenMany(entityTemplate
-                        .select(R2dbcTag.class)
-                        .from("tags")
+                        .select(R2dbcBookTag.class)
+                        .from("book_tags")
                         .all())
                 .collect(Collectors.toSet())
                 .as(StepVerifier::create)
@@ -252,14 +248,14 @@ class R2dbcPostgresqlTagDaoTest {
 
     }
 
-    private void insertTags(List<R2dbcTag> tags) {
+    private void insertTags(List<R2dbcBookTag> tags) {
         BookDaoTestUtils
                 .insertDummyBook(entityTemplate.getDatabaseClient())
                 .doOnSuccess(book -> tags.forEach(tag -> tag.setBookId(book.getUuid())))
                 .thenMany(Flux.fromIterable(tags))
                 .flatMap(author -> entityTemplate
                         .getDatabaseClient()
-                        .sql(R2dbcPostgresqlTagDao.INSERT_STATEMENT)
+                        .sql(R2dbcPostgresqlBookTagDao.INSERT_STATEMENT)
                         .bind("$1", author.getBookUuid())
                         .bind("$2", author.getKey())
                         .bind("$3", author.getValue())
@@ -268,7 +264,7 @@ class R2dbcPostgresqlTagDaoTest {
                 .collectList()
                 .doOnSuccess(authorIds -> {
                     Iterator<UUID> idIterator = authorIds.iterator();
-                    Iterator<R2dbcTag> authorIterator = tags.iterator();
+                    Iterator<R2dbcBookTag> authorIterator = tags.iterator();
 
                     while (idIterator.hasNext()) {
                         authorIterator
@@ -285,9 +281,9 @@ class R2dbcPostgresqlTagDaoTest {
 
     @Test
     void givenValidBookId_whenDelete_shouldDelete() {
-        List<R2dbcTag> tags = new ArrayList<>();
+        List<R2dbcBookTag> tags = new ArrayList<>();
         for (int i = 1; i <= 5; i++) {
-            R2dbcTag tag = new R2dbcTag();
+            R2dbcBookTag tag = new R2dbcBookTag();
             tag.setKey("key" + i);
             tag.setValue("value" + i);
             tags.add(tag);
@@ -300,7 +296,7 @@ class R2dbcPostgresqlTagDaoTest {
                 .deleteTagsByBookId(bookId)
                 .then(entityTemplate
                         .getDatabaseClient()
-                        .sql("SELECT * FROM tags")
+                        .sql("SELECT * FROM book_tags")
                         .fetch()
                         .all()
                         .count())
