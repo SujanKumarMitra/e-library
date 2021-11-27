@@ -2,13 +2,13 @@ package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 
 import com.github.sujankumarmitra.libraryservice.v1.dao.AuthorDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.BookDao;
-import com.github.sujankumarmitra.libraryservice.v1.dao.TagDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.BookTagDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcAuthor;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBook;
-import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcTag;
+import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBookTag;
 import com.github.sujankumarmitra.libraryservice.v1.model.Author;
 import com.github.sujankumarmitra.libraryservice.v1.model.Book;
-import com.github.sujankumarmitra.libraryservice.v1.model.Tag;
+import com.github.sujankumarmitra.libraryservice.v1.model.BookTag;
 import io.r2dbc.spi.Row;
 import io.r2dbc.spi.RowMetadata;
 import lombok.AllArgsConstructor;
@@ -43,22 +43,22 @@ public class R2dbcPostgresqlBookDao implements BookDao {
     @NonNull
     private final AuthorDao authorDao;
     @NonNull
-    private final TagDao tagDao;
+    private final BookTagDao bookTagDao;
 
-    private R2dbcBook assembleResult(Tuple3<R2dbcBook, List<Author>, List<Tag>> tuple3) {
+    private R2dbcBook assembleResult(Tuple3<R2dbcBook, List<Author>, List<BookTag>> tuple3) {
         R2dbcBook r2dbcBook = tuple3.getT1();
         List<Author> authorList = tuple3.getT2();
-        List<Tag> tagList = tuple3.getT3();
+        List<BookTag> tagList = tuple3.getT3();
 
         Set<R2dbcAuthor> authorSet = r2dbcBook.getAuthors();
-        Set<R2dbcTag> tagSet = r2dbcBook.getTags();
+        Set<R2dbcBookTag> tagSet = r2dbcBook.getTags();
 
         for (Author author : authorList) {
             authorSet.add(new R2dbcAuthor(author));
         }
 
-        for (Tag tag : tagList) {
-            tagSet.add(new R2dbcTag(tag));
+        for (BookTag tag : tagList) {
+            tagSet.add(new R2dbcBookTag(tag));
         }
         return r2dbcBook;
     }
@@ -93,7 +93,7 @@ public class R2dbcPostgresqlBookDao implements BookDao {
                             .createAuthors(r2dbcBook.getAuthors())
                             .then()
                             .thenReturn(bookId))
-                    .flatMap(bookId -> tagDao
+                    .flatMap(bookId -> bookTagDao
                             .createTags(r2dbcBook.getTags())
                             .then()
                             .thenReturn(bookId))
@@ -130,7 +130,7 @@ public class R2dbcPostgresqlBookDao implements BookDao {
                     .getAuthorsByBookId(bookId)
                     .collectList();
 
-            Mono<List<Tag>> tags = tagDao
+            Mono<List<BookTag>> tags = bookTagDao
                     .getTagsByBookId(bookId)
                     .collectList();
 
@@ -168,7 +168,7 @@ public class R2dbcPostgresqlBookDao implements BookDao {
                     .flatMap(r2dbcBook -> authorDao
                             .updateAuthors(r2dbcBook.getAuthors())
                             .thenReturn(r2dbcBook))
-                    .flatMap(r2dbcBook -> tagDao
+                    .flatMap(r2dbcBook -> bookTagDao
                             .updateTags(r2dbcBook.getTags())
                             .thenReturn(r2dbcBook))
                     .then();
@@ -217,8 +217,8 @@ public class R2dbcPostgresqlBookDao implements BookDao {
         }
 
         if (oldBook.getTags() != null) {
-            for (Tag tag : oldBook.getTags()) {
-                R2dbcTag r2dbcTag = new R2dbcTag(tag);
+            for (BookTag tag : oldBook.getTags()) {
+                R2dbcBookTag r2dbcTag = new R2dbcBookTag(tag);
                 r2dbcTag.setBookId(newBook.getUuid());
                 newBook.getTags().add(r2dbcTag);
             }
@@ -263,7 +263,7 @@ public class R2dbcPostgresqlBookDao implements BookDao {
             return Mono.just(bookId)
                     .flatMap(authorDao::deleteAuthorsByBookId)
                     .thenReturn(bookId)
-                    .flatMap(tagDao::deleteTagsByBookId)
+                    .flatMap(bookTagDao::deleteTagsByBookId)
                     .then(this.databaseClient
                             .sql(DELETE_STATEMENT)
                             .bind("$1", uuid)

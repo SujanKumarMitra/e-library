@@ -2,7 +2,7 @@ package com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity;
 
 import com.github.sujankumarmitra.libraryservice.v1.model.Author;
 import com.github.sujankumarmitra.libraryservice.v1.model.Book;
-import com.github.sujankumarmitra.libraryservice.v1.model.Tag;
+import com.github.sujankumarmitra.libraryservice.v1.model.BookTag;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -25,7 +25,7 @@ public final class R2dbcBook extends Book {
     private String publisher;
     private String edition;
     private String coverPageImageId;
-    private Set<R2dbcTag> tags = new HashSet<>();
+    private Set<R2dbcBookTag> tags = new HashSet<>();
 
     @Override
     public String getId() {
@@ -54,8 +54,8 @@ public final class R2dbcBook extends Book {
 
         }
         if (book.getTags() != null) {
-            for (Tag tag : book.getTags()) {
-                this.tags.add(new R2dbcTag(tag));
+            for (BookTag tag : book.getTags()) {
+                this.tags.add(new R2dbcBookTag(tag));
             }
         }
     }

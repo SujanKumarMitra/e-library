@@ -2,13 +2,13 @@ package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 
 import com.github.javafaker.Faker;
 import com.github.sujankumarmitra.libraryservice.v1.dao.AuthorDao;
-import com.github.sujankumarmitra.libraryservice.v1.dao.TagDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.BookTagDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcAuthor;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBook;
-import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcTag;
+import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBookTag;
 import com.github.sujankumarmitra.libraryservice.v1.model.Author;
 import com.github.sujankumarmitra.libraryservice.v1.model.Book;
-import com.github.sujankumarmitra.libraryservice.v1.model.Tag;
+import com.github.sujankumarmitra.libraryservice.v1.model.BookTag;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,7 +43,7 @@ import static org.mockito.ArgumentMatchers.anySet;
 class R2dbcPostgresqlBookDaoTest {
 
     private R2dbcPostgresqlBookDao bookDao;
-    private TagDao mockTagDao = null;
+    private BookTagDao mockBookTagDao = null;
     private AuthorDao mockAuthorDao = null;
     @Autowired
     private R2dbcEntityTemplate entityTemplate = null;
@@ -66,22 +66,22 @@ class R2dbcPostgresqlBookDaoTest {
     @BeforeEach
     void setUp() {
         mockAuthorDao = Mockito.mock(AuthorDao.class);
-        mockTagDao = Mockito.mock(TagDao.class);
+        mockBookTagDao = Mockito.mock(BookTagDao.class);
 
         Mockito.doReturn(Flux.empty())
                 .when(mockAuthorDao).createAuthors(anySet());
 
         Mockito.doReturn(Flux.empty())
-                .when(mockTagDao).createTags(anySet());
+                .when(mockBookTagDao).createTags(anySet());
 
         Mockito.doReturn(Mono.empty())
                 .when(mockAuthorDao).updateAuthors(anySet());
 
         Mockito.doReturn(Mono.empty())
-                .when(mockTagDao).updateTags(anySet());
+                .when(mockBookTagDao).updateTags(anySet());
 
         Mockito.doReturn(Mono.empty())
-                .when(mockTagDao).deleteTagsByBookId(any());
+                .when(mockBookTagDao).deleteTagsByBookId(any());
 
         Mockito.doReturn(Mono.empty())
                 .when(mockAuthorDao).deleteAuthorsByBookId(any());
@@ -90,7 +90,7 @@ class R2dbcPostgresqlBookDaoTest {
         bookDao = new R2dbcPostgresqlBookDao(
                 entityTemplate.getDatabaseClient(),
                 mockAuthorDao,
-                mockTagDao);
+                mockBookTagDao);
     }
 
     @AfterEach
@@ -163,17 +163,17 @@ class R2dbcPostgresqlBookDaoTest {
 
         Set<R2dbcAuthor> expectedAuthors = Set.of(author1, author2);
 
-        R2dbcTag tag1 = new R2dbcTag();
+        R2dbcBookTag tag1 = new R2dbcBookTag();
         tag1.setBookId(book.getUuid());
         tag1.setKey("key1");
         tag1.setValue("value1");
 
-        R2dbcTag tag2 = new R2dbcTag();
+        R2dbcBookTag tag2 = new R2dbcBookTag();
         tag2.setBookId(book.getUuid());
         tag2.setKey("key2");
         tag2.setValue("value2");
 
-        Set<R2dbcTag> expectedTags = Set.of(tag1, tag2);
+        Set<R2dbcBookTag> expectedTags = Set.of(tag1, tag2);
 
 
         book.getAuthors().addAll(expectedAuthors);
@@ -183,8 +183,8 @@ class R2dbcPostgresqlBookDaoTest {
         Mockito.doReturn(Flux.fromIterable(expectedAuthors).cast(Author.class))
                 .when(mockAuthorDao).getAuthorsByBookId(any());
 
-        Mockito.doReturn(Flux.fromIterable(expectedTags).cast(Tag.class))
-                .when(mockTagDao).getTagsByBookId(any());
+        Mockito.doReturn(Flux.fromIterable(expectedTags).cast(BookTag.class))
+                .when(mockBookTagDao).getTagsByBookId(any());
 
         log.info("Expected book:: {}", book);
 
@@ -245,17 +245,17 @@ class R2dbcPostgresqlBookDaoTest {
 
         Set<R2dbcAuthor> expectedAuthors = Set.of(author1, author2);
 
-        R2dbcTag tag1 = new R2dbcTag();
+        R2dbcBookTag tag1 = new R2dbcBookTag();
         tag1.setBookId(book.getUuid());
         tag1.setKey("key1");
         tag1.setValue("value1");
 
-        R2dbcTag tag2 = new R2dbcTag();
+        R2dbcBookTag tag2 = new R2dbcBookTag();
         tag2.setBookId(book.getUuid());
         tag2.setKey("key2");
         tag2.setValue("value2");
 
-        Set<R2dbcTag> expectedTags = Set.of(tag1, tag2);
+        Set<R2dbcBookTag> expectedTags = Set.of(tag1, tag2);
 
 
         book.getAuthors().addAll(expectedAuthors);
@@ -265,8 +265,8 @@ class R2dbcPostgresqlBookDaoTest {
         Mockito.doReturn(Flux.fromIterable(expectedAuthors).cast(Author.class))
                 .when(mockAuthorDao).getAuthorsByBookId(any());
 
-        Mockito.doReturn(Flux.fromIterable(expectedTags).cast(Tag.class))
-                .when(mockTagDao).getTagsByBookId(any());
+        Mockito.doReturn(Flux.fromIterable(expectedTags).cast(BookTag.class))
+                .when(mockBookTagDao).getTagsByBookId(any());
 
         log.info("Expected book:: {}", book);
 
@@ -294,7 +294,7 @@ class R2dbcPostgresqlBookDaoTest {
                 .when(mockAuthorDao).getAuthorsByBookId(any());
 
         Mockito.doReturn(Flux.empty())
-                .when(mockTagDao).getTagsByBookId(any());
+                .when(mockBookTagDao).getTagsByBookId(any());
 
         bookDao.getBook(UUID.randomUUID().toString())
                 .as(StepVerifier::create)
@@ -309,7 +309,7 @@ class R2dbcPostgresqlBookDaoTest {
                 .when(mockAuthorDao).getAuthorsByBookId(any());
 
         Mockito.doReturn(Flux.empty())
-                .when(mockTagDao).getTagsByBookId(any());
+                .when(mockBookTagDao).getTagsByBookId(any());
 
         bookDao.getBook("malformed_uuid")
                 .as(StepVerifier::create)

@@ -21,7 +21,7 @@ public abstract class Book {
 
     public abstract String getCoverPageImageId();
 
-    public abstract Set<? extends Tag> getTags();
+    public abstract Set<? extends BookTag> getTags();
 
     @Override
     public boolean equals(Object o) {
