@@ -2,10 +2,13 @@ package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 
 import com.github.sujankumarmitra.libraryservice.v1.dao.PackageDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.PackageItemDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.PackageTagDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcPackage;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcPackageItem;
+import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcPackageTag;
 import com.github.sujankumarmitra.libraryservice.v1.model.Package;
 import com.github.sujankumarmitra.libraryservice.v1.model.PackageItem;
+import com.github.sujankumarmitra.libraryservice.v1.model.PackageTag;
 import io.r2dbc.spi.Row;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -13,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple3;
 
 import java.util.List;
 import java.util.UUID;
@@ -35,6 +39,8 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
     private final DatabaseClient databaseClient;
     @NonNull
     private final PackageItemDao packageItemDao;
+    @NonNull
+    private final PackageTagDao packageTagDao;
 
     @Override
     public Mono<String> createPackage(Package _package) {
@@ -56,6 +62,11 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
                                     .createPackageItems(r2dbcPackage.getItems())
                                     .then()
                                     .thenReturn(id))
+                    .flatMap(id ->
+                            packageTagDao
+                                    .createTags(r2dbcPackage.getTags())
+                                    .then()
+                                    .thenReturn(id))
                     .map(Object::toString);
         });
     }
@@ -64,6 +75,8 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
         aPackage.setId(packageId);
         aPackage.getItems()
                 .forEach(packageItem -> packageItem.setPackageId(packageId));
+        aPackage.getTags()
+                .forEach(tag -> tag.setPackageId(packageId));
     }
 
     @Override
@@ -90,14 +103,27 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
                     .getPackageItemsByPackageId(packageId)
                     .collectList();
 
-            return Mono.zip(_packageMono, packageItemsMono, this::assemblePackage);
+            Mono<List<PackageTag>> packageTagsMono = packageTagDao
+                    .getTagsByPackageId(packageId)
+                    .collectList();
+
+            return Mono.zip(_packageMono, packageItemsMono, packageTagsMono)
+                    .map(this::assemblePackage);
         });
 
     }
 
-    private Package assemblePackage(R2dbcPackage _package, List<PackageItem> packageItems) {
+    private Package assemblePackage(Tuple3<R2dbcPackage, List<PackageItem>, List<PackageTag>> tuple) {
+        R2dbcPackage _package = tuple.getT1();
+        List<PackageItem> packageItems = tuple.getT2();
+        List<PackageTag> packageTags = tuple.getT3();
+
         for (PackageItem item : packageItems) {
             _package.getItems().add(new R2dbcPackageItem(item));
+        }
+
+        for (PackageTag tag : packageTags) {
+            _package.getTags().add(new R2dbcPackageTag(tag));
         }
         return _package;
     }
@@ -135,8 +161,10 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
                     .bind("$2", uuid)
                     .fetch()
                     .rowsUpdated()
-                    .then(Mono.justOrEmpty(_package.getItems())
-                            .flatMap(packageItemDao::updatePackageItems));
+                    .then(Mono.justOrEmpty(_package.getItems()))
+                    .flatMap(packageItemDao::updatePackageItems)
+                    .then(Mono.justOrEmpty(_package.getTags()))
+                    .flatMap(packageTagDao::updateTags);
         });
     }
 
@@ -156,6 +184,8 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
             }
             return packageItemDao
                     .deletePackageItemsByPackageId(packageId)
+                    .thenReturn(packageId)
+                    .flatMap(packageTagDao::deleteTagsByPackageId)
                     .then(this.databaseClient
                             .sql(DELETE_STATEMENT)
                             .bind("$1", uuid)
