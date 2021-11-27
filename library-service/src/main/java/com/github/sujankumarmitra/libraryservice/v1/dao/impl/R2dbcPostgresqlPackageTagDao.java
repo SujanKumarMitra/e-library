@@ -15,6 +15,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -41,6 +42,7 @@ public class R2dbcPostgresqlPackageTagDao implements PackageTagDao {
     private final DatabaseClient databaseClient;
 
     @Override
+    @Transactional
     public Flux<String> createTags(Collection<? extends PackageTag> tags) {
         return Flux.defer(() -> {
             if (tags == null) {
@@ -84,6 +86,7 @@ public class R2dbcPostgresqlPackageTagDao implements PackageTagDao {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Flux<PackageTag> getTagsByPackageId(String packageId) {
         return Flux.defer(() -> {
             if (packageId == null) {
@@ -108,6 +111,7 @@ public class R2dbcPostgresqlPackageTagDao implements PackageTagDao {
     }
 
     @Override
+    @Transactional
     public Mono<Void> updateTags(Collection<? extends PackageTag> tags) {
         return Mono.defer(() -> {
             if (tags == null) {
@@ -140,6 +144,7 @@ public class R2dbcPostgresqlPackageTagDao implements PackageTagDao {
     }
 
     @Override
+    @Transactional
     public Mono<Void> deleteTagsByPackageId(String packageId) {
         return Mono.defer(() -> {
             if (packageId == null) {

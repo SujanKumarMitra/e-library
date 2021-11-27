@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.r2dbc.core.DatabaseClient.GenericExecuteSpec;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple3;
 
@@ -64,6 +65,7 @@ public class R2dbcPostgresqlBookDao implements BookDao {
     }
 
     @Override
+    @Transactional
     public Mono<String> createBook(Book book) {
         return Mono.defer(() -> {
             if (book == null) {
@@ -103,6 +105,7 @@ public class R2dbcPostgresqlBookDao implements BookDao {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Mono<Book> getBook(String bookId) {
         return Mono.defer(() -> {
             if (bookId == null) {
@@ -141,6 +144,7 @@ public class R2dbcPostgresqlBookDao implements BookDao {
     }
 
     @Override
+    @Transactional
     public Mono<Void> updateBook(Book book) {
         return Mono.defer(() -> {
             if (book == null) {
@@ -250,6 +254,7 @@ public class R2dbcPostgresqlBookDao implements BookDao {
     }
 
     @Override
+    @Transactional
     public Mono<Void> deleteBook(@NonNull String bookId) {
         return Mono.defer(() -> {
             UUID uuid;

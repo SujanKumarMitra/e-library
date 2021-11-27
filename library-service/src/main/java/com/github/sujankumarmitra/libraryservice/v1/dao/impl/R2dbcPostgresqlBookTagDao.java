@@ -15,6 +15,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -41,6 +42,7 @@ public class R2dbcPostgresqlBookTagDao implements BookTagDao {
     private final DatabaseClient databaseClient;
 
     @Override
+    @Transactional
     public Flux<String> createTags(Collection<? extends BookTag> tags) {
         return Flux.defer(() -> {
             if (tags == null) {
@@ -84,6 +86,7 @@ public class R2dbcPostgresqlBookTagDao implements BookTagDao {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Flux<BookTag> getTagsByBookId(String bookId) {
         return Flux.defer(() -> {
             if (bookId == null) {
@@ -108,6 +111,7 @@ public class R2dbcPostgresqlBookTagDao implements BookTagDao {
     }
 
     @Override
+    @Transactional
     public Mono<Void> updateTags(Collection<? extends BookTag> tags) {
         return Mono.defer(() -> {
             if (tags == null) {
@@ -140,6 +144,7 @@ public class R2dbcPostgresqlBookTagDao implements BookTagDao {
     }
 
     @Override
+    @Transactional
     public Mono<Void> deleteTagsByBookId(String bookId) {
         return Mono.defer(() -> {
             if (bookId == null) {

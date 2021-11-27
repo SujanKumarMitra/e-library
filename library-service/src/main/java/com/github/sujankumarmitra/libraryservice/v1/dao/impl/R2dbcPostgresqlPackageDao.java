@@ -15,6 +15,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple3;
 
@@ -43,6 +44,7 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
     private final PackageTagDao packageTagDao;
 
     @Override
+    @Transactional
     public Mono<String> createPackage(Package _package) {
         return Mono.defer(() -> {
             if (_package == null) {
@@ -80,6 +82,7 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Mono<Package> getPackage(String packageId) {
         return Mono.defer(() -> {
             if (packageId == null) {
@@ -138,6 +141,7 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
     }
 
     @Override
+    @Transactional
     public Mono<Void> updatePackage(Package _package) {
         return Mono.defer(() -> {
             if (_package == null) {
@@ -169,6 +173,7 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
     }
 
     @Override
+    @Transactional
     public Mono<Void> deletePackage(String packageId) {
         return Mono.defer(() -> {
             if (packageId == null) {

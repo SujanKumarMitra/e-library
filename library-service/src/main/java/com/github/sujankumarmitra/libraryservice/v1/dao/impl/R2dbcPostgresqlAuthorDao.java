@@ -14,6 +14,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -39,6 +40,7 @@ public class R2dbcPostgresqlAuthorDao implements AuthorDao {
     private final DatabaseClient databaseClient;
 
     @Override
+    @Transactional
     public Flux<String> createAuthors(Collection<? extends Author> authors) {
         return Flux.defer(() -> {
             if (authors == null) {
@@ -76,6 +78,7 @@ public class R2dbcPostgresqlAuthorDao implements AuthorDao {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Flux<Author> getAuthorsByBookId(String bookId) {
         return Flux.defer(() -> {
             if (bookId == null) {
@@ -100,6 +103,7 @@ public class R2dbcPostgresqlAuthorDao implements AuthorDao {
     }
 
     @Override
+    @Transactional
     public Mono<Void> updateAuthors(Collection<? extends Author> authors) {
         return Mono.defer(() -> {
             if (authors == null) {
@@ -132,6 +136,7 @@ public class R2dbcPostgresqlAuthorDao implements AuthorDao {
     }
 
     @Override
+    @Transactional
     public Mono<Void> deleteAuthorsByBookId(String bookId) {
         return Mono.defer(() -> {
             if (bookId == null) {
