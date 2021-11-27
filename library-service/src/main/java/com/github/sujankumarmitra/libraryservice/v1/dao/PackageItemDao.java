@@ -12,12 +12,12 @@ import java.util.Collection;
  */
 public interface PackageItemDao {
 
-    Flux<String> createPackageItems(Collection<? extends PackageItem> packageItems);
+    Flux<String> createItems(Collection<? extends PackageItem> packageItems);
 
-    Flux<PackageItem> getPackageItemsByPackageId(String packageId);
+    Flux<PackageItem> getItemsByPackageId(String packageId);
 
-    Mono<Void> updatePackageItems(Collection<? extends PackageItem> tags);
+    Mono<Void> updateItems(Collection<? extends PackageItem> packageItems);
 
-    Mono<Void> deletePackageItemsByPackageId(String packageId);
+    Mono<Void> deleteItemsByPackageId(String packageId);
 
 }

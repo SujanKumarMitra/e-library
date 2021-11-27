@@ -91,7 +91,7 @@ class R2dbcPostgresqlPackageDaoTest {
         r2dbcPackage.setName("package_name");
 
         Mockito.doReturn(Flux.empty())
-                .when(mockPackageItemDao).createPackageItems(any());
+                .when(mockPackageItemDao).createItems(any());
         Mockito.doReturn(Flux.empty())
                 .when(mockPackageTagDao).createTags(any());
 
@@ -109,7 +109,7 @@ class R2dbcPostgresqlPackageDaoTest {
 
         Mockito.doReturn(Flux.empty())
                 .when(mockPackageItemDao)
-                .getPackageItemsByPackageId(any());
+                .getItemsByPackageId(any());
         Mockito.doReturn(Flux.empty())
                 .when(mockPackageTagDao)
                 .getTagsByPackageId(any());
@@ -135,7 +135,7 @@ class R2dbcPostgresqlPackageDaoTest {
     void givenNonExistingPackage_whenGet_shouldEmitComplete() {
         Mockito.doReturn(Flux.empty())
                 .when(mockPackageItemDao)
-                .getPackageItemsByPackageId(any());
+                .getItemsByPackageId(any());
 
         Mockito.doReturn(Flux.empty())
                 .when(mockPackageTagDao)
@@ -152,7 +152,7 @@ class R2dbcPostgresqlPackageDaoTest {
     void givenMalformedPackageId_whenGet_shouldEmitComplete() {
         Mockito.doReturn(Flux.empty())
                 .when(mockPackageItemDao)
-                .getPackageItemsByPackageId(any());
+                .getItemsByPackageId(any());
         Mockito.doReturn(Flux.empty())
                 .when(mockPackageTagDao)
                 .getTagsByPackageId(any());
@@ -168,7 +168,7 @@ class R2dbcPostgresqlPackageDaoTest {
     void givenValidPackage_whenUpdate_shouldUpdate() {
 
         Mockito.doReturn(Mono.empty())
-                .when(mockPackageItemDao).updatePackageItems(any());
+                .when(mockPackageItemDao).updateItems(any());
 
         Mockito.doReturn(Mono.empty())
                 .when(mockPackageTagDao).updateTags(any());
@@ -205,7 +205,7 @@ class R2dbcPostgresqlPackageDaoTest {
     void givenNonExistingPackage_whenUpdate_shouldEmitEmpty() {
 
         Mockito.doReturn(Mono.empty())
-                .when(mockPackageItemDao).updatePackageItems(any());
+                .when(mockPackageItemDao).updateItems(any());
 
         Mockito.doReturn(Mono.empty())
                 .when(mockPackageTagDao).updateTags(any());
@@ -226,7 +226,7 @@ class R2dbcPostgresqlPackageDaoTest {
     void givenPackageWithMalformedId_whenUpdate_shouldEmitEmpty() {
 
         Mockito.doReturn(Mono.empty())
-                .when(mockPackageItemDao).updatePackageItems(any());
+                .when(mockPackageItemDao).updateItems(any());
         Mockito.doReturn(Mono.empty())
                 .when(mockPackageTagDao).updateTags(any());
 
@@ -265,7 +265,7 @@ class R2dbcPostgresqlPackageDaoTest {
     void givenNonExistingPackage_whenDelete_shouldEmitComplete() {
         Mockito.doReturn(Mono.empty())
                 .when(mockPackageItemDao)
-                .deletePackageItemsByPackageId(any());
+                .deleteItemsByPackageId(any());
 
         Mockito.doReturn(Mono.empty())
                 .when(mockPackageTagDao)
@@ -282,7 +282,7 @@ class R2dbcPostgresqlPackageDaoTest {
     void givenMalformedPackageId_whenDelete_shouldEmitComplete() {
         Mockito.doReturn(Mono.empty())
                 .when(mockPackageItemDao)
-                .deletePackageItemsByPackageId(any());
+                .deleteItemsByPackageId(any());
 
         Mockito.doReturn(Mono.empty())
                 .when(mockPackageTagDao)

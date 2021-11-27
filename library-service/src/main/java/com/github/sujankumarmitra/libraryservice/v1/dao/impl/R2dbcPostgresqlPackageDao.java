@@ -61,7 +61,7 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
                     .doOnSuccess(id -> setPackageIds(id, r2dbcPackage))
                     .flatMap(id ->
                             packageItemDao
-                                    .createPackageItems(r2dbcPackage.getItems())
+                                    .createItems(r2dbcPackage.getItems())
                                     .then()
                                     .thenReturn(id))
                     .flatMap(id ->
@@ -103,7 +103,7 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
                     .one();
 
             Mono<List<PackageItem>> packageItemsMono = packageItemDao
-                    .getPackageItemsByPackageId(packageId)
+                    .getItemsByPackageId(packageId)
                     .collectList();
 
             Mono<List<PackageTag>> packageTagsMono = packageTagDao
@@ -166,7 +166,7 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
                     .fetch()
                     .rowsUpdated()
                     .then(Mono.justOrEmpty(_package.getItems()))
-                    .flatMap(packageItemDao::updatePackageItems)
+                    .flatMap(packageItemDao::updateItems)
                     .then(Mono.justOrEmpty(_package.getTags()))
                     .flatMap(packageTagDao::updateTags);
         });
@@ -188,7 +188,7 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
                 return Mono.empty();
             }
             return packageItemDao
-                    .deletePackageItemsByPackageId(packageId)
+                    .deleteItemsByPackageId(packageId)
                     .thenReturn(packageId)
                     .flatMap(packageTagDao::deleteTagsByPackageId)
                     .then(this.databaseClient
