@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
@@ -35,7 +36,9 @@ import static org.mockito.ArgumentMatchers.anySet;
 class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDependentTest {
 
     private R2dbcPostgresqlBookDao bookDao;
+    @Mock
     private BookTagDao mockBookTagDao = null;
+    @Mock
     private AuthorDao mockAuthorDao = null;
     @Autowired
     private R2dbcEntityTemplate entityTemplate = null;
@@ -44,9 +47,6 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
 
     @BeforeEach
     void setUp() {
-        mockAuthorDao = Mockito.mock(AuthorDao.class);
-        mockBookTagDao = Mockito.mock(BookTagDao.class);
-
         Mockito.doReturn(Flux.empty())
                 .when(mockAuthorDao).createAuthors(anySet());
 
