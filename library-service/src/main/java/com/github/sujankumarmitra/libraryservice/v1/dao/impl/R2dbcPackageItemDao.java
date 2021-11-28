@@ -50,7 +50,7 @@ public class R2dbcPackageItemDao implements PackageItemDao {
 
             return this.databaseClient.inConnectionMany(connection ->
                             prepareAndExecuteStatement(packageItems, connection))
-                    .flatMap(result -> result.map(((row, rowMetadata) -> row.get("id", UUID.class))))
+                    .flatMapSequential(result -> result.map(((row, rowMetadata) -> row.get("id", UUID.class))))
                     .doOnNext(insertedId -> log.debug("inserted package item id:: {}", insertedId))
                     .map(Object::toString)
                     .onErrorMap(R2dbcDataIntegrityViolationException.class, this::translateException);

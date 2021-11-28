@@ -67,7 +67,7 @@ public class R2dbcPostgresqlAuthorDao implements AuthorDao {
 
                         return Flux.from(statement.execute());
                     })
-                    .flatMap(result -> result.map((row, rowMetadata) -> row.get("id", UUID.class)))
+                    .flatMapSequential(result -> result.map((row, rowMetadata) -> row.get("id", UUID.class)))
                     .onErrorMap(R2dbcDataIntegrityViolationException.class, err -> {
                         log.debug("DB integrity error {}", err.getMessage());
                         return new BookNotFoundException(
