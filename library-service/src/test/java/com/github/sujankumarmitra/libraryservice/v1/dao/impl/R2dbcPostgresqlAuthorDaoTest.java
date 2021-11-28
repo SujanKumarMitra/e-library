@@ -9,13 +9,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.r2dbc.DataR2dbcTest;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
@@ -28,17 +22,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author skmitra
  * @since Nov 23/11/21, 2021
  */
-@DataR2dbcTest
-@Testcontainers
 @Slf4j
-class R2dbcPostgresqlAuthorDaoTest {
+class R2dbcPostgresqlAuthorDaoTest extends AbstractDataR2dbcPostgreSQLContainerDependentTest {
 
     private R2dbcPostgresqlAuthorDao authorDao = null;
     @Autowired
     private R2dbcEntityTemplate entityTemplate = null;
-
-    @Container
-    private static final PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres");
 
     @BeforeEach
     void setUp() {
@@ -59,17 +48,6 @@ class R2dbcPostgresqlAuthorDaoTest {
                 .all()
                 .block();
     }
-
-    @DynamicPropertySource
-    static void registerDynamicProperties(DynamicPropertyRegistry registry) {
-
-        registry.add("spring.r2dbc.url", () ->
-                postgreSQLContainer.getJdbcUrl().replace("jdbc", "r2dbc"));
-        registry.add("spring.r2dbc.username", postgreSQLContainer::getUsername);
-        registry.add("spring.r2dbc.password", postgreSQLContainer::getPassword);
-
-    }
-
 
     @Test
     void givenValidBookId_whenInsert_ShouldInsert() {

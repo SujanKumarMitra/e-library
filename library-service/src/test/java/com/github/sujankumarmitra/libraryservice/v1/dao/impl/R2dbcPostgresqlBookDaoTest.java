@@ -15,13 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.r2dbc.DataR2dbcTest;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -37,10 +31,8 @@ import static org.mockito.ArgumentMatchers.anySet;
  * @author skmitra
  * @since Nov 22/11/21, 2021
  */
-@DataR2dbcTest
-@Testcontainers
 @Slf4j
-class R2dbcPostgresqlBookDaoTest {
+class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDependentTest {
 
     private R2dbcPostgresqlBookDao bookDao;
     private BookTagDao mockBookTagDao = null;
@@ -49,19 +41,6 @@ class R2dbcPostgresqlBookDaoTest {
     private R2dbcEntityTemplate entityTemplate = null;
 
     private final Faker faker = new Faker();
-
-    @Container
-    private static final PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres");
-
-    @DynamicPropertySource
-    static void registerDynamicProperties(DynamicPropertyRegistry registry) {
-
-        registry.add("spring.r2dbc.url", () ->
-                postgreSQLContainer.getJdbcUrl().replace("jdbc", "r2dbc"));
-        registry.add("spring.r2dbc.username", postgreSQLContainer::getUsername);
-        registry.add("spring.r2dbc.password", postgreSQLContainer::getPassword);
-
-    }
 
     @BeforeEach
     void setUp() {
