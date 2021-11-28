@@ -218,7 +218,7 @@ class R2dbcPostgresqlAuthorDaoTest {
                 .insertDummyBook(entityTemplate.getDatabaseClient())
                 .doOnSuccess(book -> authors.forEach(author -> author.setBookId(book.getUuid())))
                 .thenMany(Flux.fromIterable(authors))
-                .flatMap(author -> entityTemplate
+                .flatMapSequential(author -> entityTemplate
                         .getDatabaseClient()
                         .sql(R2dbcPostgresqlAuthorDao.INSERT_STATEMENT)
                         .bind("$1", author.getBookUuid())

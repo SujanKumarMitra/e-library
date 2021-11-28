@@ -1,0 +1,389 @@
+package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
+
+import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBook;
+import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcPackage;
+import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcPackageItem;
+import com.github.sujankumarmitra.libraryservice.v1.exception.BookNotFoundException;
+import com.github.sujankumarmitra.libraryservice.v1.exception.PackageNotFoundException;
+import com.github.sujankumarmitra.libraryservice.v1.model.PackageItem;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.data.r2dbc.DataR2dbcTest;
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+import reactor.util.function.Tuples;
+
+import java.util.*;
+
+import static org.assertj.core.api.Assertions.as;
+import static org.assertj.core.api.Assertions.assertThat;
+
+/**
+ * @author skmitra
+ * @since Nov 28/11/21, 2021
+ */
+@DataR2dbcTest
+@Testcontainers
+@Slf4j
+class R2dbcPackageItemDaoTest {
+
+    private R2dbcPackageItemDao packageItemDao;
+    @Autowired
+    private R2dbcEntityTemplate entityTemplate = null;
+
+    @Container
+    private static final PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres");
+
+    @DynamicPropertySource
+    static void registerDynamicProperties(DynamicPropertyRegistry registry) {
+
+        registry.add("spring.r2dbc.url", () ->
+                postgreSQLContainer.getJdbcUrl().replace("jdbc", "r2dbc"));
+        registry.add("spring.r2dbc.username", postgreSQLContainer::getUsername);
+        registry.add("spring.r2dbc.password", postgreSQLContainer::getPassword);
+
+    }
+
+    @BeforeEach
+    void setUp() {
+        packageItemDao = new R2dbcPackageItemDao(entityTemplate.getDatabaseClient());
+    }
+
+    @AfterEach
+    void tearDown() {
+        entityTemplate
+                .delete(R2dbcPackageItemDao.class)
+                .from("package_items")
+                .all()
+                .block();
+
+        entityTemplate
+                .delete(R2dbcPackage.class)
+                .from("packages")
+                .all()
+                .block();
+
+        entityTemplate
+                .delete(R2dbcBook.class)
+                .from("books")
+                .all()
+                .block();
+    }
+
+
+    @Test
+    void givenValidPackageItem_whenCreate_shouldCreate() {
+        R2dbcPackageItem expectedItem = new R2dbcPackageItem();
+
+        BookDaoTestUtils
+                .insertDummyBook(entityTemplate.getDatabaseClient())
+                .doOnSuccess(book -> expectedItem.setBookId(book.getUuid()))
+                .thenReturn(entityTemplate.getDatabaseClient())
+                .flatMap(PackageDaoTestUtils::insertDummyPackage)
+                .doOnSuccess(aPackage -> expectedItem.setPackageId(aPackage.getUuid()))
+                .thenReturn(expectedItem)
+                .map(Collections::singleton)
+                .flatMapMany(packageItemDao::createItems)
+                .next()
+                .doOnSuccess(id -> expectedItem.setId(UUID.fromString(id)))
+                .then(entityTemplate
+                        .select(R2dbcPackageItem.class)
+                        .from("package_items")
+                        .one())
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .consumeNextWith(actualItem -> {
+                    log.info("Expected {}", expectedItem);
+                    log.info("Actual {}", actualItem);
+
+                    assertThat(actualItem).isEqualTo(expectedItem);
+                })
+                .verifyComplete();
+    }
+
+
+    @Test
+    void givenNonExistingPackage_whenCreate_shouldEmitPackageNotFoundException() {
+        R2dbcPackageItem expectedItem = new R2dbcPackageItem();
+        expectedItem.setPackageId(UUID.randomUUID());
+
+        BookDaoTestUtils
+                .insertDummyBook(entityTemplate.getDatabaseClient())
+                .doOnSuccess(book -> expectedItem.setBookId(book.getUuid()))
+                .thenReturn(expectedItem)
+                .map(Collections::singleton)
+                .flatMapMany(packageItemDao::createItems)
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectError(PackageNotFoundException.class)
+                .verify();
+    }
+
+    @Test
+    void givenMalformedPackageId_whenCreate_shouldEmitPackageNotFoundException() {
+        Collection<PackageItem> packageItems = Collections.singleton(new PackageItem() {
+            @Override
+            public String getId() {
+                return null;
+            }
+
+            @Override
+            public String getPackageId() {
+                return "malformed";
+            }
+
+            @Override
+            public String getBookId() {
+                return UUID.randomUUID().toString();
+            }
+        });
+
+        Mono.just(packageItems)
+                .flatMapMany(packageItemDao::createItems)
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectError(PackageNotFoundException.class)
+                .verify();
+    }
+
+    @Test
+    void givenMalformedBookId_whenCreate_shouldEmitBookNotFoundException() {
+        Collection<PackageItem> packageItems = Collections.singleton(new PackageItem() {
+            @Override
+            public String getId() {
+                return null;
+            }
+
+            @Override
+            public String getPackageId() {
+                return UUID.randomUUID().toString();
+            }
+
+            @Override
+            public String getBookId() {
+                return "malformed_uuid";
+            }
+        });
+
+        Mono.just(packageItems)
+                .flatMapMany(packageItemDao::createItems)
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectError(BookNotFoundException.class)
+                .verify();
+    }
+
+    @Test
+    void givenNonExistingBook_whenCreate_shouldEmitBookNotFoundException() {
+        R2dbcPackageItem expectedItem = new R2dbcPackageItem();
+        expectedItem.setBookId(UUID.randomUUID());
+
+        PackageDaoTestUtils
+                .insertDummyPackage(entityTemplate.getDatabaseClient())
+                .doOnSuccess(aPackage -> expectedItem.setPackageId(aPackage.getUuid()))
+                .thenReturn(expectedItem)
+                .map(Collections::singleton)
+                .flatMapMany(packageItemDao::createItems)
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectError(BookNotFoundException.class)
+                .verify();
+    }
+
+    @Test
+    void givenValidPackageId_whenSelect_shouldSelect() {
+
+        Mono<UUID> bookIdMono = BookDaoTestUtils
+                .insertDummyBook(entityTemplate.getDatabaseClient())
+                .map(R2dbcBook::getUuid);
+
+        Mono<UUID> packageIdMono = PackageDaoTestUtils
+                .insertDummyPackage(entityTemplate.getDatabaseClient())
+                .map(R2dbcPackage::getUuid);
+
+        Mono.zip(packageIdMono, bookIdMono, Tuples::of)
+                .flatMap(tuple2 ->
+                        entityTemplate.getDatabaseClient()
+                                .sql(R2dbcPackageItemDao.INSERT_STATEMENT)
+                                .bind("$1", tuple2.getT1())
+                                .bind("$2", tuple2.getT2())
+                                .map(row -> row.get("id", UUID.class))
+                                .one()
+                                .thenReturn(tuple2.getT1()))
+                .map(Object::toString)
+                .flatMapMany(packageItemDao::getItemsByPackageId)
+                .doOnNext(item -> log.info("fetched item {}", item))
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectNextCount(1L)
+                .verifyComplete();
+
+
+    }
+
+    @Test
+    void givenNonExistingPackageId_whenSelect_shouldEmitEmptyFlux() {
+        packageItemDao
+                .getItemsByPackageId(UUID.randomUUID().toString())
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectNextCount(0L)
+                .verifyComplete();
+    }
+
+    @Test
+    void givenMalformedPackageUuid_whenSelect_shouldEmitEmptyFlux() {
+        packageItemDao
+                .getItemsByPackageId("malformed")
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectNextCount(0L)
+                .verifyComplete();
+    }
+
+    @Test
+    void givenValidPackageId_whenUpdate_shouldUpdate() {
+        R2dbcPackage aPackage = PackageDaoTestUtils
+                .insertDummyPackage(entityTemplate.getDatabaseClient())
+                .block();
+
+        List<R2dbcBook> books = new ArrayList<>();
+
+        for (int i = 1; i <= 2; i++) {
+            BookDaoTestUtils
+                    .insertDummyBook(entityTemplate.getDatabaseClient())
+                    .doOnSuccess(books::add)
+                    .block();
+        }
+
+        R2dbcPackageItem previousItem = new R2dbcPackageItem();
+        previousItem.setPackageId(aPackage.getUuid());
+        previousItem.setBookId(books.get(0).getUuid());
+
+        entityTemplate
+                .getDatabaseClient()
+                .sql(R2dbcPackageItemDao.INSERT_STATEMENT)
+                .bind("$1", previousItem.getPackageUuid())
+                .bind("$2", previousItem.getBookUuid())
+                .map(row -> row.get("id",UUID.class))
+                .one()
+                .doOnSuccess(previousItem::setId)
+                .block();
+
+
+        previousItem.setBookId(books.get(1).getUuid());
+
+        Mono.just(previousItem)
+                .map(Collections::singleton)
+                .flatMap(packageItemDao::updateItems)
+                .then(entityTemplate
+                        .select(R2dbcPackageItem.class)
+                        .from("package_items")
+                        .one())
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .consumeNextWith(actualItem -> {
+                    log.info("Expected {}", previousItem);
+                    log.info("Actual {}", actualItem);
+
+                    assertThat(actualItem).isEqualTo(previousItem);
+                })
+                .verifyComplete();
+
+    }
+
+    @Test
+    void givenNonExistingPackageId_whenUpdate_shouldEmitPackageNotFoundException() {
+        R2dbcPackage aPackage = PackageDaoTestUtils
+                .insertDummyPackage(entityTemplate.getDatabaseClient())
+                .block();
+
+        R2dbcBook book =BookDaoTestUtils
+                .insertDummyBook(entityTemplate.getDatabaseClient())
+                .block();
+
+        R2dbcPackageItem previousItem = new R2dbcPackageItem();
+        previousItem.setPackageId(aPackage.getUuid());
+        previousItem.setBookId(book.getUuid());
+
+        entityTemplate
+                .getDatabaseClient()
+                .sql(R2dbcPackageItemDao.INSERT_STATEMENT)
+                .bind("$1", previousItem.getPackageUuid())
+                .bind("$2", previousItem.getBookUuid())
+                .map(row -> row.get("id",UUID.class))
+                .one()
+                .doOnSuccess(previousItem::setId)
+                .block();
+
+
+        previousItem.setPackageId(UUID.randomUUID());
+
+        Mono.just(previousItem)
+                .map(Collections::singleton)
+                .flatMap(packageItemDao::updateItems)
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectError(PackageNotFoundException.class)
+                .verify();
+    }
+
+    @Test
+    void givenValidPackageId_whenDelete_shouldDelete() {
+        Mono<UUID> bookIdMono = BookDaoTestUtils
+                .insertDummyBook(entityTemplate.getDatabaseClient())
+                .map(R2dbcBook::getUuid);
+
+        Mono<UUID> packageIdMono = PackageDaoTestUtils
+                .insertDummyPackage(entityTemplate.getDatabaseClient())
+                .map(R2dbcPackage::getUuid);
+
+        Mono.zip(packageIdMono, bookIdMono, Tuples::of)
+                .flatMap(tuple2 ->
+                        entityTemplate.getDatabaseClient()
+                                .sql(R2dbcPackageItemDao.INSERT_STATEMENT)
+                                .bind("$1", tuple2.getT1())
+                                .bind("$2", tuple2.getT2())
+                                .map(row -> row.get("id", UUID.class))
+                                .one()
+                                .thenReturn(tuple2.getT1()))
+                .map(Object::toString)
+                .flatMapMany(packageItemDao::deleteItemsByPackageId)
+                .thenMany(entityTemplate
+                        .select(R2dbcPackageItem.class)
+                        .from("package_items")
+                        .all())
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectNextCount(0L)
+                .verifyComplete();
+    }
+
+    @Test
+    void givenNonExistingPackageId_whenDelete_shouldEmitEmpty() {
+        packageItemDao
+                .deleteItemsByPackageId(UUID.randomUUID().toString())
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .verifyComplete();
+    }
+
+    @Test
+    void givenMalformedPackageUuid_whenDelete_shouldEmitEmpty() {
+        packageItemDao
+                .deleteItemsByPackageId("malformed")
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .verifyComplete();
+    }
+
+}

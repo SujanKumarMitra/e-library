@@ -233,8 +233,18 @@ class R2dbcPostgresqlBookTagDaoTest {
 
         tagDao.updateTags(tagsToUpdate)
                 .thenMany(entityTemplate
-                        .select(R2dbcBookTag.class)
-                        .from("book_tags")
+                        .getDatabaseClient()
+                        .sql("SELECT * from book_tags")
+                        .map(row -> {
+                            R2dbcBookTag bookTag = new R2dbcBookTag();
+
+                            bookTag.setId(row.get("id", UUID.class));
+                            bookTag.setBookId(row.get("book_id", UUID.class));
+                            bookTag.setKey(row.get("key", String.class));
+                            bookTag.setValue(row.get("value", String.class));
+
+                            return bookTag;
+                        })
                         .all())
                 .collect(Collectors.toSet())
                 .as(StepVerifier::create)
@@ -253,7 +263,7 @@ class R2dbcPostgresqlBookTagDaoTest {
                 .insertDummyBook(entityTemplate.getDatabaseClient())
                 .doOnSuccess(book -> tags.forEach(tag -> tag.setBookId(book.getUuid())))
                 .thenMany(Flux.fromIterable(tags))
-                .flatMap(author -> entityTemplate
+                .flatMapSequential(author -> entityTemplate
                         .getDatabaseClient()
                         .sql(R2dbcPostgresqlBookTagDao.INSERT_STATEMENT)
                         .bind("$1", author.getBookUuid())

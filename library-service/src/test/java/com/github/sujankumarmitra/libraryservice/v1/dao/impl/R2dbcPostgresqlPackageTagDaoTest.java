@@ -253,7 +253,7 @@ class R2dbcPostgresqlPackageTagDaoTest {
                 .insertDummyPackage(entityTemplate.getDatabaseClient())
                 .doOnSuccess(book -> tags.forEach(tag -> tag.setPackageId(book.getUuid())))
                 .thenMany(Flux.fromIterable(tags))
-                .flatMap(author -> entityTemplate
+                .flatMapSequential(author -> entityTemplate
                         .getDatabaseClient()
                         .sql(R2dbcPostgresqlPackageTagDao.INSERT_STATEMENT)
                         .bind("$1", author.getPackageUuid())

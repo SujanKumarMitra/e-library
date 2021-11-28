@@ -31,6 +31,18 @@ public final class R2dbcPackageItem extends PackageItem {
         return nullableToString(id);
     }
 
+    public UUID getUuid() {
+        return id;
+    }
+
+    public UUID getPackageUuid() {
+        return packageId;
+    }
+
+    public UUID getBookUuid() {
+        return bookId;
+    }
+
     @Override
     public String getPackageId() {
         return nullableToString(packageId);
