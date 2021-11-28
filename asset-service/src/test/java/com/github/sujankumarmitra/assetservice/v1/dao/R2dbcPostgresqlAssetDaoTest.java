@@ -1,51 +1,29 @@
 package com.github.sujankumarmitra.assetservice.v1.dao;
 
 import com.github.javafaker.Faker;
-import com.github.sujankumarmitra.assetservice.TestcontainersExtension;
 import com.github.sujankumarmitra.assetservice.v1.controller.dto.CreateAssetRequest;
 import com.github.sujankumarmitra.assetservice.v1.model.Asset;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.r2dbc.DataR2dbcTest;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.PostgreSQLContainer;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
  * @author skmitra
  * @since Nov 16/11/21, 2021
  */
-@DataR2dbcTest
-@ExtendWith(TestcontainersExtension.class)
-public class R2dbcPostgresqlAssetDaoTest {
+@Slf4j
+class R2dbcPostgresqlAssetDaoTest extends AbstractDataR2dbcPostgreSQLContainerDependentTest{
 
     private R2dbcPostgresqlAssetDao assetDao;
     @Autowired
     private R2dbcEntityTemplate entityTemplate = null;
-
-    private static PostgreSQLContainer<?> container = new PostgreSQLContainer("postgres");
-
-    public static List<? extends GenericContainer<?>> getManagedContainers() {
-        return List.of(container);
-    }
-
-    @DynamicPropertySource
-    static void registerR2dbcProps(DynamicPropertyRegistry registry) {
-        registry.add("spring.r2dbc.url", () -> container.getJdbcUrl()
-                .replace("jdbc", "r2dbc"));
-        registry.add("spring.r2dbc.username", container::getUsername);
-        registry.add("spring.r2dbc.password", container::getPassword);
-    }
 
     @BeforeEach
     void setUp() {
@@ -72,8 +50,8 @@ public class R2dbcPostgresqlAssetDaoTest {
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .consumeNextWith(savedAsset -> {
-                    System.out.println(savedAsset);
-                    System.out.println("Saved Asset Id" + savedAsset.getId());
+                    log.info("{}", savedAsset);
+                    log.info("Saved Asset Id" + savedAsset.getId());
                 })
                 .verifyComplete();
 
@@ -97,7 +75,7 @@ public class R2dbcPostgresqlAssetDaoTest {
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .expectNextMatches(asset -> {
-                    System.out.println(asset);
+                    log.info("{}", asset);
                     return asset.getId().equals(id.toString()) &&
                             asset.getName().equals(name);
                 })
