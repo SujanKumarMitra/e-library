@@ -8,15 +8,3 @@ services:
       POSTGRES_DB: "asset_service_db"
     ports:
       - "5432:5432"
-  pgadmin:
-    image: "dpage/pgadmin4"
-    depends_on:
-      - "postgres"
-    volumes:
-      - "/home/skmitra/Docker/volumes/pgadmin:/var/lib/pgadmin"
-    environment:
-      PGADMIN_DEFAULT_EMAIL: "pgadmin_user@email.com"
-      PGADMIN_DEFAULT_PASSWORD: "pgadmin_password"
-    ports:
-      - "5433:80"
-
