@@ -1,8 +1,8 @@
 package com.github.sujankumarmitra.libraryservice.v1.controller;
 
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.ErrorResponse;
-import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.OpenApiCreateBookTagRequest;
-import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.OpenApiUpdateBookTagRequest;
+import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.CreateBookTagRequestSchema;
+import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.UpdateBookTagRequestSchema;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -53,7 +53,7 @@ public class BookTagController {
     )
     @PostMapping
     public Mono<ResponseEntity<Void>> createTag(@PathVariable("bookId") String bookId,
-                                               @RequestBody OpenApiCreateBookTagRequest request) {
+                                               @RequestBody CreateBookTagRequestSchema request) {
         return Mono.empty();
     }
 
@@ -76,7 +76,7 @@ public class BookTagController {
     )
     @PatchMapping(path = "/{tagId}", consumes = {"application/merge-patch+json", "application/json"})
     public Mono<ResponseEntity<Void>> updateTag(@PathVariable("tagId") String tagId,
-                                                @RequestBody OpenApiUpdateBookTagRequest request) {
+                                                @RequestBody UpdateBookTagRequestSchema request) {
         return Mono.empty();
     }
 

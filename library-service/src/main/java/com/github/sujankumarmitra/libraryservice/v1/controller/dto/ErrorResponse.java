@@ -13,7 +13,7 @@ import java.util.Collection;
  */
 @Data
 @Schema(
-        name = "ErrorResponse",
+        name = "ErrorResponseSchema",
         description = "Response body in case any error occurs"
 )
 public class ErrorResponse {

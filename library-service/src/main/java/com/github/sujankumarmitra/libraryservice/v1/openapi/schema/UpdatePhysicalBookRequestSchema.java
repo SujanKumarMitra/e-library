@@ -1,18 +1,15 @@
 package com.github.sujankumarmitra.libraryservice.v1.openapi.schema;
 
-import com.github.sujankumarmitra.libraryservice.v1.model.EBookSegment;
-import com.github.sujankumarmitra.libraryservice.v1.model.Ebook;
+import com.github.sujankumarmitra.libraryservice.v1.model.PhysicalBook;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import java.util.List;
 import java.util.Set;
 
 /**
  * @author skmitra
  * @since Nov 29/11/21, 2021
  */
-@Schema(name = "UpdateEBookRequest")
-public class OpenApiUpdateEBookRequest extends Ebook {
+public class UpdatePhysicalBookRequestSchema extends PhysicalBook {
 
 
     @Override
@@ -27,7 +24,7 @@ public class OpenApiUpdateEBookRequest extends Ebook {
     }
 
     @Override
-    public Set<OpenApiUpdateAuthor> getAuthors() {
+    public Set<UpdateAuthorSchema> getAuthors() {
         return null;
     }
 
@@ -47,13 +44,17 @@ public class OpenApiUpdateEBookRequest extends Ebook {
     }
 
     @Override
-    public Set<OpenApiUpdateBookTag> getTags() {
+    public Set<UpdateBookTagSchema> getTags() {
         return null;
     }
 
     @Override
-    @Schema(hidden = true)
-    public List<EBookSegment> getSegments() {
+    public long getCopiesAvailable() {
+        return 0;
+    }
+
+    @Override
+    public MoneySchema getFinePerDay() {
         return null;
     }
 }

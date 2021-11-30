@@ -1,8 +1,8 @@
 package com.github.sujankumarmitra.libraryservice.v1.controller;
 
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.ErrorResponse;
-import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.OpenApiCreatePackageRequest;
-import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.OpenApiUpdatePackageRequest;
+import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.CreatePackageRequestSchema;
+import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.UpdatePackageRequestSchema;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -50,7 +50,7 @@ public class PackageController {
             }
     )
     @PostMapping
-    public Mono<ResponseEntity<Void>> createPackage(@RequestBody OpenApiCreatePackageRequest request) {
+    public Mono<ResponseEntity<Void>> createPackage(@RequestBody CreatePackageRequestSchema request) {
         return Mono.empty();
     }
 
@@ -73,7 +73,7 @@ public class PackageController {
     )
     @PatchMapping(path = "/{packageId}",  consumes = {"application/merge-patch+json", "application/json"})
     public Mono<ResponseEntity<Void>> updatePackage(@PathVariable("bookId") String bookId,
-                                                    @RequestBody OpenApiUpdatePackageRequest request) {
+                                                    @RequestBody UpdatePackageRequestSchema request) {
         return Mono.empty();
     }
 

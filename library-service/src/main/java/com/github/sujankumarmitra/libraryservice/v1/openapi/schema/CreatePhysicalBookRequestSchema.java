@@ -1,6 +1,5 @@
 package com.github.sujankumarmitra.libraryservice.v1.openapi.schema;
 
-import com.github.sujankumarmitra.libraryservice.v1.model.Money;
 import com.github.sujankumarmitra.libraryservice.v1.model.PhysicalBook;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -10,12 +9,9 @@ import java.util.Set;
  * @author skmitra
  * @since Nov 29/11/21, 2021
  */
-@Schema(name = "UpdatePhysicalBookRequest")
-public class OpenApiUpdatePhysicalBookRequest extends PhysicalBook {
-
-
-    @Override
+public class CreatePhysicalBookRequestSchema extends PhysicalBook {
     @Schema(hidden = true)
+    @Override
     public String getId() {
         return null;
     }
@@ -26,7 +22,7 @@ public class OpenApiUpdatePhysicalBookRequest extends PhysicalBook {
     }
 
     @Override
-    public Set<OpenApiUpdateAuthor> getAuthors() {
+    public Set<CreateAuthorSchema> getAuthors() {
         return null;
     }
 
@@ -46,7 +42,7 @@ public class OpenApiUpdatePhysicalBookRequest extends PhysicalBook {
     }
 
     @Override
-    public Set<OpenApiUpdateBookTag> getTags() {
+    public Set<CreateBookTagSchema> getTags() {
         return null;
     }
 
@@ -56,7 +52,7 @@ public class OpenApiUpdatePhysicalBookRequest extends PhysicalBook {
     }
 
     @Override
-    public Money getFinePerDay() {
+    public MoneySchema getFinePerDay() {
         return null;
     }
 }

@@ -1,14 +1,19 @@
 package com.github.sujankumarmitra.libraryservice.v1.openapi.schema;
 
-import com.github.sujankumarmitra.libraryservice.v1.model.Author;
+import com.github.sujankumarmitra.libraryservice.v1.model.PackageTag;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * @author skmitra
  * @since Nov 29/11/21, 2021
  */
-@Schema(name = "UpdateBookAuthorRequest")
-public class OpenApiUpdateBookAuthorRequest extends Author {
+public class CreatePackageTagSchema extends PackageTag {
+    @Override
+    @Schema(hidden = true)
+    public String getPackageId() {
+        return null;
+    }
+
     @Override
     @Schema(hidden = true)
     public String getId() {
@@ -16,13 +21,12 @@ public class OpenApiUpdateBookAuthorRequest extends Author {
     }
 
     @Override
-    @Schema(hidden = true)
-    public String getBookId() {
+    public String getKey() {
         return null;
     }
 
     @Override
-    public String getName() {
+    public String getValue() {
         return null;
     }
 }

@@ -7,8 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * @author skmitra
  * @since Nov 29/11/21, 2021
  */
-@Schema(name = "CreateBookTagRequest")
-public class OpenApiCreateBookTagRequest extends BookTag {
+public class UpdateBookTagRequestSchema extends BookTag {
     @Override
     @Schema(hidden = true)
     public String getId() {

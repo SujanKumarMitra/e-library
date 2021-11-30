@@ -7,8 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * @author skmitra
  * @since Nov 29/11/21, 2021
  */
-@Schema(name = "CreatePackageItemRequest")
-public class OpenApiCreatePackageItemRequest extends PackageItem {
+public class CreatePackageItemSchema extends PackageItem {
     @Override
     @Schema(hidden = true)
     public String getId() {
@@ -16,6 +15,7 @@ public class OpenApiCreatePackageItemRequest extends PackageItem {
     }
 
     @Override
+    @Schema(hidden = true)
     public String getPackageId() {
         return null;
     }

@@ -11,8 +11,7 @@ import java.util.Set;
  * @author skmitra
  * @since Nov 29/11/21, 2021
  */
-@Schema(name = "CreateEBookRequest")
-public class OpenApiCreateEBookRequest extends Ebook {
+public class CreateEBookRequestSchema extends Ebook {
     @Schema(hidden = true)
     @Override
     public String getId() {
@@ -25,7 +24,7 @@ public class OpenApiCreateEBookRequest extends Ebook {
     }
 
     @Override
-    public Set<OpenApiCreateAuthor> getAuthors() {
+    public Set<CreateAuthorSchema> getAuthors() {
         return null;
     }
 
@@ -45,7 +44,7 @@ public class OpenApiCreateEBookRequest extends Ebook {
     }
 
     @Override
-    public Set<OpenApiCreateBookTag> getTags() {
+    public Set<CreateBookTagSchema> getTags() {
         return null;
     }
 

@@ -7,7 +7,7 @@ import lombok.Getter;
  * @since Nov 30/11/21, 2021
  */
 @Getter
-public enum OpenApiBookType {
+public enum BookTypeSchema {
 
     PHYSICAL_BOOK,
 

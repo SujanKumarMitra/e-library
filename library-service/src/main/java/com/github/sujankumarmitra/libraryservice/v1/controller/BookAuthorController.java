@@ -1,7 +1,8 @@
 package com.github.sujankumarmitra.libraryservice.v1.controller;
 
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.ErrorResponse;
-import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.*;
+import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.CreateBookAuthorRequestSchema;
+import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.UpdateBookAuthorRequestSchema;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -52,7 +53,7 @@ public class BookAuthorController {
     )
     @PostMapping
     public Mono<ResponseEntity<Void>> createAuthor(@PathVariable("bookId") String bookId,
-                                                  @RequestBody OpenApiCreateBookAuthorRequest request) {
+                                                  @RequestBody CreateBookAuthorRequestSchema request) {
         return Mono.empty();
     }
 
@@ -75,7 +76,7 @@ public class BookAuthorController {
     )
     @PatchMapping(path = "/{authorId}",  consumes = {"application/merge-patch+json", "application/json"})
     public Mono<ResponseEntity<Void>> updateAuthor(@PathVariable("authorId") String authorId,
-                                                         @RequestBody OpenApiUpdateBookAuthorRequest request) {
+                                                         @RequestBody UpdateBookAuthorRequestSchema request) {
         return Mono.empty();
     }
 

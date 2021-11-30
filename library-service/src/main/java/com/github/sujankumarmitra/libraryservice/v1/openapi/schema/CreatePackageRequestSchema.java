@@ -9,10 +9,9 @@ import java.util.Set;
  * @author skmitra
  * @since Nov 29/11/21, 2021
  */
-@Schema(name = "UpdatePackageRequest")
-public class OpenApiUpdatePackageRequest extends Package {
+public class CreatePackageRequestSchema extends Package {
     @Override
-    @Schema(hidden = true)
+    @Schema
     public String getId() {
         return null;
     }
@@ -23,12 +22,12 @@ public class OpenApiUpdatePackageRequest extends Package {
     }
 
     @Override
-    public Set<OpenApiUpdatePackageItem> getItems() {
+    public Set<CreatePackageItemSchema> getItems() {
         return null;
     }
 
     @Override
-    public Set<OpenApiUpdatePackageTag> getTags() {
+    public Set<CreatePackageTagSchema> getTags() {
         return null;
     }
 }

@@ -7,9 +7,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * @author skmitra
  * @since Nov 29/11/21, 2021
  */
-@Schema(name = "UpdateAuthor")
-public class OpenApiUpdateAuthor extends Author {
+public class UpdateBookAuthorRequestSchema extends Author {
     @Override
+    @Schema(hidden = true)
     public String getId() {
         return null;
     }

@@ -32,13 +32,13 @@ public class BookController {
                     name = "book_type",
                     in = ParameterIn.HEADER,
                     schema = @Schema(
-                            implementation = OpenApiBookType.class
+                            implementation = BookTypeSchema.class
                     )
             ),
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     content = @Content(
                             schema = @Schema(
-                                    oneOf = {OpenApiCreatePhysicalBookRequest.class, OpenApiCreateEBookRequest.class}
+                                    oneOf = {CreatePhysicalBookRequestSchema.class, CreateEBookRequestSchema.class}
                             )
                     )
             ),
@@ -65,7 +65,7 @@ public class BookController {
             }
     )
     @PostMapping
-    public Mono<ResponseEntity<Void>> createPhysicalBook(@RequestBody OpenApiCreatePhysicalBookRequest request) {
+    public Mono<ResponseEntity<Void>> createPhysicalBook(@RequestBody CreatePhysicalBookRequestSchema request) {
         return Mono.empty();
     }
 
@@ -75,13 +75,13 @@ public class BookController {
                     name = "book_type",
                     in = ParameterIn.HEADER,
                     schema = @Schema(
-                            implementation = OpenApiBookType.class
+                            implementation = BookTypeSchema.class
                     )
             ),
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     content = @Content(
                             schema = @Schema(
-                                    oneOf = {OpenApiUpdatePhysicalBookRequest.class, OpenApiUpdateEBookRequest.class}
+                                    oneOf = {UpdatePhysicalBookRequestSchema.class, UpdateEBookRequestSchema.class}
                             )
                     )
             ),
@@ -102,7 +102,7 @@ public class BookController {
     )
     @PatchMapping(path = "/{bookId}", consumes = {"application/merge-patch+json", "application/json"})
     public Mono<ResponseEntity<Void>> updatePhysicalBook(@PathVariable("bookId") String bookId,
-                                                         @RequestBody OpenApiUpdatePhysicalBookRequest request) {
+                                                         @RequestBody UpdatePhysicalBookRequestSchema request) {
         return Mono.empty();
     }
 

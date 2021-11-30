@@ -1,18 +1,20 @@
 package com.github.sujankumarmitra.libraryservice.v1.openapi.schema;
 
-import com.github.sujankumarmitra.libraryservice.v1.model.PhysicalBook;
+import com.github.sujankumarmitra.libraryservice.v1.model.EBookSegment;
+import com.github.sujankumarmitra.libraryservice.v1.model.Ebook;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import java.util.List;
 import java.util.Set;
 
 /**
  * @author skmitra
  * @since Nov 29/11/21, 2021
  */
-@Schema(name = "CreatePhysicalBookRequest")
-public class OpenApiCreatePhysicalBookRequest extends PhysicalBook {
-    @Schema(hidden = true)
+public class UpdateEBookRequestSchema extends Ebook {
+
     @Override
+    @Schema(hidden = true)
     public String getId() {
         return null;
     }
@@ -23,7 +25,7 @@ public class OpenApiCreatePhysicalBookRequest extends PhysicalBook {
     }
 
     @Override
-    public Set<OpenApiCreateAuthor> getAuthors() {
+    public Set<UpdateAuthorSchema> getAuthors() {
         return null;
     }
 
@@ -43,17 +45,13 @@ public class OpenApiCreatePhysicalBookRequest extends PhysicalBook {
     }
 
     @Override
-    public Set<OpenApiCreateBookTag> getTags() {
+    public Set<UpdateBookTagSchema> getTags() {
         return null;
     }
 
     @Override
-    public long getCopiesAvailable() {
-        return 0;
-    }
-
-    @Override
-    public OpenApiMoney getFinePerDay() {
+    @Schema(hidden = true)
+    public List<EBookSegment> getSegments() {
         return null;
     }
 }
