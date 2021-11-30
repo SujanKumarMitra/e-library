@@ -52,7 +52,7 @@ public class BookAuthorController {
     )
     @PostMapping
     public Mono<ResponseEntity<Void>> createAuthor(@PathVariable("bookId") String bookId,
-                                                   OpenApiCreateBookAuthorRequest request) {
+                                                  @RequestBody OpenApiCreateBookAuthorRequest request) {
         return Mono.empty();
     }
 
@@ -81,7 +81,7 @@ public class BookAuthorController {
 
 
     @Operation(
-            description = "# Deletes an author",
+            description = "# Delete an author",
             responses = {
                     @ApiResponse(
                             responseCode = "202"

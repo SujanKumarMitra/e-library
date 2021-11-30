@@ -45,7 +45,7 @@ public class OpenApiCreateEBookRequest extends Ebook {
     }
 
     @Override
-    public Set<OpenApiCreateBookTagRequest> getTags() {
+    public Set<OpenApiCreateBookTag> getTags() {
         return null;
     }
 

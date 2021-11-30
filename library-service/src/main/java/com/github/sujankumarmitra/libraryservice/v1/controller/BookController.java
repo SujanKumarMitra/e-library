@@ -1,11 +1,10 @@
 package com.github.sujankumarmitra.libraryservice.v1.controller;
 
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.ErrorResponse;
-import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.OpenApiCreateEBookRequest;
-import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.OpenApiCreatePhysicalBookRequest;
-import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.OpenApiUpdateEBookRequest;
-import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.OpenApiUpdatePhysicalBookRequest;
+import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.*;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -29,6 +28,13 @@ public class BookController {
 
     @Operation(
             description = "# Create a book",
+            parameters = @Parameter(
+                    name = "book_type",
+                    in = ParameterIn.HEADER,
+                    schema = @Schema(
+                            implementation = OpenApiBookType.class
+                    )
+            ),
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     content = @Content(
                             schema = @Schema(
@@ -65,6 +71,13 @@ public class BookController {
 
     @Operation(
             description = "# Update an existing book",
+            parameters = @Parameter(
+                    name = "book_type",
+                    in = ParameterIn.HEADER,
+                    schema = @Schema(
+                            implementation = OpenApiBookType.class
+                    )
+            ),
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     content = @Content(
                             schema = @Schema(
@@ -94,7 +107,7 @@ public class BookController {
     }
 
     @Operation(
-            description = "# Deletes a book",
+            description = "# Delete a book",
             responses = {
                     @ApiResponse(
                             responseCode = "202"

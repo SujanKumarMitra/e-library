@@ -16,6 +16,7 @@ public class OpenApiUpdatePackageTag extends PackageTag {
     }
 
     @Override
+    @Schema(hidden = true)
     public String getId() {
         return null;
     }

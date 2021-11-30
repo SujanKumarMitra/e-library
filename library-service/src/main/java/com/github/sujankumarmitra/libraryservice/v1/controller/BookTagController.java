@@ -28,7 +28,7 @@ public class BookTagController {
 
 
     @Operation(
-            description = "# Creates a book tag",
+            description = "# Create a book tag",
             responses = {
                     @ApiResponse(
                             responseCode = "201",
@@ -53,12 +53,12 @@ public class BookTagController {
     )
     @PostMapping
     public Mono<ResponseEntity<Void>> createTag(@PathVariable("bookId") String bookId,
-                                                OpenApiCreateBookTagRequest request) {
+                                               @RequestBody OpenApiCreateBookTagRequest request) {
         return Mono.empty();
     }
 
     @Operation(
-            description = "# Updates an existing book tag",
+            description = "# Update an existing book tag",
             responses = {
                     @ApiResponse(
                             responseCode = "202"
@@ -82,7 +82,7 @@ public class BookTagController {
 
 
     @Operation(
-            description = "# Deletes a book tag",
+            description = "# Delete a book tag",
             responses = {
                     @ApiResponse(
                             responseCode = "202"

@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @Schema(name = "UpdatePackageItem")
 public class OpenApiUpdatePackageItem extends PackageItem {
     @Override
+    @Schema(hidden = true)
     public String getId() {
         return null;
     }

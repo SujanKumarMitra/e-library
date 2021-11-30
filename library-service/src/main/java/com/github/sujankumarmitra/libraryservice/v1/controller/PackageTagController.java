@@ -29,7 +29,7 @@ public class PackageTagController {
 
 
     @Operation(
-            description = "# Creates a package tag",
+            description = "# Create a package tag",
             responses = {
                     @ApiResponse(
                             responseCode = "201",
@@ -54,12 +54,12 @@ public class PackageTagController {
     )
     @PostMapping
     public Mono<ResponseEntity<Void>> createTag(@PathVariable("bookId") String bookId,
-                                                OpenApiCreatePackageTagRequest request) {
+                                               @RequestBody OpenApiCreatePackageTagRequest request) {
         return Mono.empty();
     }
 
     @Operation(
-            description = "# Updates an existing book tag",
+            description = "# Update an existing book tag",
             responses = {
                     @ApiResponse(
                             responseCode = "202"
@@ -83,7 +83,7 @@ public class PackageTagController {
 
 
     @Operation(
-            description = "# Deletes a package tag",
+            description = "# Delete a package tag",
             responses = {
                     @ApiResponse(
                             responseCode = "202"

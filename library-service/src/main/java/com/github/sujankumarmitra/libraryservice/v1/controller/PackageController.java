@@ -50,7 +50,7 @@ public class PackageController {
             }
     )
     @PostMapping
-    public Mono<ResponseEntity<Void>> createPhysicalBook(@RequestBody OpenApiCreatePackageRequest request) {
+    public Mono<ResponseEntity<Void>> createPackage(@RequestBody OpenApiCreatePackageRequest request) {
         return Mono.empty();
     }
 
@@ -72,8 +72,8 @@ public class PackageController {
             }
     )
     @PatchMapping(path = "/{packageId}",  consumes = {"application/merge-patch+json", "application/json"})
-    public Mono<ResponseEntity<Void>> updatePhysicalBook(@PathVariable("bookId") String bookId,
-                                                         @RequestBody OpenApiUpdatePackageRequest request) {
+    public Mono<ResponseEntity<Void>> updatePackage(@PathVariable("bookId") String bookId,
+                                                    @RequestBody OpenApiUpdatePackageRequest request) {
         return Mono.empty();
     }
 
@@ -86,7 +86,7 @@ public class PackageController {
             }
     )
     @DeleteMapping("/{packageId}")
-    public Mono<ResponseEntity<Void>> deletePhysicalBook(@PathVariable("packageId") String packageId) {
+    public Mono<ResponseEntity<Void>> deletePackage(@PathVariable("packageId") String packageId) {
         return Mono.empty();
     }
 }
