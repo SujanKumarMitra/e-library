@@ -3,9 +3,7 @@ package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 import com.github.sujankumarmitra.libraryservice.v1.dao.AuthorDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.BookDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.BookTagDao;
-import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcAuthor;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBook;
-import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBookTag;
 import com.github.sujankumarmitra.libraryservice.v1.model.Author;
 import com.github.sujankumarmitra.libraryservice.v1.model.Book;
 import com.github.sujankumarmitra.libraryservice.v1.model.BookTag;
@@ -21,9 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple3;
 
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * @author skmitra
@@ -46,22 +45,15 @@ public class R2dbcPostgresqlBookDao implements BookDao {
     @NonNull
     private final BookTagDao bookTagDao;
 
-    private R2dbcBook assembleResult(Tuple3<R2dbcBook, List<Author>, List<BookTag>> tuple3) {
-        R2dbcBook r2dbcBook = tuple3.getT1();
-        List<Author> authorList = tuple3.getT2();
-        List<BookTag> tagList = tuple3.getT3();
+    private R2dbcBook assembleResult(Tuple3<R2dbcBook, Set<Author>, Set<BookTag>> tuple3) {
+        R2dbcBook book = tuple3.getT1();
+        Set<Author> authors = tuple3.getT2();
+        Set<BookTag> tags = tuple3.getT3();
 
-        Set<R2dbcAuthor> authorSet = r2dbcBook.getAuthors();
-        Set<R2dbcBookTag> tagSet = r2dbcBook.getTags();
+        book.addAllAuthors(authors);
+        book.addAllTags(tags);
 
-        for (Author author : authorList) {
-            authorSet.add(new R2dbcAuthor(author));
-        }
-
-        for (BookTag tag : tagList) {
-            tagSet.add(new R2dbcBookTag(tag));
-        }
-        return r2dbcBook;
+        return book;
     }
 
     @Override
@@ -129,13 +121,13 @@ public class R2dbcPostgresqlBookDao implements BookDao {
                     .one()
                     .doOnNext(r2dbcBook -> r2dbcBook.setId(finalId));
 
-            Mono<List<Author>> authors = authorDao
+            Mono<Set<Author>> authors = authorDao
                     .getAuthorsByBookId(bookId)
-                    .collectList();
+                    .collect(Collectors.toCollection(HashSet::new));
 
-            Mono<List<BookTag>> tags = bookTagDao
+            Mono<Set<BookTag>> tags = bookTagDao
                     .getTagsByBookId(bookId)
-                    .collectList();
+                    .collect(Collectors.toCollection(HashSet::new));
 
             return Mono.zip(book, authors, tags)
                     .map(this::assembleResult);
@@ -169,17 +161,29 @@ public class R2dbcPostgresqlBookDao implements BookDao {
                     .switchIfEmpty(Mono.fromRunnable(() -> log.debug("book does not exist for id {}", uuid)))
                     .map(r2dbcBook -> applyUpdates(book, r2dbcBook))
                     .flatMap(this::updateR2dbcBook)
-                    .flatMap(r2dbcBook -> authorDao
-                            .updateAuthors(r2dbcBook.getAuthors())
-                            .thenReturn(r2dbcBook))
-                    .flatMap(r2dbcBook -> bookTagDao
-                            .updateTags(r2dbcBook.getTags())
-                            .thenReturn(r2dbcBook))
-                    .then();
+                    .then(Mono.defer(() -> {
+                        if (book.getAuthors() == null)
+                            return Mono.empty();
+                        else {
+                            return authorDao
+                                    .deleteAuthorsByBookId(id)
+                                    .thenMany(authorDao.createAuthors(book.getAuthors()))
+                                    .then();
+                        }
+                    }).then(Mono.defer(() -> {
+                        if (book.getTags() == null)
+                            return Mono.empty();
+                        else {
+                            return bookTagDao
+                                    .deleteTagsByBookId(id)
+                                    .thenMany(bookTagDao.createTags(book.getTags()))
+                                    .then();
+                        }
+                    })));
         });
     }
 
-    private Mono<R2dbcBook> updateR2dbcBook(R2dbcBook book) {
+    private Mono<Void> updateR2dbcBook(R2dbcBook book) {
         log.debug("Saving updates to db");
         GenericExecuteSpec executeSpec = this.databaseClient
                 .sql(UPDATE_STATEMENT)
@@ -196,7 +200,7 @@ public class R2dbcPostgresqlBookDao implements BookDao {
                 .bind("$5", book.getUuid())
                 .fetch()
                 .rowsUpdated()
-                .thenReturn(book);
+                .then();
     }
 
     private R2dbcBook applyUpdates(Book oldBook, R2dbcBook newBook) {
@@ -211,22 +215,6 @@ public class R2dbcPostgresqlBookDao implements BookDao {
 
         if (oldBook.getCoverPageImageId() != null)
             newBook.setCoverPageImageId(oldBook.getCoverPageImageId());
-
-        if (oldBook.getAuthors() != null) {
-            for (Author author : oldBook.getAuthors()) {
-                R2dbcAuthor r2dbcAuthor = new R2dbcAuthor(author);
-                r2dbcAuthor.setBookId(newBook.getUuid());
-                newBook.getAuthors().add(r2dbcAuthor);
-            }
-        }
-
-        if (oldBook.getTags() != null) {
-            for (BookTag tag : oldBook.getTags()) {
-                R2dbcBookTag r2dbcTag = new R2dbcBookTag(tag);
-                r2dbcTag.setBookId(newBook.getUuid());
-                newBook.getTags().add(r2dbcTag);
-            }
-        }
 
         return newBook;
     }

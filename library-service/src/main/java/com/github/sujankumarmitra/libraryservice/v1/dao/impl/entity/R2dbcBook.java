@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -48,16 +49,52 @@ public final class R2dbcBook extends Book {
         this.coverPageImageId = book.getCoverPageImageId();
 
         if (book.getAuthors() != null) {
-            for (Author author : book.getAuthors()) {
-                this.authors.add(new R2dbcAuthor(author));
-            }
+            addAllAuthors(book.getAuthors());
 
         }
         if (book.getTags() != null) {
-            for (BookTag tag : book.getTags()) {
-                this.tags.add(new R2dbcBookTag(tag));
-            }
+            addAllTags(book.getTags());
         }
+    }
+
+    public void addAuthor(@NonNull Author author) {
+        this.authors.add(convertToR2dbcAuthor(author));
+    }
+
+    public void addTag(@NonNull BookTag tag) {
+        this.tags.add(convertToR2dbcBookTag(tag));
+    }
+
+    public <T extends Author> void addAllAuthors(@NonNull Set<T> authors) {
+        for (Author author : authors) {
+            this.authors.add(convertToR2dbcAuthor(author));
+        }
+    }
+
+    public <T extends BookTag> void addAllTags(@NonNull Set<T> tags) {
+        for (BookTag author : tags) {
+            this.tags.add(convertToR2dbcBookTag(author));
+        }
+    }
+
+    public void removeAllTags() {
+        this.tags.clear();
+    }
+
+    public void removeAllAuthors() {
+        this.authors.clear();
+    }
+
+    private R2dbcAuthor convertToR2dbcAuthor(Author author) {
+        return author instanceof R2dbcAuthor ?
+                (R2dbcAuthor) author :
+                new R2dbcAuthor(author);
+    }
+
+    private R2dbcBookTag convertToR2dbcBookTag(BookTag tag) {
+        return tag instanceof BookTag ?
+                (R2dbcBookTag) tag :
+                new R2dbcBookTag(tag);
     }
 
 }
