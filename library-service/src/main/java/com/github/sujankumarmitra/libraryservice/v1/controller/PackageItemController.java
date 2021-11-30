@@ -1,11 +1,9 @@
 package com.github.sujankumarmitra.libraryservice.v1.controller;
 
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.ErrorResponse;
-import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.OpenApiCreatePhysicalBookRequest;
-import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.OpenApiUpdatePhysicalBookRequest;
+import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.OpenApiCreatePackageTagRequest;
+import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.OpenApiUpdateBookTagRequest;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -17,25 +15,24 @@ import reactor.core.publisher.Mono;
 
 /**
  * @author skmitra
- * @since Nov 29/11/21, 2021
+ * @since Nov 30/11/21, 2021
  */
 @RestController
-@RequestMapping(path = "/api/v1/physical-books")
+@RequestMapping("/api/v1/packages/{packageId}/items")
 @Tag(
-        name = "PhysicalBookController",
-        description = "### Controller for managing physical books"
+        name = "PackageItemController",
+        description = "### Controller for managing package items"
 )
-public class PhysicalBookController {
-
+public class PackageItemController {
 
     @Operation(
-            description = "# Create a physical book",
+            description = "# Creates a package item",
             responses = {
                     @ApiResponse(
                             responseCode = "201",
                             headers = @Header(
                                     name = "Location",
-                                    description = "Unique ID pointing to this book",
+                                    description = "Unique ID pointing to this tag",
                                     schema = @Schema(
                                             example = "7d553b6b-c6e4-42a7-bc8d-7cda07909b2f"
                                     )
@@ -53,12 +50,13 @@ public class PhysicalBookController {
             }
     )
     @PostMapping
-    public Mono<ResponseEntity<Void>> createPhysicalBook(@RequestBody OpenApiCreatePhysicalBookRequest request) {
+    public Mono<ResponseEntity<Void>> createTag(@PathVariable("packageId") String packageId,
+                                                OpenApiCreatePackageTagRequest request) {
         return Mono.empty();
     }
 
     @Operation(
-            description = "# Update an existing physical book",
+            description = "# Updates an existing book tag",
             responses = {
                     @ApiResponse(
                             responseCode = "202"
@@ -74,22 +72,24 @@ public class PhysicalBookController {
                     )
             }
     )
-    @PatchMapping(path = "/{bookId}", consumes = {"application/merge-patch+json", "application/json"})
-    public Mono<ResponseEntity<Void>> updatePhysicalBook(@PathVariable("bookId") String bookId,
-                                                         @RequestBody OpenApiUpdatePhysicalBookRequest request) {
+    @PatchMapping(path = "/{itemId}", consumes = {"application/merge-patch+json", "application/json"})
+    public Mono<ResponseEntity<Void>> updateTag(@PathVariable("itemId") String itemId,
+                                                @RequestBody OpenApiUpdateBookTagRequest request) {
         return Mono.empty();
     }
 
+
     @Operation(
-            description = "# Delete a physical book",
+            description = "# Deletes a package tag",
             responses = {
                     @ApiResponse(
                             responseCode = "202"
                     )
             }
     )
-    @DeleteMapping("/{bookId}")
-    public Mono<ResponseEntity<Void>> deletePhysicalBook(@PathVariable("bookId") String bookId) {
+    @DeleteMapping("/{itemId}")
+    public Mono<ResponseEntity<Void>> deleteTag(@PathVariable("itemId") String itemId) {
         return Mono.empty();
     }
+
 }

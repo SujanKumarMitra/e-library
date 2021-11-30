@@ -1,6 +1,5 @@
 package com.github.sujankumarmitra.libraryservice.v1.openapi.schema;
 
-import com.github.sujankumarmitra.libraryservice.v1.model.BookTag;
 import com.github.sujankumarmitra.libraryservice.v1.model.Money;
 import com.github.sujankumarmitra.libraryservice.v1.model.PhysicalBook;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -27,7 +26,7 @@ public class OpenApiUpdatePhysicalBookRequest extends PhysicalBook {
     }
 
     @Override
-    public Set<OpenApiUpdateAuthorRequest> getAuthors() {
+    public Set<OpenApiUpdateAuthor> getAuthors() {
         return null;
     }
 
@@ -47,7 +46,7 @@ public class OpenApiUpdatePhysicalBookRequest extends PhysicalBook {
     }
 
     @Override
-    public Set<OpenApiUpdateBookTagRequest> getTags() {
+    public Set<OpenApiUpdateBookTag> getTags() {
         return null;
     }
 

@@ -4,6 +4,8 @@ import com.github.sujankumarmitra.libraryservice.v1.controller.dto.ErrorResponse
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.OpenApiCreateEBookRequest;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.OpenApiUpdatePhysicalBookRequest;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -18,7 +20,7 @@ import reactor.core.publisher.Mono;
  * @since Nov 29/11/21, 2021
  */
 @RestController
-@RequestMapping("/api/v1/ebooks")
+@RequestMapping(path = "/api/v1/ebooks")
 @Tag(
         name = "EBookController",
         description = "### Controller for managing ebooks"
@@ -72,7 +74,7 @@ public class EBookController {
                     )
             }
     )
-    @PatchMapping("/{bookId}")
+    @PatchMapping(path = "/{bookId}", consumes = {"application/merge-patch+json", "application/json"})
     public Mono<ResponseEntity<Void>> updatePhysicalBook(@PathVariable("bookId") String bookId,
                                                          @RequestBody OpenApiUpdatePhysicalBookRequest request) {
         return Mono.empty();

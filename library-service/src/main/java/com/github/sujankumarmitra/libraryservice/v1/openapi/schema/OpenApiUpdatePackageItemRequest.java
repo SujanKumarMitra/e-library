@@ -10,12 +10,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @Schema(name = "UpdatePackageItemRequest")
 public class OpenApiUpdatePackageItemRequest extends PackageItem {
     @Override
+    @Schema(hidden = true)
     public String getId() {
         return null;
     }
 
     @Override
-    @Schema(hidden = true)
     public String getPackageId() {
         return null;
     }

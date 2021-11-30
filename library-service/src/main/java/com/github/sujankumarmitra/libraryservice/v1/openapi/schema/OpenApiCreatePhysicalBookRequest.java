@@ -23,7 +23,7 @@ public class OpenApiCreatePhysicalBookRequest extends PhysicalBook {
     }
 
     @Override
-    public Set<OpenApiCreateAuthorRequest> getAuthors() {
+    public Set<OpenApiCreateAuthor> getAuthors() {
         return null;
     }
 
@@ -43,7 +43,7 @@ public class OpenApiCreatePhysicalBookRequest extends PhysicalBook {
     }
 
     @Override
-    public Set<OpenApiCreateBookTagRequest> getTags() {
+    public Set<OpenApiCreateBookTag> getTags() {
         return null;
     }
 

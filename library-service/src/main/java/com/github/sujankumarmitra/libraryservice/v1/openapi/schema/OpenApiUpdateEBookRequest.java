@@ -27,7 +27,7 @@ public class OpenApiUpdateEBookRequest extends Ebook {
     }
 
     @Override
-    public Set<OpenApiUpdateAuthorRequest> getAuthors() {
+    public Set<OpenApiUpdateAuthor> getAuthors() {
         return null;
     }
 
@@ -47,7 +47,7 @@ public class OpenApiUpdateEBookRequest extends Ebook {
     }
 
     @Override
-    public Set<OpenApiUpdateBookTagRequest> getTags() {
+    public Set<OpenApiUpdateBookTag> getTags() {
         return null;
     }
 

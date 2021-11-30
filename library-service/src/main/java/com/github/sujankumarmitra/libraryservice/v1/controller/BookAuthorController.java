@@ -1,11 +1,8 @@
 package com.github.sujankumarmitra.libraryservice.v1.controller;
 
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.ErrorResponse;
-import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.OpenApiCreatePhysicalBookRequest;
-import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.OpenApiUpdatePhysicalBookRequest;
+import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.*;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -17,25 +14,26 @@ import reactor.core.publisher.Mono;
 
 /**
  * @author skmitra
- * @since Nov 29/11/21, 2021
+ * @since Nov 30/11/21, 2021
  */
+
 @RestController
-@RequestMapping(path = "/api/v1/physical-books")
+@RequestMapping("/api/v1/books/{bookId}/authors")
 @Tag(
-        name = "PhysicalBookController",
-        description = "### Controller for managing physical books"
+        name = "BookAuthorController",
+        description = "### Controller for managing book authors"
 )
-public class PhysicalBookController {
+public class BookAuthorController {
 
 
     @Operation(
-            description = "# Create a physical book",
+            description = "# Create an author",
             responses = {
                     @ApiResponse(
                             responseCode = "201",
                             headers = @Header(
                                     name = "Location",
-                                    description = "Unique ID pointing to this book",
+                                    description = "Unique ID pointing to this author",
                                     schema = @Schema(
                                             example = "7d553b6b-c6e4-42a7-bc8d-7cda07909b2f"
                                     )
@@ -53,12 +51,13 @@ public class PhysicalBookController {
             }
     )
     @PostMapping
-    public Mono<ResponseEntity<Void>> createPhysicalBook(@RequestBody OpenApiCreatePhysicalBookRequest request) {
+    public Mono<ResponseEntity<Void>> createAuthor(@PathVariable("bookId") String bookId,
+                                                   OpenApiCreateBookAuthorRequest request) {
         return Mono.empty();
     }
 
     @Operation(
-            description = "# Update an existing physical book",
+            description = "# Update an existing author",
             responses = {
                     @ApiResponse(
                             responseCode = "202"
@@ -74,22 +73,27 @@ public class PhysicalBookController {
                     )
             }
     )
-    @PatchMapping(path = "/{bookId}", consumes = {"application/merge-patch+json", "application/json"})
-    public Mono<ResponseEntity<Void>> updatePhysicalBook(@PathVariable("bookId") String bookId,
-                                                         @RequestBody OpenApiUpdatePhysicalBookRequest request) {
+    @PatchMapping(path = "/{authorId}",  consumes = {"application/merge-patch+json", "application/json"})
+    public Mono<ResponseEntity<Void>> updateAuthor(@PathVariable("authorId") String authorId,
+                                                         @RequestBody OpenApiUpdateBookAuthorRequest request) {
         return Mono.empty();
     }
 
+
     @Operation(
-            description = "# Delete a physical book",
+            description = "# Deletes an author",
             responses = {
                     @ApiResponse(
                             responseCode = "202"
                     )
             }
     )
-    @DeleteMapping("/{bookId}")
-    public Mono<ResponseEntity<Void>> deletePhysicalBook(@PathVariable("bookId") String bookId) {
+    @DeleteMapping("/{authorId}")
+    public Mono<ResponseEntity<Void>> deleteAuthor(@PathVariable("authorId") String authorId) {
         return Mono.empty();
     }
+
+
+
+
 }

@@ -25,7 +25,7 @@ public class OpenApiCreateEBookRequest extends Ebook {
     }
 
     @Override
-    public Set<OpenApiCreateAuthorRequest> getAuthors() {
+    public Set<OpenApiCreateAuthor> getAuthors() {
         return null;
     }
 

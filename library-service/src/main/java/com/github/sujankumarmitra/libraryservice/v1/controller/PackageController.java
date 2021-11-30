@@ -71,7 +71,7 @@ public class PackageController {
                     )
             }
     )
-    @PatchMapping("/{packageId}")
+    @PatchMapping(path = "/{packageId}",  consumes = {"application/merge-patch+json", "application/json"})
     public Mono<ResponseEntity<Void>> updatePhysicalBook(@PathVariable("bookId") String bookId,
                                                          @RequestBody OpenApiUpdatePackageRequest request) {
         return Mono.empty();

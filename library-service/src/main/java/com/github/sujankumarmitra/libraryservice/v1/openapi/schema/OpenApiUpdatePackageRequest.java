@@ -23,12 +23,12 @@ public class OpenApiUpdatePackageRequest extends Package {
     }
 
     @Override
-    public Set<OpenApiUpdatePackageItemRequest> getItems() {
+    public Set<OpenApiUpdatePackageItem> getItems() {
         return null;
     }
 
     @Override
-    public Set<OpenApiUpdatePackageTagRequest> getTags() {
+    public Set<OpenApiUpdatePackageTag> getTags() {
         return null;
     }
 }

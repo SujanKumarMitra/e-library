@@ -1,11 +1,11 @@
 package com.github.sujankumarmitra.libraryservice.v1.controller;
 
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.ErrorResponse;
+import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.OpenApiCreateEBookRequest;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.OpenApiCreatePhysicalBookRequest;
+import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.OpenApiUpdateEBookRequest;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.OpenApiUpdatePhysicalBookRequest;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -17,19 +17,25 @@ import reactor.core.publisher.Mono;
 
 /**
  * @author skmitra
- * @since Nov 29/11/21, 2021
+ * @since Nov 30/11/21, 2021
  */
 @RestController
-@RequestMapping(path = "/api/v1/physical-books")
+@RequestMapping(path = "/api/v1/books")
 @Tag(
-        name = "PhysicalBookController",
-        description = "### Controller for managing physical books"
+        name = "BookController",
+        description = "### Controller for managing books"
 )
-public class PhysicalBookController {
-
+public class BookController {
 
     @Operation(
-            description = "# Create a physical book",
+            description = "# Create a book",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    content = @Content(
+                            schema = @Schema(
+                                    oneOf = {OpenApiCreatePhysicalBookRequest.class, OpenApiCreateEBookRequest.class}
+                            )
+                    )
+            ),
             responses = {
                     @ApiResponse(
                             responseCode = "201",
@@ -58,7 +64,14 @@ public class PhysicalBookController {
     }
 
     @Operation(
-            description = "# Update an existing physical book",
+            description = "# Update an existing book",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    content = @Content(
+                            schema = @Schema(
+                                    oneOf = {OpenApiUpdatePhysicalBookRequest.class, OpenApiUpdateEBookRequest.class}
+                            )
+                    )
+            ),
             responses = {
                     @ApiResponse(
                             responseCode = "202"
@@ -81,7 +94,7 @@ public class PhysicalBookController {
     }
 
     @Operation(
-            description = "# Delete a physical book",
+            description = "# Deletes a book",
             responses = {
                     @ApiResponse(
                             responseCode = "202"
