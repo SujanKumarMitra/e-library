@@ -8,6 +8,7 @@ import lombok.NonNull;
 import lombok.Setter;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -27,16 +28,16 @@ public final class R2dbcPackage extends Package {
     public R2dbcPackage() {
     }
 
-    public R2dbcPackage(@NonNull Package _package) {
-        this.id = _package.getId() == null ? null : UUID.fromString(_package.getId());
-        this.name = _package.getName();
-        if (_package.getItems() != null) {
-            for (PackageItem packageItem : _package.getItems()) {
+    public R2dbcPackage(@NonNull Package aPackage) {
+        this.id = aPackage.getId() == null ? null : UUID.fromString(aPackage.getId());
+        this.name = aPackage.getName();
+        if (aPackage.getItems() != null) {
+            for (PackageItem packageItem : aPackage.getItems()) {
                 this.items.add(new R2dbcPackageItem(packageItem));
             }
         }
-        if (_package.getTags() != null) {
-            for (PackageTag tag : _package.getTags()) {
+        if (aPackage.getTags() != null) {
+            for (PackageTag tag : aPackage.getTags()) {
                 this.tags.add(new R2dbcPackageTag(tag));
             }
         }
@@ -51,4 +52,39 @@ public final class R2dbcPackage extends Package {
         return id;
     }
 
+
+    public <T extends PackageTag> void addAllTags(Set<T> tags) {
+        for (PackageTag tag : tags) {
+            this.tags.add(convertToR2dbcPackageTag(tag));
+        }
+    }
+
+    public <T extends PackageItem> void addAllItems(Set<T> items) {
+        for (PackageItem item : items) {
+            this.items.add(convertToR2dbcPackageItem(item));
+        }
+    }
+
+
+    private R2dbcPackageItem convertToR2dbcPackageItem(PackageItem item) {
+        return item instanceof R2dbcPackageItem ?
+                (R2dbcPackageItem) item :
+                new R2dbcPackageItem(item);
+    }
+
+    private R2dbcPackageTag convertToR2dbcPackageTag(PackageTag tag) {
+        return tag instanceof R2dbcPackageTag ?
+                (R2dbcPackageTag) tag :
+                new R2dbcPackageTag(tag);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
 }

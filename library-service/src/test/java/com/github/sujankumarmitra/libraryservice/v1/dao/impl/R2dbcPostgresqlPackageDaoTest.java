@@ -147,19 +147,25 @@ class R2dbcPostgresqlPackageDaoTest extends AbstractDataR2dbcPostgreSQLContainer
     void givenValidPackage_whenUpdate_shouldUpdate() {
 
         Mockito.doReturn(Mono.empty())
-                .when(mockPackageItemDao).updateItems(any());
+                .when(mockPackageItemDao).deleteItemsByPackageId(any());
 
         Mockito.doReturn(Mono.empty())
-                .when(mockPackageTagDao).updateTags(any());
+                .when(mockPackageTagDao).deleteTagsByPackageId(any());
 
-        R2dbcPackage _package = new R2dbcPackage();
+        Mockito.doReturn(Flux.empty())
+                .when(mockPackageItemDao).createItems(any());
+
+        Mockito.doReturn(Flux.empty())
+                .when(mockPackageTagDao).createTags(any());
+
+        R2dbcPackage expectedPackage = new R2dbcPackage();
 
         PackageDaoTestUtils
                 .insertDummyPackage(entityTemplate.getDatabaseClient())
-                .doOnSuccess(insertedPackage -> _package.setId(insertedPackage.getUuid()))
-                .doOnSuccess(insertedPackage -> _package.setName(insertedPackage.getName()))
-                .doOnSuccess(__ -> _package.setName("updated_name"))
-                .thenReturn(_package)
+                .doOnSuccess(insertedPackage -> expectedPackage.setId(insertedPackage.getUuid()))
+                .doOnSuccess(insertedPackage -> expectedPackage.setName(insertedPackage.getName()))
+                .doOnSuccess(that -> expectedPackage.setName("updated_name"))
+                .thenReturn(expectedPackage)
                 .flatMap(packageDao::updatePackage)
                 .then(entityTemplate
                         .select(R2dbcPackage.class)
@@ -170,10 +176,10 @@ class R2dbcPostgresqlPackageDaoTest extends AbstractDataR2dbcPostgreSQLContainer
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .consumeNextWith(actualPackage -> {
-                    log.info("expected package:: {}", _package);
+                    log.info("expected package:: {}", expectedPackage);
                     log.info("actual package:: {}", actualPackage);
 
-                    assertThat(actualPackage).isEqualTo(_package);
+                    assertThat(actualPackage).isEqualTo(expectedPackage);
                 })
                 .verifyComplete();
 
@@ -184,10 +190,17 @@ class R2dbcPostgresqlPackageDaoTest extends AbstractDataR2dbcPostgreSQLContainer
     void givenNonExistingPackage_whenUpdate_shouldEmitEmpty() {
 
         Mockito.doReturn(Mono.empty())
-                .when(mockPackageItemDao).updateItems(any());
+                .when(mockPackageItemDao).deleteItemsByPackageId(any());
 
         Mockito.doReturn(Mono.empty())
-                .when(mockPackageTagDao).updateTags(any());
+                .when(mockPackageTagDao).deleteTagsByPackageId(any());
+
+        Mockito.doReturn(Flux.empty())
+                .when(mockPackageItemDao).createItems(any());
+
+        Mockito.doReturn(Flux.empty())
+                .when(mockPackageTagDao).createTags(any());
+
 
         R2dbcPackage _package = new R2dbcPackage();
         _package.setId(UUID.randomUUID());
@@ -209,7 +222,7 @@ class R2dbcPostgresqlPackageDaoTest extends AbstractDataR2dbcPostgreSQLContainer
         Mockito.doReturn(Mono.empty())
                 .when(mockPackageTagDao).updateTags(any());
 
-        Package _package = new Package() {
+        Package aPackage = new Package() {
             @Override
             public String getId() {
                 return "malformed";
@@ -221,17 +234,19 @@ class R2dbcPostgresqlPackageDaoTest extends AbstractDataR2dbcPostgreSQLContainer
             }
 
             @Override
-            public Set<? extends PackageItem> getItems() {
+            @SuppressWarnings("unchecked")
+            public Set<PackageItem> getItems() {
                 return Collections.emptySet();
             }
 
             @Override
-            public Set<? extends PackageTag> getTags() {
+            @SuppressWarnings("unchecked")
+            public Set<PackageTag> getTags() {
                 return Collections.emptySet();
             }
         };
 
-        Mono.just(_package)
+        Mono.just(aPackage)
                 .flatMap(packageDao::updatePackage)
                 .as(StepVerifier::create)
                 .expectSubscription()

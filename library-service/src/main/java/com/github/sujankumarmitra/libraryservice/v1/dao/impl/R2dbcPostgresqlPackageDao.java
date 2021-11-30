@@ -4,8 +4,6 @@ import com.github.sujankumarmitra.libraryservice.v1.dao.PackageDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.PackageItemDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.PackageTagDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcPackage;
-import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcPackageItem;
-import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcPackageTag;
 import com.github.sujankumarmitra.libraryservice.v1.model.Package;
 import com.github.sujankumarmitra.libraryservice.v1.model.PackageItem;
 import com.github.sujankumarmitra.libraryservice.v1.model.PackageTag;
@@ -19,8 +17,10 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple3;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * @author skmitra
@@ -45,13 +45,13 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
 
     @Override
     @Transactional
-    public Mono<String> createPackage(Package _package) {
+    public Mono<String> createPackage(Package aPackage) {
         return Mono.defer(() -> {
-            if (_package == null) {
+            if (aPackage == null) {
                 log.debug("given parameter is null");
                 return Mono.error(new NullPointerException("package can't be null"));
             }
-            R2dbcPackage r2dbcPackage = new R2dbcPackage(_package);
+            R2dbcPackage r2dbcPackage = new R2dbcPackage(aPackage);
             return this.databaseClient
                     .sql(INSERT_STATEMENT)
                     .bind("$1", r2dbcPackage.getName())
@@ -96,79 +96,98 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
                 log.debug("{} not valid uuid, returning Mono.empty()", packageId);
                 return Mono.empty();
             }
-            Mono<R2dbcPackage> _packageMono = databaseClient
+            Mono<R2dbcPackage> packageMono = databaseClient
                     .sql(SELECT_STATEMENT)
                     .bind("$1", id)
                     .map(this::mapToR2dbcPackage)
                     .one();
 
-            Mono<List<PackageItem>> packageItemsMono = packageItemDao
+            Mono<Set<PackageItem>> packageItemsMono = packageItemDao
                     .getItemsByPackageId(packageId)
-                    .collectList();
+                    .collect(Collectors.toCollection(HashSet::new));
 
-            Mono<List<PackageTag>> packageTagsMono = packageTagDao
+            Mono<Set<PackageTag>> packageTagsMono = packageTagDao
                     .getTagsByPackageId(packageId)
-                    .collectList();
+                    .collect(Collectors.toCollection(HashSet::new));
 
-            return Mono.zip(_packageMono, packageItemsMono, packageTagsMono)
+            return Mono.zip(packageMono, packageItemsMono, packageTagsMono)
                     .map(this::assemblePackage);
         });
 
     }
 
-    private Package assemblePackage(Tuple3<R2dbcPackage, List<PackageItem>, List<PackageTag>> tuple) {
-        R2dbcPackage _package = tuple.getT1();
-        List<PackageItem> packageItems = tuple.getT2();
-        List<PackageTag> packageTags = tuple.getT3();
+    private Package assemblePackage(Tuple3<R2dbcPackage, Set<PackageItem>, Set<PackageTag>> tuple) {
+        R2dbcPackage aPackage = tuple.getT1();
+        Set<PackageItem> packageItems = tuple.getT2();
+        Set<PackageTag> packageTags = tuple.getT3();
 
-        for (PackageItem item : packageItems) {
-            _package.getItems().add(new R2dbcPackageItem(item));
-        }
+        aPackage.addAllItems(packageItems);
+        aPackage.addAllTags(packageTags);
 
-        for (PackageTag tag : packageTags) {
-            _package.getTags().add(new R2dbcPackageTag(tag));
-        }
-        return _package;
+        return aPackage;
     }
 
     private R2dbcPackage mapToR2dbcPackage(Row row) {
-        R2dbcPackage _package = new R2dbcPackage();
+        R2dbcPackage r2dbcPackage = new R2dbcPackage();
 
-        _package.setId(row.get("id", UUID.class));
-        _package.setName(row.get("name", String.class));
+        r2dbcPackage.setId(row.get("id", UUID.class));
+        r2dbcPackage.setName(row.get("name", String.class));
 
-        return _package;
+        return r2dbcPackage;
     }
 
     @Override
     @Transactional
-    public Mono<Void> updatePackage(Package _package) {
+    public Mono<Void> updatePackage(Package aPackage) {
         return Mono.defer(() -> {
-            if (_package == null) {
+            if (aPackage == null) {
                 log.debug("given package is null");
                 return Mono.error(new NullPointerException("package can't be null"));
             }
 
+            String id = aPackage.getId();
+
+            if (id == null) {
+                log.debug("Package.getId() returned null, returning Mono.error(NullPointerException)");
+                return Mono.error(new NullPointerException("packageId can't be null"));
+            }
+
+
             UUID uuid;
             try {
-                uuid = UUID.fromString(_package.getId());
+                uuid = UUID.fromString(id);
             } catch (IllegalArgumentException ex) {
-                log.debug("{} is not valid uuid, returning empty Mono");
+                log.debug("{} is not valid uuid, returning empty Mono", id);
                 return Mono.empty();
             }
 
-            R2dbcPackage r2dbcPackage = new R2dbcPackage(_package);
 
             return this.databaseClient
                     .sql(UPDATE_STATEMENT)
-                    .bind("$1", r2dbcPackage.getName())
+                    .bind("$1", aPackage.getName())
                     .bind("$2", uuid)
                     .fetch()
                     .rowsUpdated()
-                    .then(Mono.justOrEmpty(_package.getItems()))
-                    .flatMap(packageItemDao::updateItems)
-                    .then(Mono.justOrEmpty(_package.getTags()))
-                    .flatMap(packageTagDao::updateTags);
+                    .then(Mono.defer(() -> {
+                        if (aPackage.getItems() == null) {
+                            log.debug("Package.getItems() is null, no changes made to items of packageId, {}", uuid);
+                            return Mono.empty();
+                        }
+                        return packageItemDao
+                                .deleteItemsByPackageId(id)
+                                .thenMany(packageItemDao.createItems(aPackage.getItems()))
+                                .then();
+                    })).then(Mono.defer(() -> {
+                        if (aPackage.getTags() == null) {
+                            log.debug("Package.getTags() is null, no changes made to tags of packageId, {}", uuid);
+                            return Mono.empty();
+                        }
+                        return packageTagDao
+                                .deleteTagsByPackageId(id)
+                                .thenMany(packageTagDao.createTags(aPackage.getTags()))
+                                .then();
+                    }));
+
         });
     }
 

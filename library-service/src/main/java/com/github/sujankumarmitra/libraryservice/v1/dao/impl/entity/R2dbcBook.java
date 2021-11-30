@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -57,13 +56,13 @@ public final class R2dbcBook extends Book {
         }
     }
 
-    public void addAuthor(@NonNull Author author) {
-        this.authors.add(convertToR2dbcAuthor(author));
-    }
-
-    public void addTag(@NonNull BookTag tag) {
-        this.tags.add(convertToR2dbcBookTag(tag));
-    }
+//    public void addAuthor(@NonNull Author author) {
+//        this.authors.add(convertToR2dbcAuthor(author));
+//    }
+//
+//    public void addTag(@NonNull BookTag tag) {
+//        this.tags.add(convertToR2dbcBookTag(tag));
+//    }
 
     public <T extends Author> void addAllAuthors(@NonNull Set<T> authors) {
         for (Author author : authors) {
@@ -77,13 +76,13 @@ public final class R2dbcBook extends Book {
         }
     }
 
-    public void removeAllTags() {
-        this.tags.clear();
-    }
-
-    public void removeAllAuthors() {
-        this.authors.clear();
-    }
+//    public void removeAllTags() {
+//        this.tags.clear();
+//    }
+//
+//    public void removeAllAuthors() {
+//        this.authors.clear();
+//    }
 
     private R2dbcAuthor convertToR2dbcAuthor(Author author) {
         return author instanceof R2dbcAuthor ?
@@ -92,9 +91,19 @@ public final class R2dbcBook extends Book {
     }
 
     private R2dbcBookTag convertToR2dbcBookTag(BookTag tag) {
-        return tag instanceof BookTag ?
+        return tag instanceof R2dbcBookTag ?
                 (R2dbcBookTag) tag :
                 new R2dbcBookTag(tag);
     }
 
+
+    @Override
+    public boolean equals(Object o) {
+        return super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
 }

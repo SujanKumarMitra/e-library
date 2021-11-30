@@ -162,8 +162,10 @@ public class R2dbcPostgresqlBookDao implements BookDao {
                     .map(r2dbcBook -> applyUpdates(book, r2dbcBook))
                     .flatMap(this::updateR2dbcBook)
                     .then(Mono.defer(() -> {
-                        if (book.getAuthors() == null)
+                        if (book.getAuthors() == null) {
+                            log.debug("Book.getAuthors() is null, no changes made to authors of bookId, {}", uuid);
                             return Mono.empty();
+                        }
                         else {
                             return authorDao
                                     .deleteAuthorsByBookId(id)
@@ -171,8 +173,10 @@ public class R2dbcPostgresqlBookDao implements BookDao {
                                     .then();
                         }
                     }).then(Mono.defer(() -> {
-                        if (book.getTags() == null)
+                        if (book.getTags() == null) {
+                            log.debug("Book.getTags() is null, no changes made to tags of bookId, {}", uuid);
                             return Mono.empty();
+                        }
                         else {
                             return bookTagDao
                                     .deleteTagsByBookId(id)
