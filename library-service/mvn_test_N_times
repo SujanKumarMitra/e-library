@@ -1,0 +1,5 @@
+#!/usr/bin/sh
+n=$1
+for i in {1..$n}; do
+  ./mvnw test
+done

@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
@@ -28,7 +29,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @OpenAPIDefinition(
         info = @Info(
                 title = "Library Service",
-                description = "Service for storing library information and managing book leases",
+                description = "Service for CRUD operations of library data items and managing book leases",
                 contact = @Contact(
                         name = "Sujan Kumar Mitra",
                         email = "mitrakumarsujan@gmail.com",
@@ -100,12 +101,36 @@ public class OpenApiConfiguration {
             responseCode = "400",
             description = "Request contains errors",
             content = @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = ErrorResponse.class)
-            )
+                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = ErrorResponse.class))
     )
     @Target({METHOD, TYPE})
     @Retention(RUNTIME)
     public @interface ApiBadRequestResponse {
+    }
+
+    @ApiResponse(
+            responseCode = "409",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = ErrorResponse.class))
+    )
+    @Target({METHOD, TYPE})
+    @Retention(RUNTIME)
+    public @interface ApiConflictResponse {
+    }
+
+
+    @ApiResponse(responseCode = "404", content = @Content(schema = @Schema))
+    @Target({METHOD, TYPE})
+    @Retention(RUNTIME)
+    public @interface ApiNotFoundResponse {
+    }
+
+
+    @ApiResponse(responseCode = "202", description = "Server acknowledged the request")
+    @Target({METHOD, TYPE})
+    @Retention(RUNTIME)
+    public @interface ApiAcceptedResponse {
     }
 }

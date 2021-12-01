@@ -12,7 +12,7 @@ public abstract class LeaseRequest {
 
     public abstract String getUserId();
 
-    public abstract LeaseStatus getLeaseStatus();
+    public abstract LeaseStatus getStatus();
 
     public abstract long getTimestamp();
 }

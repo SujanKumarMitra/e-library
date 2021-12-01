@@ -1,11 +1,12 @@
 package com.github.sujankumarmitra.libraryservice.v1.controller;
 
-import com.github.sujankumarmitra.libraryservice.v1.controller.dto.ErrorResponse;
+import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiAcceptedResponse;
+import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiBadRequestResponse;
+import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiConflictResponse;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.CreatePackageTagRequestSchema;
-import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.UpdateBookTagRequestSchema;
+import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.UpdatePackageTagRequestSchema;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.headers.Header;
-import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,71 +27,55 @@ import reactor.core.publisher.Mono;
 )
 public class PackageTagController {
 
-
     @Operation(
-            description = "# Create a package tag",
-            responses = {
-                    @ApiResponse(
-                            responseCode = "201",
-                            headers = @Header(
-                                    name = "Location",
-                                    description = "Unique ID pointing to this tag",
-                                    schema = @Schema(
-                                            example = "7d553b6b-c6e4-42a7-bc8d-7cda07909b2f"
-                                    )
-                            )
-                    ),
-                    @ApiResponse(
-                            responseCode = "400",
-                            description = "Request body contains errors",
-                            content = @Content(
-                                    schema = @Schema(
-                                            implementation = ErrorResponse.class
-                                    )
-                            )
+            summary = "Create a package tag",
+            description = "Librarians/Teachers will invoke this API"
+    )
+    @ApiResponse(
+            responseCode = "201",
+            headers = @Header(
+                    name = "Location",
+                    description = "Unique ID pointing to this tag",
+                    schema = @Schema(
+                            example = "7d553b6b-c6e4-42a7-bc8d-7cda07909b2f"
                     )
-            }
+            )
+    )
+    @ApiAcceptedResponse
+    @ApiBadRequestResponse
+    @ApiConflictResponse
+    @ApiResponse(
+            responseCode = "409",
+            description = "Tag with key already exists"
     )
     @PostMapping
-    public Mono<ResponseEntity<Void>> createTag(@PathVariable("bookId") String bookId,
-                                               @RequestBody CreatePackageTagRequestSchema request) {
+    public Mono<ResponseEntity<Void>> createTag(@PathVariable("packageId") String packageId,
+                                                @RequestBody CreatePackageTagRequestSchema request) {
         return Mono.empty();
     }
 
     @Operation(
-            description = "# Update an existing book tag",
-            responses = {
-                    @ApiResponse(
-                            responseCode = "202"
-                    ),
-                    @ApiResponse(
-                            responseCode = "400",
-                            description = "Request body contains errors",
-                            content = @Content(
-                                    schema = @Schema(
-                                            implementation = ErrorResponse.class
-                                    )
-                            )
-                    )
-            }
+            summary = "Update an existing package tag",
+            description = "Librarians/Teachers will invoke this API"
     )
+    @ApiConflictResponse
+    @ApiAcceptedResponse
     @PatchMapping(path = "/{tagId}", consumes = {"application/merge-patch+json", "application/json"})
-    public Mono<ResponseEntity<Void>> updateTag(@PathVariable("tagId") String tagId,
-                                                @RequestBody UpdateBookTagRequestSchema request) {
+    public Mono<ResponseEntity<Void>> updateTag(@PathVariable("packageId") String packageId,
+                                                @PathVariable("tagId") String tagId,
+                                                @RequestBody UpdatePackageTagRequestSchema request) {
         return Mono.empty();
     }
 
 
     @Operation(
-            description = "# Delete a package tag",
-            responses = {
-                    @ApiResponse(
-                            responseCode = "202"
-                    )
-            }
+            summary = "Delete a package tag",
+            description = "Librarians/Teachers will invoke this API"
     )
+    @ApiAcceptedResponse
     @DeleteMapping("/{tagId}")
-    public Mono<ResponseEntity<Void>> deleteTag(@PathVariable("tagId") String tagId) {
+    public Mono<ResponseEntity<Void>> deleteTag(@PathVariable("packageId") String packageId,
+                                                @PathVariable("tagId") String tagId) {
         return Mono.empty();
     }
 

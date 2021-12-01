@@ -21,11 +21,13 @@ public class UpdateBookTagRequestSchema extends BookTag {
     }
 
     @Override
+    @Schema(description = "the key of the tag. the key must be unique")
     public String getKey() {
         return null;
     }
 
     @Override
+    @Schema(description = "the value of the tag")
     public String getValue() {
         return null;
     }

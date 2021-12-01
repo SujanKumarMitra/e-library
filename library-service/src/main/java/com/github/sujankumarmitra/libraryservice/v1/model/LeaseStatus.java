@@ -10,6 +10,8 @@ public enum LeaseStatus {
 
     ACCEPTED,
 
-    REJECTED
+    REJECTED,
+
+    EXPIRED
 
 }

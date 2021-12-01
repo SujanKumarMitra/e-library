@@ -1,25 +1,28 @@
 package com.github.sujankumarmitra.libraryservice.v1.openapi.schema;
 
 import com.github.sujankumarmitra.libraryservice.v1.model.Author;
-import io.swagger.v3.oas.annotations.media.Schema;
+
+import javax.validation.constraints.NotEmpty;
 
 /**
  * @author skmitra
- * @since Nov 29/11/21, 2021
+ * @since Dec 01/12/21, 2021
  */
-public class UpdateAuthorSchema extends Author {
+public class GetAuthorResponseSchema extends Author {
     @Override
+    @NotEmpty
     public String getId() {
         return null;
     }
 
     @Override
-    @Schema(hidden = true)
+    @NotEmpty
     public String getBookId() {
         return null;
     }
 
     @Override
+    @NotEmpty
     public String getName() {
         return null;
     }

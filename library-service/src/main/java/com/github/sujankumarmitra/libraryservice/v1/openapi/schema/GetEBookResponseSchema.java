@@ -1,20 +1,22 @@
 package com.github.sujankumarmitra.libraryservice.v1.openapi.schema;
 
-import com.github.sujankumarmitra.libraryservice.v1.model.PhysicalBook;
+import com.github.sujankumarmitra.libraryservice.v1.model.EBookSegment;
+import com.github.sujankumarmitra.libraryservice.v1.model.Ebook;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import javax.validation.constraints.*;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 /**
  * @author skmitra
- * @since Nov 29/11/21, 2021
+ * @since Dec 01/12/21, 2021
  */
-@Schema(description = "Payload to create a physical book")
-public class CreatePhysicalBookRequestSchema extends PhysicalBook {
-    @Schema(hidden = true)
+public class GetEBookResponseSchema extends Ebook {
     @Override
+    @NotEmpty
     public String getId() {
         return null;
     }
@@ -27,8 +29,8 @@ public class CreatePhysicalBookRequestSchema extends PhysicalBook {
 
     @Override
     @SuppressWarnings("unchecked")
-    @Size(min = 1)
-    public Set<CreateAuthorRequestSchema> getAuthors() {
+    @NotEmpty
+    public Set<GetAuthorResponseSchema> getAuthors() {
         return Collections.emptySet();
     }
 
@@ -45,7 +47,6 @@ public class CreatePhysicalBookRequestSchema extends PhysicalBook {
     }
 
     @Override
-    @Schema(description = "the cover page image asset id")
     public String getCoverPageImageId() {
         return null;
     }
@@ -53,30 +54,23 @@ public class CreatePhysicalBookRequestSchema extends PhysicalBook {
     @Override
     @SuppressWarnings("unchecked")
     @NotNull
-    public Set<CreateBookTagRequestSchema> getTags() {
+    public Set<GetBookTagResponseSchema> getTags() {
         return Collections.emptySet();
     }
 
+
     @Schema(
+            description = "The value will always set to 'ebook'",
             implementation = String.class,
-            allowableValues = {"physical_book"},
-            description = "the value must be set to 'physical_book'"
-    )
+            allowableValues = {"ebook"})
     @NotEmpty
     public BookTypeSchema getType() {
         return null;
     }
 
     @Override
-    @NotEmpty
-    @Min(0)
-    public long getCopiesAvailable() {
-        return 0;
-    }
-
-    @Override
-    @NotEmpty
-    public MoneySchema getFinePerDay() {
-        return null;
+    @Schema(hidden = true)
+    public <T extends EBookSegment> List<T> getSegments() {
+        return Collections.emptyList();
     }
 }

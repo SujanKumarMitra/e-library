@@ -1,31 +1,34 @@
 package com.github.sujankumarmitra.libraryservice.v1.openapi.schema;
 
-import com.github.sujankumarmitra.libraryservice.v1.model.PackageTag;
-import io.swagger.v3.oas.annotations.media.Schema;
+import com.github.sujankumarmitra.libraryservice.v1.model.BookTag;
+
+import javax.validation.constraints.NotEmpty;
 
 /**
  * @author skmitra
- * @since Nov 29/11/21, 2021
+ * @since Dec 01/12/21, 2021
  */
-public class CreatePackageTagSchema extends PackageTag {
+public class GetBookTagResponseSchema extends BookTag {
     @Override
-    @Schema(hidden = true)
-    public String getPackageId() {
-        return null;
-    }
-
-    @Override
-    @Schema(hidden = true)
+    @NotEmpty
     public String getId() {
         return null;
     }
 
     @Override
+    @NotEmpty
+    public String getBookId() {
+        return null;
+    }
+
+    @Override
+    @NotEmpty
     public String getKey() {
         return null;
     }
 
     @Override
+    @NotEmpty
     public String getValue() {
         return null;
     }

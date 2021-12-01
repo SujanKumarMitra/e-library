@@ -8,6 +8,6 @@ import java.util.List;
  */
 public abstract class Ebook extends Book {
 
-    public abstract List<EBookSegment> getSegments();
+    public abstract <T extends EBookSegment> List<T> getSegments();
 
 }

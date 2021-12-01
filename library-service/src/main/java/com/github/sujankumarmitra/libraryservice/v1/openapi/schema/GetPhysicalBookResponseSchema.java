@@ -3,18 +3,19 @@ package com.github.sujankumarmitra.libraryservice.v1.openapi.schema;
 import com.github.sujankumarmitra.libraryservice.v1.model.PhysicalBook;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import javax.validation.constraints.*;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.Set;
 
 /**
  * @author skmitra
- * @since Nov 29/11/21, 2021
+ * @since Dec 01/12/21, 2021
  */
-@Schema(description = "Payload to create a physical book")
-public class CreatePhysicalBookRequestSchema extends PhysicalBook {
-    @Schema(hidden = true)
+@Schema(description = "Payload for physical book. See type")
+public class GetPhysicalBookResponseSchema extends PhysicalBook {
     @Override
+    @NotEmpty
     public String getId() {
         return null;
     }
@@ -26,9 +27,9 @@ public class CreatePhysicalBookRequestSchema extends PhysicalBook {
     }
 
     @Override
+    @NotEmpty
     @SuppressWarnings("unchecked")
-    @Size(min = 1)
-    public Set<CreateAuthorRequestSchema> getAuthors() {
+    public Set<GetAuthorResponseSchema> getAuthors() {
         return Collections.emptySet();
     }
 
@@ -45,38 +46,36 @@ public class CreatePhysicalBookRequestSchema extends PhysicalBook {
     }
 
     @Override
-    @Schema(description = "the cover page image asset id")
+    @Schema(description = "the cover page image asset id. Can be null", nullable = true)
     public String getCoverPageImageId() {
         return null;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     @NotNull
-    public Set<CreateBookTagRequestSchema> getTags() {
+    @SuppressWarnings("unchecked")
+    public Set<GetBookTagResponseSchema> getTags() {
         return Collections.emptySet();
     }
 
+    @Override
+    @Schema(description = "total no of copies available in library." +
+            "<br> lease requests will not be made if it's value is 0")
+    public long getCopiesAvailable() {
+        return 0;
+    }
+
     @Schema(
+            description = "The value will always set to 'physical_book'",
             implementation = String.class,
-            allowableValues = {"physical_book"},
-            description = "the value must be set to 'physical_book'"
-    )
-    @NotEmpty
+            allowableValues = {"physical_book"})
     public BookTypeSchema getType() {
         return null;
     }
 
     @Override
-    @NotEmpty
-    @Min(0)
-    public long getCopiesAvailable() {
-        return 0;
-    }
-
-    @Override
-    @NotEmpty
+    @NotNull
     public MoneySchema getFinePerDay() {
-        return null;
+        return new MoneySchema();
     }
 }
