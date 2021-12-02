@@ -19,7 +19,7 @@ public abstract class Book {
 
     public abstract String getEdition();
 
-    public abstract String getCoverPageImageId();
+    public abstract String getCoverPageImageAssetId();
 
     public abstract <T extends BookTag> Set<T> getTags();
 
@@ -34,7 +34,7 @@ public abstract class Book {
                 Objects.equals(getAuthors(), book.getAuthors()) &&
                 Objects.equals(getPublisher(), book.getPublisher()) &&
                 Objects.equals(getEdition(), book.getEdition()) &&
-                Objects.equals(getCoverPageImageId(), book.getCoverPageImageId()) &&
+                Objects.equals(getCoverPageImageAssetId(), book.getCoverPageImageAssetId()) &&
                 Objects.equals(getTags(), book.getTags());
     }
 
@@ -45,7 +45,7 @@ public abstract class Book {
                 getAuthors(),
                 getPublisher(),
                 getEdition(),
-                getCoverPageImageId(),
+                getCoverPageImageAssetId(),
                 getTags());
     }
 
@@ -57,7 +57,7 @@ public abstract class Book {
                 ", authors=" + getAuthors() +
                 ", publisher='" + getPublisher() + '\'' +
                 ", edition='" + getEdition() + '\'' +
-                ", coverPageImageId='" + getCoverPageImageId() + '\'' +
+                ", coverPageImageAssetId='" + getCoverPageImageAssetId() + '\'' +
                 ", tags=" + getTags() +
                 '}';
     }

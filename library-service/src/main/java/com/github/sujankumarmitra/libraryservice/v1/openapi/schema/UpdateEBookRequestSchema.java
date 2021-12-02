@@ -1,7 +1,8 @@
 package com.github.sujankumarmitra.libraryservice.v1.openapi.schema;
 
+import com.github.sujankumarmitra.libraryservice.v1.model.EBook;
+import com.github.sujankumarmitra.libraryservice.v1.model.EBookFormat;
 import com.github.sujankumarmitra.libraryservice.v1.model.EBookSegment;
-import com.github.sujankumarmitra.libraryservice.v1.model.Ebook;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.validation.constraints.NotEmpty;
@@ -17,7 +18,7 @@ import java.util.Set;
         "<br> if a field is missing or set to null, it's value will remain unchanged." +
         "<br> if an array field is null, it will remain unchanged, <b> but if it is empty, or filled, " +
         "all it's previous values will be replaced by new array")
-public class UpdateEBookRequestSchema extends Ebook {
+public class UpdateEBookRequestSchema extends EBook {
 
     @Override
     @Schema(hidden = true)
@@ -47,14 +48,14 @@ public class UpdateEBookRequestSchema extends Ebook {
     }
 
     @Override
-    public String getCoverPageImageId() {
+    public String getCoverPageImageAssetId() {
         return null;
     }
 
     @Schema(
             implementation = String.class,
-            allowableValues = {"ebook"},
-            description = "the value must be set to 'ebook'"
+            allowableValues = {"EBOOK"},
+            description = "the value must be set to 'EBOOK'"
     )
     @NotEmpty
     public BookTypeSchema getType() {
@@ -65,6 +66,12 @@ public class UpdateEBookRequestSchema extends Ebook {
     @SuppressWarnings("unchecked")
     public Set<UpdateBookTagRequestSchema> getTags() {
         return Collections.emptySet();
+    }
+
+    @Schema(description = "format of ebook")
+    @Override
+    public EBookFormat getFormat() {
+        return null;
     }
 
     @Override

@@ -6,7 +6,9 @@ import java.util.List;
  * @author skmitra
  * @since Nov 20/11/21, 2021
  */
-public abstract class Ebook extends Book {
+public abstract class EBook extends Book {
+
+    public abstract EBookFormat getFormat();
 
     public abstract <T extends EBookSegment> List<T> getSegments();
 

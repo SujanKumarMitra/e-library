@@ -1,7 +1,8 @@
 package com.github.sujankumarmitra.libraryservice.v1.openapi.schema;
 
+import com.github.sujankumarmitra.libraryservice.v1.model.EBookFormat;
 import com.github.sujankumarmitra.libraryservice.v1.model.EBookSegment;
-import com.github.sujankumarmitra.libraryservice.v1.model.Ebook;
+import com.github.sujankumarmitra.libraryservice.v1.model.EBook;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.validation.constraints.NotEmpty;
@@ -14,7 +15,7 @@ import java.util.Set;
  * @author skmitra
  * @since Dec 01/12/21, 2021
  */
-public class GetEBookResponseSchema extends Ebook {
+public class GetEBookResponseSchema extends EBook {
     @Override
     @NotEmpty
     public String getId() {
@@ -47,7 +48,7 @@ public class GetEBookResponseSchema extends Ebook {
     }
 
     @Override
-    public String getCoverPageImageId() {
+    public String getCoverPageImageAssetId() {
         return null;
     }
 
@@ -60,11 +61,17 @@ public class GetEBookResponseSchema extends Ebook {
 
 
     @Schema(
-            description = "The value will always set to 'ebook'",
+            description = "The value will always set to 'EBOOK'",
             implementation = String.class,
-            allowableValues = {"ebook"})
+            allowableValues = {"EBOOK"})
     @NotEmpty
     public BookTypeSchema getType() {
+        return null;
+    }
+
+    @Schema(description = "format of ebook")
+    @Override
+    public EBookFormat getFormat() {
         return null;
     }
 

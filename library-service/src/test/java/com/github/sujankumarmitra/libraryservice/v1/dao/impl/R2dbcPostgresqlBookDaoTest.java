@@ -175,7 +175,7 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
                     assertThat(actualBook.getId()).isEqualTo(expectedId);
                     assertThat(actualBook.getTitle()).isEqualTo(expectedTitle);
                     assertThat(actualBook.getPublisher()).isEqualTo(expectedPublisher);
-                    assertThat(actualBook.getCoverPageImageId()).isNull();
+                    assertThat(actualBook.getCoverPageImageAssetId()).isNull();
                     assertThat(actualBook.getEdition()).isEqualTo(expectedEdition);
                     assertThat(actualBook.getAuthors()).isEqualTo(expectedAuthors);
                     assertThat(actualBook.getTags()).isEqualTo(expectedTags);
@@ -196,7 +196,7 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
                 .bind("$1", book.getTitle())
                 .bind("$2", book.getPublisher())
                 .bind("$3", book.getEdition())
-                .bind("$4", book.getCoverPageImageId())
+                .bind("$4", book.getCoverPageImageAssetId())
                 .map(row -> row.get("id", UUID.class))
                 .one()
                 .doOnNext(book::setId)
@@ -212,7 +212,7 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
         String expectedTitle = book.getTitle();
         String expectedPublisher = book.getPublisher();
         String expectedEdition = book.getEdition();
-        String expectedCoverPageImageId = book.getCoverPageImageId();
+        String expectedCoverPageImageId = book.getCoverPageImageAssetId();
 
         R2dbcAuthor author1 = new R2dbcAuthor();
         author1.setBookId(book.getUuid());
@@ -258,7 +258,7 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
                     assertThat(actualBook.getTitle()).isEqualTo(expectedTitle);
                     assertThat(actualBook.getPublisher()).isEqualTo(expectedPublisher);
                     assertThat(actualBook.getEdition()).isEqualTo(expectedEdition);
-                    assertThat(actualBook.getCoverPageImageId()).isEqualTo(expectedCoverPageImageId);
+                    assertThat(actualBook.getCoverPageImageAssetId()).isEqualTo(expectedCoverPageImageId);
                     assertThat(actualBook.getAuthors()).isEqualTo(expectedAuthors);
                     assertThat(actualBook.getTags()).isEqualTo(expectedTags);
                 })
@@ -308,7 +308,7 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
                 .bind("$1", book.getTitle())
                 .bind("$2", book.getPublisher())
                 .bind("$3", book.getEdition())
-                .bind("$4", book.getCoverPageImageId())
+                .bind("$4", book.getCoverPageImageAssetId())
                 .fetch()
                 .one()
                 .map(map -> map.get("id"))
@@ -358,7 +358,7 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
                     String actualTitle = actualBook.getTitle();
                     String actualPublisher = actualBook.getPublisher();
                     String actualEdition = actualBook.getEdition();
-                    String actualCoverPageImageId = actualBook.getCoverPageImageId();
+                    String actualCoverPageImageId = actualBook.getCoverPageImageAssetId();
 
                     assertThat(actualTitle).isEqualTo(expectedTitle);
                     assertThat(actualEdition).isEqualTo(expectedEdition);

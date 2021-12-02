@@ -73,10 +73,10 @@ public class R2dbcPostgresqlBookDao implements BookDao {
                     .bind("$2", r2dbcBook.getPublisher())
                     .bind("$3", r2dbcBook.getEdition());
 
-            if (r2dbcBook.getCoverPageImageId() == null) {
+            if (r2dbcBook.getCoverPageImageAssetId() == null) {
                 executeSpec = executeSpec.bindNull("$4", String.class);
             } else {
-                executeSpec = executeSpec.bind("$4", r2dbcBook.getCoverPageImageId());
+                executeSpec = executeSpec.bind("$4", r2dbcBook.getCoverPageImageAssetId());
             }
             return executeSpec
                     .map(row -> row.get("id", UUID.class))
@@ -195,10 +195,10 @@ public class R2dbcPostgresqlBookDao implements BookDao {
                 .bind("$2", book.getPublisher())
                 .bind("$3", book.getEdition());
 
-        if (book.getCoverPageImageId() == null)
+        if (book.getCoverPageImageAssetId() == null)
             executeSpec = executeSpec.bindNull("$4", String.class);
         else
-            executeSpec = executeSpec.bind("$4", book.getCoverPageImageId());
+            executeSpec = executeSpec.bind("$4", book.getCoverPageImageAssetId());
 
         return executeSpec
                 .bind("$5", book.getUuid())
@@ -217,8 +217,8 @@ public class R2dbcPostgresqlBookDao implements BookDao {
         if (oldBook.getEdition() != null)
             newBook.setEdition(oldBook.getEdition());
 
-        if (oldBook.getCoverPageImageId() != null)
-            newBook.setCoverPageImageId(oldBook.getCoverPageImageId());
+        if (oldBook.getCoverPageImageAssetId() != null)
+            newBook.setCoverPageImageId(oldBook.getCoverPageImageAssetId());
 
         return newBook;
     }

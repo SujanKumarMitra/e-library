@@ -96,4 +96,18 @@ public class ActiveLeaseRequestController {
         return Mono.empty();
     }
 
+    @Operation(
+            summary = "Trigger system to invalidate expired ebook leases",
+            description = "The system is expected to automatically relinquish active ebook leases, once they expire." +
+                    "<br> But, sometimes this operation might take some time to activate, due to multiple reasons like scheduler delay, clock drift etc." +
+                    "<br> So, <b>Librarians</b> can manually trigger relinquishing of expired ebook leases." +
+                    "<br><b> Note: auto relinquishment of leases only occurs for ebooks, not for physical books"
+    )
+    @ApiAcceptedResponse
+    @PutMapping("/invalidate")
+    public Mono<ResponseEntity<Void>> invalidateStaleLeases() {
+        return Mono.empty();
+    }
+
+
 }

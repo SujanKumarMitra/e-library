@@ -46,7 +46,7 @@ public class UpdatePhysicalBookRequestSchema extends PhysicalBook {
     }
 
     @Override
-    public String getCoverPageImageId() {
+    public String getCoverPageImageAssetId() {
         return null;
     }
 
@@ -58,8 +58,8 @@ public class UpdatePhysicalBookRequestSchema extends PhysicalBook {
 
     @Schema(
             implementation = String.class,
-            allowableValues = {"physical_book"},
-            description = "the value must be set to 'physical_book'"
+            allowableValues = {"PHYSICAL_BOOK"},
+            description = "the value must be set to 'PHYSICAL_BOOK'"
     )
     @NotEmpty
     public BookTypeSchema getType() {

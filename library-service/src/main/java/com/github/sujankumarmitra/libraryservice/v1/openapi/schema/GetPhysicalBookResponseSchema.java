@@ -47,7 +47,7 @@ public class GetPhysicalBookResponseSchema extends PhysicalBook {
 
     @Override
     @Schema(description = "the cover page image asset id. Can be null", nullable = true)
-    public String getCoverPageImageId() {
+    public String getCoverPageImageAssetId() {
         return null;
     }
 
@@ -66,9 +66,9 @@ public class GetPhysicalBookResponseSchema extends PhysicalBook {
     }
 
     @Schema(
-            description = "The value will always set to 'physical_book'",
+            description = "The value will always set to 'PHYSICAL_BOOK'",
             implementation = String.class,
-            allowableValues = {"physical_book"})
+            allowableValues = {"PHYSICAL_BOOK"})
     public BookTypeSchema getType() {
         return null;
     }

@@ -33,7 +33,7 @@ public class BookDaoTestUtils {
                                 .bind("$1", book.getTitle())
                                 .bind("$2", book.getPublisher())
                                 .bind("$3", book.getEdition())
-                                .bind("$4", book.getCoverPageImageId())
+                                .bind("$4", book.getCoverPageImageAssetId())
                                 .execute()))
                 .flatMap(result -> result.map((row, __) -> row.get("id", UUID.class)))
                 .next()

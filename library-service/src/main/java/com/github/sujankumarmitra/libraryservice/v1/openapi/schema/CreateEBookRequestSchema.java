@@ -1,13 +1,14 @@
 package com.github.sujankumarmitra.libraryservice.v1.openapi.schema;
 
+import com.github.sujankumarmitra.libraryservice.v1.model.EBook;
+import com.github.sujankumarmitra.libraryservice.v1.model.EBookFormat;
 import com.github.sujankumarmitra.libraryservice.v1.model.EBookSegment;
-import com.github.sujankumarmitra.libraryservice.v1.model.Ebook;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.Collections;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -16,7 +17,7 @@ import java.util.Set;
  * @since Nov 29/11/21, 2021
  */
 @Schema(description = "Payload to create an ebook")
-public class CreateEBookRequestSchema extends Ebook {
+public class CreateEBookRequestSchema extends EBook {
     @Schema(hidden = true)
     @Override
     public String getId() {
@@ -50,14 +51,14 @@ public class CreateEBookRequestSchema extends Ebook {
 
     @Override
     @Schema(description = "cover image asset id", nullable = true)
-    public String getCoverPageImageId() {
+    public String getCoverPageImageAssetId() {
         return null;
     }
 
     @Schema(
             implementation = String.class,
-            allowableValues = {"ebook"},
-            description = "the value must be set to 'ebook'"
+            allowableValues = {"EBOOK"},
+            description = "the value must be set to 'EBOOK'"
     )
     @NotEmpty
     public BookTypeSchema getType() {
@@ -76,5 +77,11 @@ public class CreateEBookRequestSchema extends Ebook {
     @Schema(hidden = true)
     public List<EBookSegment> getSegments() {
         return Collections.emptyList();
+    }
+
+    @Override
+    @Schema(description = "format of ebook")
+    public EBookFormat getFormat() {
+        return null;
     }
 }
