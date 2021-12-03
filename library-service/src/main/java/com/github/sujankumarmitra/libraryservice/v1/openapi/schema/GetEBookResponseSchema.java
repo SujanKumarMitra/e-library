@@ -1,14 +1,12 @@
 package com.github.sujankumarmitra.libraryservice.v1.openapi.schema;
 
-import com.github.sujankumarmitra.libraryservice.v1.model.EBookFormat;
-import com.github.sujankumarmitra.libraryservice.v1.model.EBookSegment;
 import com.github.sujankumarmitra.libraryservice.v1.model.EBook;
+import com.github.sujankumarmitra.libraryservice.v1.model.EBookFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -75,9 +73,4 @@ public class GetEBookResponseSchema extends EBook {
         return null;
     }
 
-    @Override
-    @Schema(hidden = true)
-    public <T extends EBookSegment> List<T> getSegments() {
-        return Collections.emptyList();
-    }
 }

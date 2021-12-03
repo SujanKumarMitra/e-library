@@ -61,8 +61,8 @@ public class GetPhysicalBookResponseSchema extends PhysicalBook {
     @Override
     @Schema(description = "total no of copies available in library." +
             "<br> lease requests will not be made if it's value is 0")
-    public long getCopiesAvailable() {
-        return 0;
+    public Long getCopiesAvailable() {
+        return null;
     }
 
     @Schema(

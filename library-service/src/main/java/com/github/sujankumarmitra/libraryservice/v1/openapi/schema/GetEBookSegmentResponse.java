@@ -29,8 +29,8 @@ public class GetEBookSegmentResponse extends EBookSegment {
     @Override
     @NotNull
     @Schema(description = "logical index of a segment, like array indices")
-    public long getIndex() {
-        return 0;
+    public Long getIndex() {
+        return 0L;
     }
 
     @Override

@@ -2,14 +2,12 @@ package com.github.sujankumarmitra.libraryservice.v1.openapi.schema;
 
 import com.github.sujankumarmitra.libraryservice.v1.model.EBook;
 import com.github.sujankumarmitra.libraryservice.v1.model.EBookFormat;
-import com.github.sujankumarmitra.libraryservice.v1.model.EBookSegment;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -70,13 +68,6 @@ public class CreateEBookRequestSchema extends EBook {
     @NotNull
     public Set<CreateBookTagRequestSchema> getTags() {
         return Collections.emptySet();
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    @Schema(hidden = true)
-    public List<EBookSegment> getSegments() {
-        return Collections.emptyList();
     }
 
     @Override

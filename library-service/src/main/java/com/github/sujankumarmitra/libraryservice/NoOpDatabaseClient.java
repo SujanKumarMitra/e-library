@@ -14,7 +14,7 @@ import java.util.function.Supplier;
  * @author skmitra
  * @since Dec 01/12/21, 2021
  */
-class NoOpDatabaseClient implements DatabaseClient {
+final class NoOpDatabaseClient implements DatabaseClient {
     @Override
     public ConnectionFactory getConnectionFactory() {
         return null;

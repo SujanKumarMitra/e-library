@@ -67,8 +67,8 @@ public class UpdatePhysicalBookRequestSchema extends PhysicalBook {
     }
 
     @Override
-    public long getCopiesAvailable() {
-        return 0;
+    public Long getCopiesAvailable() {
+        return null;
     }
 
     @Override

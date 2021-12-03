@@ -70,8 +70,8 @@ public class CreatePhysicalBookRequestSchema extends PhysicalBook {
     @Override
     @NotEmpty
     @Min(0)
-    public long getCopiesAvailable() {
-        return 0;
+    public Long getCopiesAvailable() {
+        return null;
     }
 
     @Override

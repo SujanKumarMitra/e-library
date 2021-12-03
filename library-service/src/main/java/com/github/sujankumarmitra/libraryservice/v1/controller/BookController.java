@@ -2,8 +2,16 @@ package com.github.sujankumarmitra.libraryservice.v1.controller;
 
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiAcceptedResponse;
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiBadRequestResponse;
+import com.github.sujankumarmitra.libraryservice.v1.controller.dto.*;
+import com.github.sujankumarmitra.libraryservice.v1.controller.dto.adaptor.JacksonCreateEBookRequestAdaptor;
+import com.github.sujankumarmitra.libraryservice.v1.controller.dto.adaptor.JacksonCreatePhysicalBookRequestAdaptor;
+import com.github.sujankumarmitra.libraryservice.v1.controller.dto.adaptor.JacksonUpdateEBookRequestAdaptor;
+import com.github.sujankumarmitra.libraryservice.v1.controller.dto.adaptor.JacksonUpdatePhysicalBookRequestAdaptor;
 import com.github.sujankumarmitra.libraryservice.v1.model.Book;
+import com.github.sujankumarmitra.libraryservice.v1.model.EBook;
+import com.github.sujankumarmitra.libraryservice.v1.model.PhysicalBook;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.*;
+import com.github.sujankumarmitra.libraryservice.v1.service.BookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -11,12 +19,19 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import java.net.URI;
+
+import static com.github.sujankumarmitra.libraryservice.v1.controller.dto.BookType.EBOOK;
+import static com.github.sujankumarmitra.libraryservice.v1.controller.dto.BookType.PHYSICAL;
 
 /**
  * @author skmitra
@@ -24,12 +39,15 @@ import reactor.core.publisher.Mono;
  */
 @RestController
 @RequestMapping(path = "/api/v1/books")
+@AllArgsConstructor
 @Tag(
         name = "BookController",
         description = "### Controller for managing books"
 )
 public class BookController {
 
+    @NotNull
+    private final BookService bookService;
 
     @Operation(
             summary = "Fetch all books",
@@ -108,8 +126,24 @@ public class BookController {
     @ApiBadRequestResponse
     @ApiAcceptedResponse
     @PostMapping
-    public Mono<ResponseEntity<Void>> createBook(ServerWebExchange exchange) {
-        return Mono.empty();
+    public Mono<ResponseEntity<Void>> createBook(@RequestBody @Valid JacksonCreateBookRequest request) {
+        BookType type = request.getType();
+
+        Mono<String> createdBookId;
+
+        if (type == PHYSICAL) {
+            PhysicalBook book = new JacksonCreatePhysicalBookRequestAdaptor((JacksonCreatePhysicalBookRequest) request);
+            createdBookId = bookService.createBook(book);
+        } else if (type == EBOOK) {
+            EBook book = new JacksonCreateEBookRequestAdaptor((JacksonCreateEBookRequest) request);
+            createdBookId = bookService.createBook(book);
+        } else {
+            //this should not happen
+            createdBookId = Mono.error(new IllegalArgumentException("BookType could not be determined"));
+        }
+
+        return createdBookId
+                .map(id -> ResponseEntity.created(URI.create(id)).build());
     }
 
     @Operation(
@@ -129,8 +163,31 @@ public class BookController {
     @ApiBadRequestResponse
     @PatchMapping(path = "/{bookId}", consumes = {"application/merge-patch+json", "application/json"})
     public Mono<ResponseEntity<Void>> updateBook(@PathVariable("bookId") String bookId,
-                                                 ServerWebExchange exchange) {
-        return Mono.empty();
+                                                 @RequestBody @Valid JacksonUpdateBookRequest request) {
+
+        request.setId(bookId);
+        if (request.getAuthors() != null)
+            request.getAuthors().forEach(author -> author.setBookId(bookId));
+        if (request.getTags() != null)
+            request.getTags().forEach(tag -> tag.setBookId(bookId));
+
+        BookType type = request.getType();
+
+        Mono<Void> updateMono;
+
+        if (type == PHYSICAL) {
+            PhysicalBook book = new JacksonUpdatePhysicalBookRequestAdaptor((JacksonUpdatePhysicalBookRequest) request);
+            updateMono = bookService.updateBook(book);
+        } else if (type == EBOOK) {
+            EBook book = new JacksonUpdateEBookRequestAdaptor((JacksonUpdateEBookRequest) request);
+            updateMono = bookService.updateBook(book);
+        } else {
+            // should not happen
+            updateMono = Mono.error(new IllegalArgumentException("could not determine bookType"));
+        }
+
+        return updateMono
+                .thenReturn(ResponseEntity.accepted().build());
     }
 
     @Operation(
@@ -139,6 +196,7 @@ public class BookController {
     @ApiAcceptedResponse
     @DeleteMapping("/{bookId}")
     public Mono<ResponseEntity<Void>> deleteBook(@PathVariable("bookId") String bookId) {
-        return Mono.empty();
+        return bookService.deleteBook(bookId)
+                .thenReturn(ResponseEntity.accepted().build());
     }
 }

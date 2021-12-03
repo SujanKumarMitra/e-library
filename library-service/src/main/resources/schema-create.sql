@@ -44,15 +44,15 @@ CREATE TABLE IF NOT EXISTS physical_books(
 	book_id uuid,
 	copies_available bigint DEFAULT 0,
 	fine_amount numeric DEFAULT 0.0,
-	currency_code char(3),
+	fine_currency_code char(3),
 	CONSTRAINT pk_physical_books PRIMARY KEY(book_id),
 	CONSTRAINT fk_physical_books_books FOREIGN KEY(book_id) REFERENCES books(id),
 	CONSTRAINT chk_physical_book_copies_not_null CHECK(copies_available IS NOT NULL),
 	CONSTRAINT chk_physical_book_copies_positive CHECK(copies_available >= 0),
 	CONSTRAINT chk_physical_fine_amount_not_null CHECK(fine_amount IS NOT NULL),
 	CONSTRAINT chk_physical_book_fine_amount_positive CHECK(fine_amount >= 0.0),
-	CONSTRAINT chk_physical_book_currency_code_not_null CHECK(currency_code IS NOT NULL),
-	CONSTRAINT chk_physical_book_currency_code_valid CHECK(LENGTH(currency_code) = 3)
+	CONSTRAINT chk_physical_book_fine_currency_code_not_null CHECK(fine_currency_code IS NOT NULL),
+	CONSTRAINT chk_physical_book_fine_currency_code_valid CHECK(LENGTH(fine_currency_code) = 3)
 );
 
 CREATE TABLE IF NOT EXISTS ebooks(

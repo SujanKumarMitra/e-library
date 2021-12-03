@@ -2,12 +2,10 @@ package com.github.sujankumarmitra.libraryservice.v1.openapi.schema;
 
 import com.github.sujankumarmitra.libraryservice.v1.model.EBook;
 import com.github.sujankumarmitra.libraryservice.v1.model.EBookFormat;
-import com.github.sujankumarmitra.libraryservice.v1.model.EBookSegment;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.validation.constraints.NotEmpty;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -74,10 +72,4 @@ public class UpdateEBookRequestSchema extends EBook {
         return null;
     }
 
-    @Override
-    @SuppressWarnings("unchecked")
-    @Schema(hidden = true)
-    public List<EBookSegment> getSegments() {
-        return Collections.emptyList();
-    }
 }
