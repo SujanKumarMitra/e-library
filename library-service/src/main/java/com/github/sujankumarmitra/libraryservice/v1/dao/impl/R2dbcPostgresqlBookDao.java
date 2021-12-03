@@ -31,12 +31,12 @@ import java.util.stream.Collectors;
 @Repository
 @AllArgsConstructor
 @Slf4j
-public class R2dbcPostgresqlBookDao implements BookDao {
+public class R2dbcPostgresqlBookDao implements BookDao<Book> {
 
-    public static final String INSERT_STATEMENT = "INSERT INTO books (title,publisher,edition,cover_page_image_id) values ($1,$2,$3,$4) RETURNING id";
+    public static final String INSERT_STATEMENT = "INSERT INTO books (title,publisher,edition,cover_page_image_asset_id) values ($1,$2,$3,$4) RETURNING id";
     public static final String DELETE_STATEMENT = "DELETE FROM books WHERE id=$1";
-    public static final String SELECT_STATEMENT = "SELECT title,publisher,edition,cover_page_image_id FROM books WHERE id=$1";
-    public static final String UPDATE_STATEMENT = "UPDATE books SET title=$1, publisher=$2, edition=$3, cover_page_image_id=$4 WHERE id=$5";
+    public static final String SELECT_STATEMENT = "SELECT title,publisher,edition,cover_page_image_asset_id FROM books WHERE id=$1";
+    public static final String UPDATE_STATEMENT = "UPDATE books SET title=$1, publisher=$2, edition=$3, cover_page_image_asset_id=$4 WHERE id=$5";
 
     @NonNull
     private final DatabaseClient databaseClient;
@@ -165,8 +165,7 @@ public class R2dbcPostgresqlBookDao implements BookDao {
                         if (book.getAuthors() == null) {
                             log.debug("Book.getAuthors() is null, no changes made to authors of bookId, {}", uuid);
                             return Mono.empty();
-                        }
-                        else {
+                        } else {
                             return authorDao
                                     .deleteAuthorsByBookId(id)
                                     .thenMany(authorDao.createAuthors(book.getAuthors()))
@@ -176,8 +175,7 @@ public class R2dbcPostgresqlBookDao implements BookDao {
                         if (book.getTags() == null) {
                             log.debug("Book.getTags() is null, no changes made to tags of bookId, {}", uuid);
                             return Mono.empty();
-                        }
-                        else {
+                        } else {
                             return bookTagDao
                                     .deleteTagsByBookId(id)
                                     .thenMany(bookTagDao.createTags(book.getTags()))
@@ -218,7 +216,7 @@ public class R2dbcPostgresqlBookDao implements BookDao {
             newBook.setEdition(oldBook.getEdition());
 
         if (oldBook.getCoverPageImageAssetId() != null)
-            newBook.setCoverPageImageId(oldBook.getCoverPageImageAssetId());
+            newBook.setCoverPageImageAssetId(oldBook.getCoverPageImageAssetId());
 
         return newBook;
     }
@@ -240,7 +238,7 @@ public class R2dbcPostgresqlBookDao implements BookDao {
         book.setTitle(row.get("title", String.class));
         book.setEdition(row.get("edition", String.class));
         book.setPublisher(row.get("publisher", String.class));
-        book.setCoverPageImageId(row.get("cover_page_image_id", String.class));
+        book.setCoverPageImageAssetId(row.get("cover_page_image_asset_id", String.class));
 
         return book;
     }

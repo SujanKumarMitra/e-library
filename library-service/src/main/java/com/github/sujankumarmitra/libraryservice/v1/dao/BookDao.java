@@ -7,13 +7,13 @@ import reactor.core.publisher.Mono;
  * @author skmitra
  * @since Nov 21/11/21, 2021
  */
-public interface BookDao {
+public interface BookDao<B extends Book> {
 
-    Mono<String> createBook(Book book);
+    Mono<String> createBook(B book);
 
-    Mono<Book> getBook(String bookId);
+    Mono<B> getBook(String bookId);
 
-    Mono<Void> updateBook(Book book);
+    Mono<Void> updateBook(B book);
 
     Mono<Void> deleteBook(String bookId);
 

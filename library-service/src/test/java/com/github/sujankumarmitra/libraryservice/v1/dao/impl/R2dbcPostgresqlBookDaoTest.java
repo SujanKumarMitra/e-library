@@ -94,7 +94,7 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
     @Test
     void givenValidBookWithNullCoverImageId_whenInsert_shouldHandleNull() {
         R2dbcBook book = getBook();
-        book.setCoverPageImageId(null);
+        book.setCoverPageImageAssetId(null);
 
         bookDao.createBook(book)
                 .as(StepVerifier::create)
@@ -107,7 +107,7 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
     void givenValidBookWithNullCoverImagePage_whenSelect_shouldHandleNull() {
 
         R2dbcBook book = getBook();
-        book.setCoverPageImageId(null);
+        book.setCoverPageImageAssetId(null);
 
         entityTemplate
                 .getDatabaseClient()
@@ -329,7 +329,7 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
         book.setTitle(expectedTitle);
         book.setPublisher(expectedPublisher);
         book.setEdition(expectedEdition);
-        book.setCoverPageImageId(expectedCoverPageImageId);
+        book.setCoverPageImageAssetId(expectedCoverPageImageId);
 
         log.info("Expected book:: {}", book);
 
@@ -345,7 +345,7 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
                             actualBook.setTitle(row.get("title", String.class));
                             actualBook.setPublisher(row.get("publisher", String.class));
                             actualBook.setEdition(row.get("edition", String.class));
-                            actualBook.setCoverPageImageId(row.get("cover_page_image_id", String.class));
+                            actualBook.setCoverPageImageAssetId(row.get("cover_page_image_asset_id", String.class));
 
                             return actualBook;
                         })
@@ -430,7 +430,7 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
         book.setTitle(faker.book().title());
         book.setPublisher(faker.book().publisher());
         book.setEdition("1st");
-        book.setCoverPageImageId(faker.idNumber().valid());
+        book.setCoverPageImageAssetId(faker.idNumber().valid());
 
         return book;
 

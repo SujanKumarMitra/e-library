@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS physical_books;
-DROP TABLE IF EXISTS e_book_segments;
+DROP TABLE IF EXISTS ebook_segments;
+DROP TABLE IF EXISTS ebooks;
 DROP TABLE IF EXISTS tags;
 DROP TABLE IF EXISTS package_items;
 DROP TABLE IF EXISTS packages;

@@ -24,7 +24,6 @@ public final class R2dbcBook extends Book {
     private Set<R2dbcAuthor> authors = new HashSet<>();
     private String publisher;
     private String edition;
-    private String coverPageImageId;
     private String coverPageImageAssetId;
     private Set<R2dbcBookTag> tags = new HashSet<>();
 
@@ -46,7 +45,7 @@ public final class R2dbcBook extends Book {
         this.title = book.getTitle();
         this.publisher = book.getPublisher();
         this.edition = book.getEdition();
-        this.coverPageImageId = book.getCoverPageImageAssetId();
+        this.coverPageImageAssetId = book.getCoverPageImageAssetId();
 
         if (book.getAuthors() != null) {
             addAllAuthors(book.getAuthors());

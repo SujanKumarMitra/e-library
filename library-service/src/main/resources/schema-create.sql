@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS books(
 	title text,
 	publisher text,
 	edition text,
-	cover_page_image_id text,
+	cover_page_image_asset_id text,
 	CONSTRAINT pk_books PRIMARY KEY (id),
 	CONSTRAINT chk_books_title_not_null CHECK (title IS NOT NULL),
 	CONSTRAINT chk_books_title_not_empty CHECK (LENGTH(title) > 0),
@@ -55,18 +55,27 @@ CREATE TABLE IF NOT EXISTS physical_books(
 	CONSTRAINT chk_physical_book_currency_code_valid CHECK(LENGTH(currency_code) = 3)
 );
 
-CREATE TABLE IF NOT EXISTS e_book_segments(
+CREATE TABLE IF NOT EXISTS ebooks(
+	book_id uuid,
+	format text,
+	CONSTRAINT pk_ebooks PRIMARY KEY(book_id),
+	CONSTRAINT fk_ebooks_books FOREIGN KEY(book_id) REFERENCES books(id),
+	CONSTRAINT chk_ebook_format_not_null CHECK(format IS NOT NULL),
+	CONSTRAINT chk_ebook_format_valid CHECK(format IN ('PDF'))
+);
+
+
+CREATE TABLE IF NOT EXISTS ebook_segments(
 	id text,
 	book_id uuid,
-	start_page bigint,
-	end_page bigint,
-	CONSTRAINT pk_e_book_segments PRIMARY KEY(id),
-	CONSTRAINT fk_e_book_segments_books FOREIGN KEY(book_id) REFERENCES books(id),
-	CONSTRAINT chk_e_book_book_id_not_null CHECK(book_id IS NOT NULL),
-	CONSTRAINT chk_e_book_start_page_not_null CHECK(start_page IS NOT NULL),
-	CONSTRAINT chk_e_book_start_page_positive CHECK(start_page >= 0),
-	CONSTRAINT chk_e_book_end_page_not_null CHECK(end_page IS NOT NULL),
-	CONSTRAINT chk_e_book_end_page_positive CHECK(end_page >= 0)
+	index bigint,
+	asset_id text,
+	CONSTRAINT pk_ebook_segments PRIMARY KEY(id),
+	CONSTRAINT fk_ebook_segments_books FOREIGN KEY(book_id) REFERENCES books(id),
+	CONSTRAINT chk_ebook_book_id_not_null CHECK(book_id IS NOT NULL),
+	CONSTRAINT chk_ebook_index_not_null CHECK(index IS NOT NULL),
+	CONSTRAINT chk_ebook_index_positive CHECK(index >= 0),
+	CONSTRAINT chk_ebook_asset_id_not_null CHECK(asset_id IS NOT NULL)
 );
 
 CREATE TABLE IF NOT EXISTS packages(
@@ -106,9 +115,9 @@ CREATE TABLE IF NOT EXISTS package_items(
 CREATE TABLE IF NOT EXISTS lease_requests (
 	id uuid DEFAULT uuid_generate_v4(),
 	book_id uuid,
-	user_id varchar(255),
+	user_id text,
 	timestamp bigint DEFAULT extract(epoch from now()),
-	status varchar(255),
+	status text,
 	CONSTRAINT pk_lease_requests PRIMARY KEY(id),
  	CONSTRAINT fk_lease_requests_books FOREIGN KEY(book_id) REFERENCES books(id),
 	CONSTRAINT uq_lease_requests_book_id_user_id UNIQUE (book_id,user_id),
@@ -118,7 +127,7 @@ CREATE TABLE IF NOT EXISTS lease_requests (
 	CONSTRAINT chk_lease_requests_timestamp_not_null CHECK(timestamp IS NOT NULL),
 	CONSTRAINT chk_lease_requests_timestamp_positive CHECK(timestamp >= 0),
 	CONSTRAINT chk_lease_requests_status_not_null CHECK(status IS NOT NULL),
-	CONSTRAINT chk_lease_requests_status_valid CHECK(status IN ('PENDING', 'ACCEPTED', 'REJECTED'))
+	CONSTRAINT chk_lease_requests_status_valid CHECK(status IN ('PENDING', 'ACCEPTED', 'REJECTED', 'EXPIRED'))
 );
 
 CREATE TABLE IF NOT EXISTS lease_records(

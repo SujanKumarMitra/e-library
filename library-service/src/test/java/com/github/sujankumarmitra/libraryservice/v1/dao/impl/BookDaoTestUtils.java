@@ -26,7 +26,7 @@ public class BookDaoTestUtils {
         book.setTitle(faker.book().title());
         book.setPublisher(faker.book().publisher());
         book.setEdition(faker.idNumber().valid());
-        book.setCoverPageImageId(faker.idNumber().valid());
+        book.setCoverPageImageAssetId(faker.idNumber().valid());
 
         return connAccessor.inConnectionMany(conn ->
                         Flux.from(conn.createStatement(R2dbcPostgresqlBookDao.INSERT_STATEMENT)
