@@ -2,6 +2,7 @@ package com.github.sujankumarmitra.libraryservice.v1.controller.dto.adaptor;
 
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonCreateAuthorRequest;
 import com.github.sujankumarmitra.libraryservice.v1.model.Author;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,21 +14,19 @@ import javax.validation.constraints.NotNull;
  */
 @Getter
 @Setter
+@AllArgsConstructor
 public class JacksonCreateAuthorRequestAdaptor extends Author {
+    @NotNull
     private final JacksonCreateAuthorRequest request;
-
-    public JacksonCreateAuthorRequestAdaptor(@NotNull JacksonCreateAuthorRequest request) {
-        this.request = request;
-    }
 
     @Override
     public String getId() {
-        return null;
+        return request.getId();
     }
 
     @Override
     public String getBookId() {
-        return null;
+        return request.getBookId();
     }
 
     @Override

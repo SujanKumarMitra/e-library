@@ -20,7 +20,7 @@ public class JacksonCreatePackageTagRequestAdaptor extends PackageTag {
 
     @Override
     public String getId() {
-        return null;
+        return request.getId();
     }
 
     @Override
@@ -35,7 +35,7 @@ public class JacksonCreatePackageTagRequestAdaptor extends PackageTag {
 
     @Override
     public String getPackageId() {
-        return null;
+        return request.getPackageId();
     }
 
 }

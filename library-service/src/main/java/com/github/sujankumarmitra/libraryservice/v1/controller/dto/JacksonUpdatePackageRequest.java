@@ -1,6 +1,7 @@
 package com.github.sujankumarmitra.libraryservice.v1.controller.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.github.sujankumarmitra.libraryservice.v1.model.Package;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,7 +14,7 @@ import java.util.Set;
  */
 @Getter
 @Setter
-public class JacksonUpdatePackageRequest {
+public class JacksonUpdatePackageRequest extends Package {
 
     @JsonIgnore
     private String id;

@@ -18,12 +18,12 @@ public class JacksonCreateBookTagRequestAdaptor extends BookTag {
 
     @Override
     public String getId() {
-        return null;
+        return request.getId();
     }
 
     @Override
     public String getBookId() {
-        return null;
+        return request.getBookId();
     }
 
     @Override

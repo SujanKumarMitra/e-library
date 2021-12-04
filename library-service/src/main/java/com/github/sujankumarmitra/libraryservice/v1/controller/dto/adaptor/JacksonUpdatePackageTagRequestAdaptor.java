@@ -3,16 +3,12 @@ package com.github.sujankumarmitra.libraryservice.v1.controller.dto.adaptor;
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonUpdatePackageTagRequest;
 import com.github.sujankumarmitra.libraryservice.v1.model.PackageTag;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 
 /**
  * @author skmitra
  * @since Dec 04/12/21, 2021
  */
-@Getter
-@Setter
 @AllArgsConstructor
 public class JacksonUpdatePackageTagRequestAdaptor extends PackageTag {
     @NonNull

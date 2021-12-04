@@ -5,6 +5,7 @@ import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonUpdate
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonUpdateBookTagRequest;
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonUpdatePhysicalBookRequest;
 import com.github.sujankumarmitra.libraryservice.v1.model.PhysicalBook;
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
 
 import java.util.Set;
@@ -14,12 +15,10 @@ import java.util.stream.Collectors;
  * @author skmitra
  * @since Dec 03/12/21, 2021
  */
+@AllArgsConstructor
 public class JacksonUpdatePhysicalBookRequestAdaptor extends PhysicalBook {
+    @NonNull
     private final JacksonUpdatePhysicalBookRequest request;
-
-    public JacksonUpdatePhysicalBookRequestAdaptor(@NonNull JacksonUpdatePhysicalBookRequest request) {
-        this.request = request;
-    }
 
     @Override
     public String getId() {

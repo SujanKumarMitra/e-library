@@ -18,15 +18,14 @@ public class JacksonCreatePackageItemRequestAdaptor extends PackageItem {
     @NonNull
     private final JacksonCreatePackageItemRequest request;
 
-
     @Override
     public String getId() {
-        return null;
+        return request.getId();
     }
 
     @Override
     public String getPackageId() {
-        return null;
+        return request.getPackageId();
     }
 
     @Override

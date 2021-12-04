@@ -1,8 +1,10 @@
 package com.github.sujankumarmitra.libraryservice.v1.controller.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.github.sujankumarmitra.libraryservice.v1.model.Book;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,7 +26,9 @@ import static com.fasterxml.jackson.annotation.JsonTypeInfo.Id.NAME;
 })
 @Getter
 @Setter
-public abstract class JacksonCreateBookRequest {
+public abstract class JacksonCreateBookRequest extends Book {
+    @JsonIgnore
+    private String id;
     @NotEmpty
     private String title;
     @NotEmpty
