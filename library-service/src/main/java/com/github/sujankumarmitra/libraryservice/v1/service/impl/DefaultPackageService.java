@@ -1,7 +1,8 @@
-package com.github.sujankumarmitra.libraryservice.v1.service;
+package com.github.sujankumarmitra.libraryservice.v1.service.impl;
 
 import com.github.sujankumarmitra.libraryservice.v1.dao.PackageDao;
 import com.github.sujankumarmitra.libraryservice.v1.model.Package;
+import com.github.sujankumarmitra.libraryservice.v1.service.PackageService;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;

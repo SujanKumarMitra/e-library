@@ -2,6 +2,7 @@ package com.github.sujankumarmitra.libraryservice.v1.config;
 
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.ErrorResponse;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.info.Contact;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -132,5 +133,21 @@ public class OpenApiConfiguration {
     @Target({METHOD, TYPE})
     @Retention(RUNTIME)
     public @interface ApiAcceptedResponse {
+    }
+
+
+    @ApiResponse(
+            responseCode = "201",
+            headers = @Header(
+                    name = "Location",
+                    description = "identifier of the created entity",
+                    schema = @Schema(
+                            example = "7d553b6b-c6e4-42a7-bc8d-7cda07909b2f"
+                    )
+            )
+    )
+    @Target({METHOD, TYPE})
+    @Retention(RUNTIME)
+    public @interface ApiCreatedResponse {
     }
 }

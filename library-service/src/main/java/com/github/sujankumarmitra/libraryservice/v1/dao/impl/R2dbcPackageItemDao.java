@@ -3,6 +3,8 @@ package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 import com.github.sujankumarmitra.libraryservice.v1.dao.PackageItemDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcPackageItem;
 import com.github.sujankumarmitra.libraryservice.v1.exception.BookNotFoundException;
+import com.github.sujankumarmitra.libraryservice.v1.exception.DefaultErrorDetails;
+import com.github.sujankumarmitra.libraryservice.v1.exception.DuplicatePackageItemException;
 import com.github.sujankumarmitra.libraryservice.v1.exception.PackageNotFoundException;
 import com.github.sujankumarmitra.libraryservice.v1.model.PackageItem;
 import io.r2dbc.spi.*;
@@ -15,6 +17,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -29,8 +32,10 @@ public class R2dbcPackageItemDao implements PackageItemDao {
     public static final String INSERT_STATEMENT = "INSERT INTO package_items(package_id,book_id) VALUES ($1,$2) RETURNING id";
     public static final String SELECT_STATEMENT = "SELECT id,package_id,book_id FROM package_items WHERE package_id=$1";
     public static final String UPDATE_STATEMENT = "UPDATE package_items SET package_id=$1, book_id=$2 WHERE id=$3";
-    public static final String DELETE_STATEMENT = "DELETE FROM package_items WHERE package_id=$1";
+    public static final String DELETE_BY_PACKAGE_ID_STATEMENT = "DELETE FROM package_items WHERE package_id=$1";
+    public static final String DELETE_BY_ID_STATEMENT = "DELETE FROM package_items WHERE id=$1";
     public static final String PACKAGES_FOREIGN_KEY_CONSTRAINT_NAME = "fk_package_items_packages";
+    public static final String UNIQUE_PACKAGE_ITEM_ID_CONSTRAINT_NAME = "unq_package_items_package_id_book_id";
     public static final String BOOKS_FOREIGN_KEY_CONSTRAINT_NAME = "fk_package_items_books";
     @NonNull
     private final DatabaseClient databaseClient;
@@ -94,9 +99,14 @@ public class R2dbcPackageItemDao implements PackageItemDao {
     private Throwable translateException(R2dbcDataIntegrityViolationException err) {
         String msg = err.getMessage();
         if (msg.contains(PACKAGES_FOREIGN_KEY_CONSTRAINT_NAME))
-            return new PackageNotFoundException("some package(s) does not exist");
-        else if (msg.contains(BOOKS_FOREIGN_KEY_CONSTRAINT_NAME))
-            return new BookNotFoundException("some book(s) does not exist");
+            return new PackageNotFoundException(
+                    List.of(new DefaultErrorDetails("some package(s) does not exist")));
+        if (msg.contains(BOOKS_FOREIGN_KEY_CONSTRAINT_NAME))
+            return new BookNotFoundException(
+                    List.of(new DefaultErrorDetails("some book(s) does not exist")));
+        if(msg.contains(UNIQUE_PACKAGE_ITEM_ID_CONSTRAINT_NAME))
+            return new DuplicatePackageItemException(
+                    List.of(new DefaultErrorDetails("item with bookId(s) already exists")));
         return err;
     }
 
@@ -188,12 +198,44 @@ public class R2dbcPackageItemDao implements PackageItemDao {
                 return Mono.empty();
             }
             return this.databaseClient
-                    .sql(DELETE_STATEMENT)
+                    .sql(DELETE_BY_PACKAGE_ID_STATEMENT)
                     .bind("$1", uuid)
                     .fetch()
                     .rowsUpdated()
                     .doOnSuccess(deleteCount -> log.debug("deleted package count {}", deleteCount))
                     .then();
         });
+    }
+
+    @Override
+    public Mono<Void> deleteById(String packageItemId) {
+
+        return Mono.defer(() -> {
+            if (packageItemId == null) {
+                log.debug("packageItemId is null, returning Mono.error(NullPointerException)");
+                return Mono.error(new NullPointerException("packageItemId can't be null"));
+            }
+
+            UUID id;
+
+            try {
+                id = UUID.fromString(packageItemId);
+            } catch (IllegalArgumentException ex) {
+                log.debug("{} is not valid uuid, returning empty Mono", packageItemId);
+                return Mono.empty();
+            }
+
+            return databaseClient
+                    .sql(DELETE_BY_ID_STATEMENT)
+                    .bind("$1", id)
+                    .fetch()
+                    .rowsUpdated()
+                    .doOnNext(deleteCount -> {
+                        if (deleteCount > 0) log.debug("deleted package item with id {}", id);
+                        else log.debug("no package item found with id {}", id);
+                    })
+                    .then();
+        });
+
     }
 }

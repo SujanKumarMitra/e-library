@@ -3,12 +3,10 @@ package com.github.sujankumarmitra.libraryservice.v1.controller;
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiAcceptedResponse;
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiBadRequestResponse;
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiConflictResponse;
+import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiCreatedResponse;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.CreateBookTagRequestSchema;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.UpdateBookTagRequestSchema;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.headers.Header;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,16 +29,7 @@ public class BookTagController {
             description = "Librarians will invoke this api",
             summary = "Create a book tag"
     )
-    @ApiResponse(
-            responseCode = "201",
-            headers = @Header(
-                    name = "Location",
-                    description = "Unique ID pointing to this tag",
-                    schema = @Schema(
-                            example = "7d553b6b-c6e4-42a7-bc8d-7cda07909b2f"
-                    )
-            )
-    )
+    @ApiCreatedResponse
     @ApiAcceptedResponse
     @ApiConflictResponse
     @PostMapping

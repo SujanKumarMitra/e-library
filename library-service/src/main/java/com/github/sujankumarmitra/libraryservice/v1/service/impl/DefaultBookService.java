@@ -1,9 +1,10 @@
-package com.github.sujankumarmitra.libraryservice.v1.service;
+package com.github.sujankumarmitra.libraryservice.v1.service.impl;
 
 import com.github.sujankumarmitra.libraryservice.v1.dao.EBookDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.PhysicalBookDao;
 import com.github.sujankumarmitra.libraryservice.v1.model.EBook;
 import com.github.sujankumarmitra.libraryservice.v1.model.PhysicalBook;
+import com.github.sujankumarmitra.libraryservice.v1.service.BookService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;

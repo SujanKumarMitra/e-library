@@ -5,6 +5,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @author skmitra
@@ -12,12 +13,21 @@ import java.util.Collection;
  */
 public interface PackageItemDao {
 
+    default Mono<String> createItem(PackageItem packageItem) {
+        return createItems(List.of(packageItem)).next();
+    }
+
     Flux<String> createItems(Collection<? extends PackageItem> packageItems);
 
     Flux<PackageItem> getItemsByPackageId(String packageId);
+
+    default Mono<Void> updateItem(PackageItem packageItem) {
+        return updateItems(List.of(packageItem));
+    }
 
     Mono<Void> updateItems(Collection<? extends PackageItem> packageItems);
 
     Mono<Void> deleteItemsByPackageId(String packageId);
 
+    Mono<Void> deleteById(String packageItemId);
 }

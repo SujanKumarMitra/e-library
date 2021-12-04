@@ -3,6 +3,7 @@ package com.github.sujankumarmitra.libraryservice.v1.controller;
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiAcceptedResponse;
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiBadRequestResponse;
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiConflictResponse;
+import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiCreatedResponse;
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonValidCreateAuthorRequest;
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonValidUpdateAuthorRequest;
 import com.github.sujankumarmitra.libraryservice.v1.exception.ApiOperationException;
@@ -10,10 +11,8 @@ import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.CreateAuthorR
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.UpdateBookAuthorRequestSchema;
 import com.github.sujankumarmitra.libraryservice.v1.service.AuthorService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -48,14 +47,7 @@ public class AuthorController {
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
             content = @Content(schema = @Schema(implementation = CreateAuthorRequestSchema.class))
     )
-    @ApiResponse(
-            responseCode = "201",
-            headers = @Header(
-                    name = "Location",
-                    description = "Unique ID pointing to this author",
-                    schema = @Schema(example = "7d553b6b-c6e4-42a7-bc8d-7cda07909b2f")
-            )
-    )
+    @ApiCreatedResponse
     @ApiBadRequestResponse
     @ApiConflictResponse
     @PostMapping

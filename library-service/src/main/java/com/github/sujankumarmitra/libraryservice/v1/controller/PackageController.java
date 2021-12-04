@@ -2,6 +2,7 @@ package com.github.sujankumarmitra.libraryservice.v1.controller;
 
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiAcceptedResponse;
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiBadRequestResponse;
+import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiCreatedResponse;
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonValidCreatePackageRequest;
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonValidUpdatePackageItemRequest;
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonValidUpdatePackageRequest;
@@ -12,7 +13,6 @@ import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.GetPackageRes
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.UpdatePackageRequestSchema;
 import com.github.sujankumarmitra.libraryservice.v1.service.PackageService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -89,15 +89,7 @@ public class PackageController {
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
             content = @Content(schema = @Schema(implementation = CreatePackageRequestSchema.class))
     )
-    @ApiResponse(responseCode = "201",
-            headers = @Header(
-                    name = "Location",
-                    description = "Unique ID pointing to this package",
-                    schema = @Schema(
-                            example = "7d553b6b-c6e4-42a7-bc8d-7cda07909b2f"
-                    )
-            )
-    )
+    @ApiCreatedResponse
     @ApiBadRequestResponse
     @PostMapping
     public Mono<ResponseEntity<Void>> createPackage(@RequestBody @Valid JacksonValidCreatePackageRequest request) {
