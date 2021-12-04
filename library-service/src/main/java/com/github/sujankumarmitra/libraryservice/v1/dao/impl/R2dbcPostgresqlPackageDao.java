@@ -162,7 +162,7 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
 
 
             return select(uuid)
-                    .doOnSuccess(fetchedPackage -> applyUpdates(aPackage, fetchedPackage))
+                    .doOnNext(fetchedPackage -> applyUpdates(aPackage, fetchedPackage))
                     .flatMap(fetchedPackage -> this.databaseClient
                             .sql(UPDATE_STATEMENT)
                             .bind("$1", fetchedPackage.getName())
