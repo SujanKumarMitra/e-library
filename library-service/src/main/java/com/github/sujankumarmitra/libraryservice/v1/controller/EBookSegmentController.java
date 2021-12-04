@@ -25,7 +25,7 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/api/v1/books/{bookId}/segments")
 @Tag(
         name = "EBookSegmentController",
-        description = "Controller for ebook segments"
+        description = "### Controller for ebook segments"
 )
 public class EBookSegmentController {
 

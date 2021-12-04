@@ -5,6 +5,7 @@ import com.github.sujankumarmitra.libraryservice.v1.model.Author;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 
 /**
@@ -19,7 +20,7 @@ public class JacksonValidUpdateAuthorRequest extends Author {
     private String id;
     @JsonIgnore
     private String bookId;
-    @Size(min = 1)
+    @NotEmpty
     private String name;
 
 }

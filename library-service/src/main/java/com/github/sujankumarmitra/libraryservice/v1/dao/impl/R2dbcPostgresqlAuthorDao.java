@@ -4,6 +4,7 @@ import com.github.sujankumarmitra.libraryservice.v1.dao.AuthorDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcAuthor;
 import com.github.sujankumarmitra.libraryservice.v1.exception.BookNotFoundException;
 import com.github.sujankumarmitra.libraryservice.v1.exception.DefaultErrorDetails;
+import com.github.sujankumarmitra.libraryservice.v1.exception.DuplicateAuthorNameException;
 import com.github.sujankumarmitra.libraryservice.v1.model.Author;
 import io.r2dbc.spi.R2dbcDataIntegrityViolationException;
 import io.r2dbc.spi.Result;
@@ -31,13 +32,35 @@ import java.util.UUID;
 @Slf4j
 public class R2dbcPostgresqlAuthorDao implements AuthorDao {
 
-    public static final String INSERT_STATEMENT = "INSERT INTO authors(book_id,name) VALUES ($1,$2) ON CONFLICT ON CONSTRAINT unq_authors_book_id_name DO NOTHING RETURNING id";
+    public static final String INSERT_STATEMENT = "INSERT INTO authors(book_id,name) VALUES ($1,$2) RETURNING id";
     public static final String SELECT_STATEMENT = "SELECT id,book_id,name FROM authors WHERE book_id=$1";
     public static final String UPDATE_STATEMENT = "UPDATE authors SET name=$1 WHERE id=$2";
-    public static final String DELETE_STATEMENT = "DELETE FROM authors WHERE book_id=$1";
+    public static final String DELETE_BY_AUTHOR_ID_STATEMENT = "DELETE FROM authors WHERE book_id=$1";
+    public static final String DELETE_BY_ID_STATEMENT = "DELETE FROM authors WHERE id=$1";
+    public static final String UNIQUE_AUTHOR_CONSTRAINT_NAME = "unq_authors_book_id_name";
+    public static final String FOREIGN_KEY_CONSTRAINT_NAME = "fk_authors_books";
 
     @NonNull
     private final DatabaseClient databaseClient;
+
+    private Throwable translateException(R2dbcDataIntegrityViolationException err) {
+        log.debug("DB integrity error::", err);
+        String message = err.getMessage();
+
+        if (message.contains(UNIQUE_AUTHOR_CONSTRAINT_NAME)) {
+            return new DuplicateAuthorNameException(
+                    List.of(new DefaultErrorDetails("some authorName(s) already exists")));
+        }
+
+        if (message.contains(FOREIGN_KEY_CONSTRAINT_NAME)) {
+            return new BookNotFoundException(
+                    List.of(new DefaultErrorDetails("some bookId(s) is/are invalid")));
+        }
+
+        log.debug("could not determine integrity error type, falling back to thrown exception");
+        return err;
+
+    }
 
     @Override
     @Transactional
@@ -68,11 +91,7 @@ public class R2dbcPostgresqlAuthorDao implements AuthorDao {
                         return Flux.from(statement.execute());
                     })
                     .flatMapSequential(result -> result.map((row, rowMetadata) -> row.get("id", UUID.class)))
-                    .onErrorMap(R2dbcDataIntegrityViolationException.class, err -> {
-                        log.debug("DB integrity error {}", err.getMessage());
-                        return new BookNotFoundException(
-                                List.of(new DefaultErrorDetails("some bookId(s) is/are invalid")));
-                    })
+                    .onErrorMap(R2dbcDataIntegrityViolationException.class, this::translateException)
                     .map(Object::toString);
         });
     }
@@ -152,11 +171,41 @@ public class R2dbcPostgresqlAuthorDao implements AuthorDao {
             }
 
             return this.databaseClient
-                    .sql(DELETE_STATEMENT)
+                    .sql(DELETE_BY_AUTHOR_ID_STATEMENT)
                     .bind("$1", uuid)
                     .fetch()
                     .rowsUpdated()
                     .doOnSuccess(deleteCount -> log.debug("authors delete count: {}", deleteCount))
+                    .then();
+        });
+    }
+
+    @Override
+    @Transactional
+    public Mono<Void> deleteById(String authorId) {
+        return Mono.defer(() -> {
+            if (authorId == null) {
+                log.debug("authorId is null. returning Mono.error(NullPointerException)");
+                return Mono.error(new NullPointerException("authorId is null"));
+            }
+
+            UUID id;
+            try {
+                id = UUID.fromString(authorId);
+            } catch (IllegalArgumentException ex) {
+                log.debug("{} is not valid uuid, return empty Mono", authorId);
+                return Mono.empty();
+            }
+
+            return databaseClient
+                    .sql(DELETE_BY_ID_STATEMENT)
+                    .bind("$1", id)
+                    .fetch()
+                    .rowsUpdated()
+                    .doOnSuccess(deleteCount -> {
+                        if (deleteCount > 0) log.debug("deleted author with id {}", id);
+                        else log.debug("no author exists with id {}", id);
+                    })
                     .then();
         });
     }

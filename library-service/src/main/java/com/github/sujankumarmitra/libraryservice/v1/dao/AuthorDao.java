@@ -5,6 +5,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @author skmitra
@@ -12,11 +13,21 @@ import java.util.Collection;
  */
 public interface AuthorDao {
 
+    default Mono<String> createAuthor(Author author) {
+        return createAuthors(List.of(author)).next();
+    }
+
     Flux<String> createAuthors(Collection<? extends Author> authors);
 
     Flux<Author> getAuthorsByBookId(String bookId);
 
     Mono<Void> updateAuthors(Collection<? extends Author> authors);
 
+    default Mono<Void> updateAuthor(Author author) {
+        return updateAuthors(List.of(author));
+    }
+
     Mono<Void> deleteAuthorsByBookId(String bookId);
+
+    Mono<Void> deleteById(String authorId);
 }
