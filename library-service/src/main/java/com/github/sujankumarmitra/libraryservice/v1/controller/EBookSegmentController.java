@@ -47,6 +47,10 @@ public class EBookSegmentController {
         return Flux.empty();
     }
 
+    @Operation(
+            summary = "Fetch a segment of an ebook by index",
+            description = "Librarians/Teachers/Students will invoke this API"
+    )
     @GetMapping("/{segmentIndex}")
     @ApiResponse(
             responseCode = "200",
