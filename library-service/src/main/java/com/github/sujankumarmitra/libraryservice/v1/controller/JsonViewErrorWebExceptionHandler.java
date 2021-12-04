@@ -18,7 +18,9 @@ import reactor.core.publisher.SynchronousSink;
 
 import java.util.List;
 
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 /**
  * @author skmitra
@@ -39,6 +41,10 @@ public class JsonViewErrorWebExceptionHandler implements ErrorWebExceptionHandle
         Mono<DataBuffer> dataBufferMono = Mono.just(errorResponse)
                 .handle(this::convertToBytes)
                 .map(httpResponse.bufferFactory()::wrap);
+
+        httpResponse
+                .getHeaders()
+                .add(CONTENT_TYPE, APPLICATION_JSON_VALUE);
 
         if (ex instanceof ResponseStatusException)
             httpResponse.setStatusCode(((ResponseStatusException) ex).getStatus());

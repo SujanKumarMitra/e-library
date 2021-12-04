@@ -2,10 +2,17 @@ package com.github.sujankumarmitra.libraryservice.v1.controller;
 
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiAcceptedResponse;
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiBadRequestResponse;
+import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonCreatePackageRequest;
+import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonUpdatePackageItemRequest;
+import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonUpdatePackageRequest;
+import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonUpdatePackageTagRequest;
+import com.github.sujankumarmitra.libraryservice.v1.controller.dto.adaptor.JacksonCreatePackageRequestAdaptor;
+import com.github.sujankumarmitra.libraryservice.v1.controller.dto.adaptor.JacksonUpdatePackageRequestAdaptor;
 import com.github.sujankumarmitra.libraryservice.v1.model.Package;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.CreatePackageRequestSchema;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.GetPackageResponseSchema;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.UpdatePackageRequestSchema;
+import com.github.sujankumarmitra.libraryservice.v1.service.PackageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -13,11 +20,17 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import javax.validation.Valid;
+import java.net.URI;
+import java.util.Set;
 
 /**
  * @author skmitra
@@ -25,11 +38,15 @@ import reactor.core.publisher.Mono;
  */
 @RestController
 @RequestMapping("/api/v1/packages")
+@AllArgsConstructor
 @Tag(
         name = "PackageController",
         description = "### Controller for managing packages"
 )
 public class PackageController {
+
+    @NonNull
+    private final PackageService packageService;
 
     @Operation(
             summary = "Fetch packages",
@@ -70,6 +87,10 @@ public class PackageController {
 
     @Operation(summary = "Create a package",
             description = "Librarians/Teachers will invoke this API to create a package")
+
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            content = @Content(schema = @Schema(implementation = CreatePackageRequestSchema.class))
+    )
     @ApiResponse(responseCode = "201",
             headers = @Header(
                     name = "Location",
@@ -81,18 +102,38 @@ public class PackageController {
     )
     @ApiBadRequestResponse
     @PostMapping
-    public Mono<ResponseEntity<Void>> createPackage(@RequestBody CreatePackageRequestSchema request) {
-        return Mono.empty();
+    public Mono<ResponseEntity<Void>> createPackage(@RequestBody @Valid JacksonCreatePackageRequest request) {
+
+        Package aPackage = new JacksonCreatePackageRequestAdaptor(request);
+        return packageService
+                .createPackage(aPackage)
+                .map(id -> ResponseEntity.created(URI.create(id)).build());
     }
 
     @Operation(summary = "Update an existing package",
             description = "Librarians/Teachers will invoke this API to update a package")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            content = @Content(
+                    schema = @Schema(implementation = UpdatePackageRequestSchema.class)
+            )
+    )
     @ApiAcceptedResponse
     @ApiBadRequestResponse
     @PatchMapping(path = "/{packageId}", consumes = {"application/merge-patch+json", "application/json"})
     public Mono<ResponseEntity<Void>> updatePackage(@PathVariable("packageId") String packageId,
-                                                    @RequestBody UpdatePackageRequestSchema request) {
-        return Mono.empty();
+                                                    @RequestBody JacksonUpdatePackageRequest request) {
+
+        request.setId(packageId);
+        Set<JacksonUpdatePackageItemRequest> items = request.getItems();
+        Set<JacksonUpdatePackageTagRequest> tags = request.getTags();
+
+        if(items != null) items.forEach(item -> item.setPackageId(packageId));
+        if(tags != null) tags.forEach(tag -> tag.setPackageId(packageId));
+
+        Package aPackage = new JacksonUpdatePackageRequestAdaptor(request);
+        return packageService
+                .updatePackage(aPackage)
+                .thenReturn(ResponseEntity.accepted().build());
     }
 
     @Operation(summary = " Deletes a package",
@@ -100,6 +141,8 @@ public class PackageController {
     @ApiAcceptedResponse
     @DeleteMapping("/{packageId}")
     public Mono<ResponseEntity<Void>> deletePackage(@PathVariable("packageId") String packageId) {
-        return Mono.empty();
+        return packageService
+                .deletePackage(packageId)
+                .thenReturn(ResponseEntity.accepted().build());
     }
 }

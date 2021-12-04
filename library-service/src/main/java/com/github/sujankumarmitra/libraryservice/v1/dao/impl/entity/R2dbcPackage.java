@@ -1,5 +1,6 @@
 package com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity;
 
+import com.github.sujankumarmitra.libraryservice.v1.exception.BookNotFoundException;
 import com.github.sujankumarmitra.libraryservice.v1.model.Package;
 import com.github.sujankumarmitra.libraryservice.v1.model.PackageItem;
 import com.github.sujankumarmitra.libraryservice.v1.model.PackageTag;
@@ -33,12 +34,12 @@ public final class R2dbcPackage extends Package {
         this.name = aPackage.getName();
         if (aPackage.getItems() != null) {
             for (PackageItem packageItem : aPackage.getItems()) {
-                this.items.add(new R2dbcPackageItem(packageItem));
+                this.items.add(convertToR2dbcPackageItem(packageItem));
             }
         }
         if (aPackage.getTags() != null) {
             for (PackageTag tag : aPackage.getTags()) {
-                this.tags.add(new R2dbcPackageTag(tag));
+                this.tags.add(convertToR2dbcPackageTag(tag));
             }
         }
     }
@@ -67,9 +68,13 @@ public final class R2dbcPackage extends Package {
 
 
     private R2dbcPackageItem convertToR2dbcPackageItem(PackageItem item) {
-        return item instanceof R2dbcPackageItem ?
-                (R2dbcPackageItem) item :
-                new R2dbcPackageItem(item);
+        try {
+            return item instanceof R2dbcPackageItem ?
+                    (R2dbcPackageItem) item :
+                    new R2dbcPackageItem(item);
+        } catch (IllegalArgumentException ex) {
+            throw new BookNotFoundException(item.getBookId());
+        }
     }
 
     private R2dbcPackageTag convertToR2dbcPackageTag(PackageTag tag) {

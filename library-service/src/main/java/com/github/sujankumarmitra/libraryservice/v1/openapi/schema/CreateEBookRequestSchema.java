@@ -30,6 +30,7 @@ public class CreateEBookRequestSchema extends EBook {
 
     @Override
     @SuppressWarnings("unchecked")
+    @NotNull
     @Size(min = 1)
     public Set<CreateAuthorRequestSchema> getAuthors() {
         return Collections.emptySet();
@@ -65,7 +66,6 @@ public class CreateEBookRequestSchema extends EBook {
 
     @Override
     @SuppressWarnings("unchecked")
-    @NotNull
     public Set<CreateBookTagRequestSchema> getTags() {
         return Collections.emptySet();
     }

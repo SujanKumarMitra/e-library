@@ -49,6 +49,12 @@ public class R2dbcPostgresqlBookTagDao implements BookTagDao {
                 log.debug("given tags is null");
                 return Flux.error(new NullPointerException("given tags is null"));
             }
+
+            if(tags.isEmpty()) {
+                log.debug("empty tags. returning Empty Flux");
+                return Flux.empty();
+            }
+
             return databaseClient.inConnectionMany(connection -> {
                         Statement statement = connection.createStatement(INSERT_STATEMENT);
 

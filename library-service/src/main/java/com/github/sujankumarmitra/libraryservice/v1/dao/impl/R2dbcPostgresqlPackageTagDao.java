@@ -49,6 +49,12 @@ public class R2dbcPostgresqlPackageTagDao implements PackageTagDao {
                 log.debug("given tags is null");
                 return Flux.error(new NullPointerException("given tags is null"));
             }
+
+            if(tags.isEmpty()) {
+                log.debug("Empty collection tags. returning empty Flux");
+                return Flux.empty();
+            }
+
             return databaseClient.inConnectionMany(connection -> {
                         Statement statement = connection.createStatement(INSERT_STATEMENT);
 

@@ -8,3 +8,15 @@ services:
       POSTGRES_PASSWORD: "library_service"
       POSTGRES_USER: "library_service"
       POSTGRES_DB: "library_service_db"
+  pgadmin:
+    image: "dpage/pgadmin4"
+    container_name: "pgadmin"
+    depends_on:
+      - db
+    volumes:
+      - "/home/skmitra/Docker/volumes/pgadmin:/var/lib/pgadmin"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "pgadmin_user@email.com"
+      PGADMIN_DEFAULT_PASSWORD: "pgadmin_password"
+    ports:
+      - "5433:80"

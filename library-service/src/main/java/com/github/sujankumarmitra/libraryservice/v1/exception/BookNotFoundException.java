@@ -16,7 +16,7 @@ public final class BookNotFoundException extends ApiOperationException {
     }
 
     public BookNotFoundException(String bookId) {
-        this(List.of(new DefaultErrorDetails("book with id + '" + bookId + "' not found")));
+        this(List.of(new DefaultErrorDetails("book with id '" + bookId + "' not found")));
     }
 
     @Override

@@ -6,6 +6,7 @@ import java.util.Collections;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.Set;
 
 /**
@@ -21,7 +22,7 @@ public class CreatePackageRequestSchema extends Package {
     }
 
     @Override
-    @Schema(name = "name of the package")
+    @Schema(description = "name of the package")
     @NotEmpty
     public String getName() {
         return null;
@@ -29,14 +30,14 @@ public class CreatePackageRequestSchema extends Package {
 
     @Override
     @SuppressWarnings("unchecked")
-    @NotEmpty
+    @NotNull
+    @Size(min = 1)
     public Set<CreatePackageItemSchema> getItems() {
         return Collections.emptySet();
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    @NotNull
     public Set<CreatePackageTagRequestSchema> getTags() {
         return Collections.emptySet();
     }

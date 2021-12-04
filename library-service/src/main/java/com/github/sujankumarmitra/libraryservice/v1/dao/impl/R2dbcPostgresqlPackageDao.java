@@ -152,7 +152,6 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
                 return Mono.error(new NullPointerException("packageId can't be null"));
             }
 
-
             UUID uuid;
             try {
                 uuid = UUID.fromString(id);
@@ -162,12 +161,15 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
             }
 
 
-            return this.databaseClient
-                    .sql(UPDATE_STATEMENT)
-                    .bind("$1", aPackage.getName())
-                    .bind("$2", uuid)
-                    .fetch()
-                    .rowsUpdated()
+            return select(uuid)
+                    .doOnSuccess(fetchedPackage -> applyUpdates(aPackage, fetchedPackage))
+                    .flatMap(fetchedPackage -> this.databaseClient
+                            .sql(UPDATE_STATEMENT)
+                            .bind("$1", fetchedPackage.getName())
+                            .bind("$2", fetchedPackage.getUuid())
+                            .fetch()
+                            .rowsUpdated()
+                            .then())
                     .then(Mono.defer(() -> {
                         if (aPackage.getItems() == null) {
                             log.debug("Package.getItems() is null, no changes made to items of packageId, {}", uuid);
@@ -177,7 +179,8 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
                                 .deleteItemsByPackageId(id)
                                 .thenMany(packageItemDao.createItems(aPackage.getItems()))
                                 .then();
-                    })).then(Mono.defer(() -> {
+                    }))
+                    .flatMap(fetchedPackage -> {
                         if (aPackage.getTags() == null) {
                             log.debug("Package.getTags() is null, no changes made to tags of packageId, {}", uuid);
                             return Mono.empty();
@@ -186,9 +189,24 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
                                 .deleteTagsByPackageId(id)
                                 .thenMany(packageTagDao.createTags(aPackage.getTags()))
                                 .then();
-                    }));
+                    });
 
         });
+    }
+
+    private void applyUpdates(Package aPackage, R2dbcPackage fetchedPackage) {
+        if (aPackage.getName() != null) {
+            fetchedPackage.setName(aPackage.getName());
+        }
+    }
+
+
+    Mono<R2dbcPackage> select(UUID id) {
+        return this.databaseClient
+                .sql(SELECT_STATEMENT)
+                .bind("$1", id)
+                .map(this::mapToR2dbcPackage)
+                .one();
     }
 
     @Override

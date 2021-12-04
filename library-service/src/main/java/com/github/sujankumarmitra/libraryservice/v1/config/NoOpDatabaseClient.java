@@ -1,9 +1,12 @@
-package com.github.sujankumarmitra.libraryservice;
+package com.github.sujankumarmitra.libraryservice.v1.config;
 
 import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.ConnectionFactory;
+import org.springframework.context.annotation.Profile;
 import org.springframework.dao.DataAccessException;
 import org.springframework.r2dbc.core.DatabaseClient;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -14,7 +17,9 @@ import java.util.function.Supplier;
  * @author skmitra
  * @since Dec 01/12/21, 2021
  */
-final class NoOpDatabaseClient implements DatabaseClient {
+@Service
+@Profile("swagger-ui")
+public class NoOpDatabaseClient implements DatabaseClient {
     @Override
     public ConnectionFactory getConnectionFactory() {
         return null;

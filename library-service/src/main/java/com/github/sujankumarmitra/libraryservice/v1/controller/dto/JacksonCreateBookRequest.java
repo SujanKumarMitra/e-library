@@ -35,8 +35,6 @@ public abstract class JacksonCreateBookRequest {
     @NotNull
     @Size(min = 1)
     private Set<JacksonCreateAuthorRequest> authors;
-    @NotNull
-    @Size(min = 1)
     private Set<JacksonCreateBookTagRequest> tags;
 
     public abstract BookType getType();

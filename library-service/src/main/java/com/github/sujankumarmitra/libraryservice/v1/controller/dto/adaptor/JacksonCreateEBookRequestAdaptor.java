@@ -56,7 +56,7 @@ public class JacksonCreateEBookRequestAdaptor extends EBook {
 
     @Override
     public Set<JacksonCreateBookTagRequestAdaptor> getTags() {
-        return request
+        return request.getTags() == null ? null : request
                 .getTags()
                 .stream()
                 .map(JacksonCreateBookTagRequestAdaptor::new)
