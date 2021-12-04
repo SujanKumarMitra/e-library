@@ -15,6 +15,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple3;
 
@@ -49,6 +50,7 @@ public class R2dbcPostgresqlPhysicalBookDao implements PhysicalBookDao {
     private final BookTagDao tagDao;
 
     @Override
+    @Transactional
     public Mono<String> createBook(PhysicalBook book) {
         return Mono.defer(() -> {
 
@@ -83,6 +85,7 @@ public class R2dbcPostgresqlPhysicalBookDao implements PhysicalBookDao {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Mono<PhysicalBook> getBook(String bookId) {
 
         return Mono.defer(() -> {
@@ -160,6 +163,7 @@ public class R2dbcPostgresqlPhysicalBookDao implements PhysicalBookDao {
     }
 
     @Override
+    @Transactional
     public Mono<Void> updateBook(PhysicalBook book) {
         return Mono.defer(() -> {
             if (book == null) {
@@ -240,6 +244,7 @@ public class R2dbcPostgresqlPhysicalBookDao implements PhysicalBookDao {
     }
 
     @Override
+    @Transactional
     public Mono<Void> deleteBook(String bookId) {
         return Mono.defer(() -> {
             UUID uuid;
