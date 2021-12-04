@@ -6,7 +6,7 @@ import lombok.Setter;
 import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.PositiveOrZero;
 
-import static com.github.sujankumarmitra.libraryservice.v1.controller.dto.BookType.PHYSICAL;
+import static com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonBookType.PHYSICAL;
 import static java.math.BigDecimal.ZERO;
 
 /**
@@ -15,13 +15,13 @@ import static java.math.BigDecimal.ZERO;
  */
 @Getter
 @Setter
-public class JacksonUpdatePhysicalBookRequest extends JacksonUpdateBookRequest {
+public class JacksonValidUpdatePhysicalBookRequest extends JacksonValidUpdateBookRequest {
     @PositiveOrZero
     private Long copiesAvailable;
-    private JacksonMoney finePerDay;
+    private JacksonValidMoney finePerDay;
 
     @Override
-    public BookType getType() {
+    public JacksonBookType getType() {
         return PHYSICAL;
     }
 

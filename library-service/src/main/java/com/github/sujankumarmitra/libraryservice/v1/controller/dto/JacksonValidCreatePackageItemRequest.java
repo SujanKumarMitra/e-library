@@ -1,11 +1,11 @@
 package com.github.sujankumarmitra.libraryservice.v1.controller.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.github.sujankumarmitra.libraryservice.v1.model.Author;
+import com.github.sujankumarmitra.libraryservice.v1.model.PackageItem;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.validation.constraints.Size;
+import javax.validation.constraints.NotEmpty;
 
 /**
  * @author skmitra
@@ -13,13 +13,12 @@ import javax.validation.constraints.Size;
  */
 @Getter
 @Setter
-public class JacksonUpdateAuthorRequest extends Author {
+public class JacksonValidCreatePackageItemRequest extends PackageItem {
 
     @JsonIgnore
     private String id;
     @JsonIgnore
+    private String packageId;
+    @NotEmpty
     private String bookId;
-    @Size(min = 1)
-    private String name;
-
 }

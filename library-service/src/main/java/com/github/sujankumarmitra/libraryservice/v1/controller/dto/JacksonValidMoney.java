@@ -16,7 +16,7 @@ import java.math.BigDecimal;
  */
 @Getter
 @Setter
-public class JacksonMoney extends Money {
+public class JacksonValidMoney extends Money {
     @NotNull
     @PositiveOrZero(message = "amount must be positive")
     private BigDecimal amount;

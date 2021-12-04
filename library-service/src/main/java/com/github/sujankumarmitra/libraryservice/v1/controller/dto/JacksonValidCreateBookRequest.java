@@ -21,12 +21,12 @@ import static com.fasterxml.jackson.annotation.JsonTypeInfo.Id.NAME;
  */
 @JsonTypeInfo(use = NAME, property = "type")
 @JsonSubTypes({
-        @Type(name = "PHYSICAL_BOOK", value = JacksonCreatePhysicalBookRequest.class),
-        @Type(name = "EBOOK", value = JacksonCreateEBookRequest.class)
+        @Type(name = "PHYSICAL_BOOK", value = JacksonValidCreatePhysicalBookRequest.class),
+        @Type(name = "EBOOK", value = JacksonValidCreateEBookRequest.class)
 })
 @Getter
 @Setter
-public abstract class JacksonCreateBookRequest extends Book {
+public abstract class JacksonValidCreateBookRequest extends Book {
     @JsonIgnore
     private String id;
     @NotEmpty
@@ -38,8 +38,8 @@ public abstract class JacksonCreateBookRequest extends Book {
     private String coverPageImageAssetId;
     @NotNull
     @Size(min = 1)
-    private Set<JacksonCreateAuthorRequest> authors;
-    private Set<JacksonCreateBookTagRequest> tags;
+    private Set<JacksonValidCreateAuthorRequest> authors;
+    private Set<JacksonValidCreateBookTagRequest> tags;
 
-    public abstract BookType getType();
+    public abstract JacksonBookType getType();
 }

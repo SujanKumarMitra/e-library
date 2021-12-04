@@ -13,7 +13,7 @@ import javax.validation.constraints.NotEmpty;
  */
 @Getter
 @Setter
-public class JacksonUpdateBookTagRequest extends BookTag {
+public class JacksonValidUpdateBookTagRequest extends BookTag {
 
     @JsonIgnore
     private String id;

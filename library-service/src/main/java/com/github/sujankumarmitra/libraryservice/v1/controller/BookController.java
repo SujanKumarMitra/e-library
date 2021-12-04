@@ -3,10 +3,10 @@ package com.github.sujankumarmitra.libraryservice.v1.controller;
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiAcceptedResponse;
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiBadRequestResponse;
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.*;
-import com.github.sujankumarmitra.libraryservice.v1.controller.dto.adaptor.JacksonCreateEBookRequestAdaptor;
-import com.github.sujankumarmitra.libraryservice.v1.controller.dto.adaptor.JacksonCreatePhysicalBookRequestAdaptor;
-import com.github.sujankumarmitra.libraryservice.v1.controller.dto.adaptor.JacksonUpdateEBookRequestAdaptor;
-import com.github.sujankumarmitra.libraryservice.v1.controller.dto.adaptor.JacksonUpdatePhysicalBookRequestAdaptor;
+import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonValidCreateEBookRequestAdaptor;
+import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonValidCreatePhysicalBookRequestAdaptor;
+import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonValidUpdateEBookRequestAdaptor;
+import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonValidUpdatePhysicalBookRequestAdaptor;
 import com.github.sujankumarmitra.libraryservice.v1.model.Book;
 import com.github.sujankumarmitra.libraryservice.v1.model.EBook;
 import com.github.sujankumarmitra.libraryservice.v1.model.PhysicalBook;
@@ -30,8 +30,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.net.URI;
 
-import static com.github.sujankumarmitra.libraryservice.v1.controller.dto.BookType.EBOOK;
-import static com.github.sujankumarmitra.libraryservice.v1.controller.dto.BookType.PHYSICAL;
+import static com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonBookType.EBOOK;
+import static com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonBookType.PHYSICAL;
 
 /**
  * @author skmitra
@@ -126,16 +126,16 @@ public class BookController {
     @ApiBadRequestResponse
     @ApiAcceptedResponse
     @PostMapping
-    public Mono<ResponseEntity<Void>> createBook(@RequestBody @Valid JacksonCreateBookRequest request) {
-        BookType type = request.getType();
+    public Mono<ResponseEntity<Void>> createBook(@RequestBody @Valid JacksonValidCreateBookRequest request) {
+        JacksonBookType type = request.getType();
 
         Mono<String> createdBookId;
 
         if (type == PHYSICAL) {
-            PhysicalBook book = new JacksonCreatePhysicalBookRequestAdaptor((JacksonCreatePhysicalBookRequest) request);
+            PhysicalBook book = new JacksonValidCreatePhysicalBookRequestAdaptor((JacksonValidCreatePhysicalBookRequest) request);
             createdBookId = bookService.createBook(book);
         } else if (type == EBOOK) {
-            EBook book = new JacksonCreateEBookRequestAdaptor((JacksonCreateEBookRequest) request);
+            EBook book = new JacksonValidCreateEBookRequestAdaptor((JacksonValidCreateEBookRequest) request);
             createdBookId = bookService.createBook(book);
         } else {
             //this should not happen
@@ -163,7 +163,7 @@ public class BookController {
     @ApiBadRequestResponse
     @PatchMapping(path = "/{bookId}", consumes = {"application/merge-patch+json", "application/json"})
     public Mono<ResponseEntity<Void>> updateBook(@PathVariable("bookId") String bookId,
-                                                 @RequestBody @Valid JacksonUpdateBookRequest request) {
+                                                 @RequestBody @Valid JacksonValidUpdateBookRequest request) {
 
         request.setId(bookId);
         if (request.getAuthors() != null)
@@ -171,15 +171,15 @@ public class BookController {
         if (request.getTags() != null)
             request.getTags().forEach(tag -> tag.setBookId(bookId));
 
-        BookType type = request.getType();
+        JacksonBookType type = request.getType();
 
         Mono<Void> updateMono;
 
         if (type == PHYSICAL) {
-            PhysicalBook book = new JacksonUpdatePhysicalBookRequestAdaptor((JacksonUpdatePhysicalBookRequest) request);
+            PhysicalBook book = new JacksonValidUpdatePhysicalBookRequestAdaptor((JacksonValidUpdatePhysicalBookRequest) request);
             updateMono = bookService.updateBook(book);
         } else if (type == EBOOK) {
-            EBook book = new JacksonUpdateEBookRequestAdaptor((JacksonUpdateEBookRequest) request);
+            EBook book = new JacksonValidUpdateEBookRequestAdaptor((JacksonValidUpdateEBookRequest) request);
             updateMono = bookService.updateBook(book);
         } else {
             // should not happen

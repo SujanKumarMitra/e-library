@@ -13,7 +13,7 @@ import javax.validation.constraints.NotEmpty;
  */
 @Getter
 @Setter
-public class JacksonUpdatePackageTagRequest extends PackageTag {
+public class JacksonValidCreatePackageTagRequest extends PackageTag {
 
     @JsonIgnore
     private String id;
@@ -23,4 +23,5 @@ public class JacksonUpdatePackageTagRequest extends PackageTag {
     private String key;
     @NotEmpty
     private String value;
+
 }

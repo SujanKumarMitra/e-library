@@ -5,7 +5,7 @@ import com.github.sujankumarmitra.libraryservice.v1.model.Package;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.validation.constraints.Size;
+import javax.validation.constraints.NotEmpty;
 import java.util.Set;
 
 /**
@@ -14,14 +14,14 @@ import java.util.Set;
  */
 @Getter
 @Setter
-public class JacksonUpdatePackageRequest extends Package {
+public class JacksonValidCreatePackageRequest extends Package {
 
     @JsonIgnore
     private String id;
-    @Size(min = 1)
+    @NotEmpty
     private String name;
-    @Size(min = 1)
-    private Set<JacksonUpdatePackageItemRequest> items;
-    private Set<JacksonUpdatePackageTagRequest> tags;
+    @NotEmpty
+    private Set<JacksonValidCreatePackageItemRequest> items;
+    private Set<JacksonValidCreatePackageTagRequest> tags;
 
 }

@@ -13,7 +13,7 @@ import javax.validation.constraints.NotEmpty;
  */
 @Getter
 @Setter
-public class JacksonCreateAuthorRequest extends Author {
+public class JacksonValidCreateAuthorRequest extends Author {
 
     @JsonIgnore
     private String id;

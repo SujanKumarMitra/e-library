@@ -2,12 +2,10 @@ package com.github.sujankumarmitra.libraryservice.v1.controller;
 
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiAcceptedResponse;
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiBadRequestResponse;
-import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonCreatePackageRequest;
-import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonUpdatePackageItemRequest;
-import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonUpdatePackageRequest;
-import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonUpdatePackageTagRequest;
-import com.github.sujankumarmitra.libraryservice.v1.controller.dto.adaptor.JacksonCreatePackageRequestAdaptor;
-import com.github.sujankumarmitra.libraryservice.v1.controller.dto.adaptor.JacksonUpdatePackageRequestAdaptor;
+import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonValidCreatePackageRequest;
+import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonValidUpdatePackageItemRequest;
+import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonValidUpdatePackageRequest;
+import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonValidUpdatePackageTagRequest;
 import com.github.sujankumarmitra.libraryservice.v1.model.Package;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.CreatePackageRequestSchema;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.GetPackageResponseSchema;
@@ -102,11 +100,10 @@ public class PackageController {
     )
     @ApiBadRequestResponse
     @PostMapping
-    public Mono<ResponseEntity<Void>> createPackage(@RequestBody @Valid JacksonCreatePackageRequest request) {
+    public Mono<ResponseEntity<Void>> createPackage(@RequestBody @Valid JacksonValidCreatePackageRequest request) {
 
-        Package aPackage = new JacksonCreatePackageRequestAdaptor(request);
         return packageService
-                .createPackage(aPackage)
+                .createPackage(request)
                 .map(id -> ResponseEntity.created(URI.create(id)).build());
     }
 
@@ -121,18 +118,17 @@ public class PackageController {
     @ApiBadRequestResponse
     @PatchMapping(path = "/{packageId}", consumes = {"application/merge-patch+json", "application/json"})
     public Mono<ResponseEntity<Void>> updatePackage(@PathVariable("packageId") String packageId,
-                                                    @RequestBody JacksonUpdatePackageRequest request) {
+                                                    @RequestBody JacksonValidUpdatePackageRequest request) {
 
         request.setId(packageId);
-        Set<JacksonUpdatePackageItemRequest> items = request.getItems();
-        Set<JacksonUpdatePackageTagRequest> tags = request.getTags();
+        Set<JacksonValidUpdatePackageItemRequest> items = request.getItems();
+        Set<JacksonValidUpdatePackageTagRequest> tags = request.getTags();
 
-        if(items != null) items.forEach(item -> item.setPackageId(packageId));
-        if(tags != null) tags.forEach(tag -> tag.setPackageId(packageId));
+        if (items != null) items.forEach(item -> item.setPackageId(packageId));
+        if (tags != null) tags.forEach(tag -> tag.setPackageId(packageId));
 
-        Package aPackage = new JacksonUpdatePackageRequestAdaptor(request);
         return packageService
-                .updatePackage(aPackage)
+                .updatePackage(request)
                 .thenReturn(ResponseEntity.accepted().build());
     }
 

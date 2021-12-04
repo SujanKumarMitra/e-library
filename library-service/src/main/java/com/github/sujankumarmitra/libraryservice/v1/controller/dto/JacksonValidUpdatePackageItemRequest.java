@@ -1,7 +1,7 @@
 package com.github.sujankumarmitra.libraryservice.v1.controller.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.github.sujankumarmitra.libraryservice.v1.model.PackageTag;
+import com.github.sujankumarmitra.libraryservice.v1.model.PackageItem;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,15 +13,11 @@ import javax.validation.constraints.NotEmpty;
  */
 @Getter
 @Setter
-public class JacksonCreatePackageTagRequest extends PackageTag {
-
+public class JacksonValidUpdatePackageItemRequest extends PackageItem {
     @JsonIgnore
     private String id;
     @JsonIgnore
     private String packageId;
     @NotEmpty
-    private String key;
-    @NotEmpty
-    private String value;
-
+    private String bookId;
 }
