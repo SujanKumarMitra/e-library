@@ -3,11 +3,7 @@ package com.github.sujankumarmitra.libraryservice.v1.controller;
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiAcceptedResponse;
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiBadRequestResponse;
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiCreatedResponse;
-import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonValidCreatePackageRequest;
-import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonValidUpdatePackageItemRequest;
-import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonValidUpdatePackageRequest;
-import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonValidUpdatePackageTagRequest;
-import com.github.sujankumarmitra.libraryservice.v1.model.Package;
+import com.github.sujankumarmitra.libraryservice.v1.controller.dto.*;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.CreatePackageRequestSchema;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.GetPackageResponseSchema;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.UpdatePackageRequestSchema;
@@ -59,7 +55,7 @@ public class PackageController {
             )
     )
     @GetMapping
-    public Flux<Package> getPackages(@RequestParam(value = "page_no", defaultValue = "0") long pageNo) {
+    public Flux<JacksonGetPackageResponse> getPackages(@RequestParam(value = "page_no", defaultValue = "0") long pageNo) {
         return Flux.empty();
     }
 
@@ -77,9 +73,11 @@ public class PackageController {
             )
     )
     @GetMapping("/search")
-    public Flux<Package> getPackagesByNameStartingWith(@RequestParam(value = "name_starting_with") String nameStartingWith,
-                                                       @RequestParam(value = "page_no", defaultValue = "0") long pageNo) {
-        return Flux.empty();
+    public Flux<JacksonGetPackageResponse> getPackagesByNameStartingWith(@RequestParam(value = "name_starting_with") String nameStartingWith,
+                                                                         @RequestParam(value = "page_no", defaultValue = "0") int pageNo) {
+        return packageService
+                .getPackagesByName(nameStartingWith, pageNo)
+                .map(JacksonGetPackageResponse::new);
     }
 
 

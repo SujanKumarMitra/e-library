@@ -1,3 +1,6 @@
+app:
+  paging:
+    defaultPageSize: 10
 logging:
   level:
     com.github.sujankumarmitra.libraryservice: "DEBUG"

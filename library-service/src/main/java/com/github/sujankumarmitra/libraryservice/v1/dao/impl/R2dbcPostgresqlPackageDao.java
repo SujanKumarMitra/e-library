@@ -4,6 +4,8 @@ import com.github.sujankumarmitra.libraryservice.v1.dao.PackageDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.PackageItemDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.PackageTagDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcPackage;
+import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcPackageItem;
+import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcPackageTag;
 import com.github.sujankumarmitra.libraryservice.v1.model.Package;
 import com.github.sujankumarmitra.libraryservice.v1.model.PackageItem;
 import com.github.sujankumarmitra.libraryservice.v1.model.PackageTag;
@@ -14,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple3;
 
@@ -32,7 +35,8 @@ import java.util.stream.Collectors;
 public class R2dbcPostgresqlPackageDao implements PackageDao {
 
     public static final String INSERT_STATEMENT = "INSERT INTO packages(name) values($1) RETURNING id";
-    public static final String SELECT_STATEMENT = "SELECT id,name FROM packages WHERE id=$1";
+    public static final String SELECT_BY_ID_STATEMENT = "SELECT id,name FROM packages WHERE id=$1";
+    public static final String SELECT_BY_NAME_STATEMENT = "SELECT id,name FROM packages WHERE name LIKE $1 LIMIT $3 OFFSET $2";
     public static final String UPDATE_STATEMENT = "UPDATE packages SET name=$1 WHERE id=$2";
     public static final String DELETE_STATEMENT = "DELETE FROM packages WHERE id=$1";
 
@@ -73,6 +77,30 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
         });
     }
 
+    @Override
+    public Flux<Package> getPackagesByNameStartsWith(String packageName, int skip, int limit) {
+        return databaseClient
+                .sql(SELECT_BY_NAME_STATEMENT)
+                .bind("$1", packageName + "%")
+                .bind("$2", skip)
+                .bind("$3", limit)
+                .map(this::mapToR2dbcPackage)
+                .all()
+                .flatMapSequential(aPackage -> packageItemDao
+                        .getItemsByPackageId(aPackage.getId())
+                        .cast(R2dbcPackageItem.class)
+                        .collect(Collectors.toCollection(HashSet::new))
+                        .doOnNext(aPackage::setItems)
+                        .thenReturn(aPackage)
+                        .map(Package::getId)
+                        .flatMapMany(packageTagDao::getTagsByPackageId)
+                        .cast(R2dbcPackageTag.class)
+                        .collect(Collectors.toCollection(HashSet::new))
+                        .doOnNext(aPackage::setTags)
+                        .thenReturn(aPackage))
+                .cast(Package.class);
+    }
+
     private void setPackageIds(UUID packageId, R2dbcPackage aPackage) {
         aPackage.setId(packageId);
         aPackage.getItems()
@@ -97,7 +125,7 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
                 return Mono.empty();
             }
             Mono<R2dbcPackage> packageMono = databaseClient
-                    .sql(SELECT_STATEMENT)
+                    .sql(SELECT_BY_ID_STATEMENT)
                     .bind("$1", id)
                     .map(this::mapToR2dbcPackage)
                     .one();
@@ -203,7 +231,7 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
 
     Mono<R2dbcPackage> select(UUID id) {
         return this.databaseClient
-                .sql(SELECT_STATEMENT)
+                .sql(SELECT_BY_ID_STATEMENT)
                 .bind("$1", id)
                 .map(this::mapToR2dbcPackage)
                 .one();
