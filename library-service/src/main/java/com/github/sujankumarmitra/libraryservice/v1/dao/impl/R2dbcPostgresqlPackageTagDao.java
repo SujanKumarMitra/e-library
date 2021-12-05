@@ -34,12 +34,24 @@ public class R2dbcPostgresqlPackageTagDao implements PackageTagDao {
 
     public static final String INSERT_STATEMENT = "INSERT INTO package_tags(package_id,key,value) VALUES ($1,$2,$3) RETURNING id";
     public static final String SELECT_STATEMENT = "SELECT id, package_id, key, value FROM package_tags WHERE package_id=$1";
-    public static final String UPDATE_STATEMENT = "UPDATE package_tags SET value=$1 WHERE id=$2";
-    public static final String DELETE_STATEMENT = "DELETE FROM package_tags WHERE package_id=$1";
+    public static final String UPDATE_STATEMENT = "UPDATE package_tags SET key=$1, value=$2 WHERE id=$3";
+    public static final String DELETE_BY_PACKAGE_ID_STATEMENT = "DELETE FROM package_tags WHERE package_id=$1";
+    public static final String DELETE_BY_ID_STATEMENT = "DELETE FROM package_tags WHERE id=$1";
     public static final String UNIQUE_TAG_KEY_CONSTRAINT_NAME = "unq_package_tags_book_id_key";
 
     @NonNull
     private final DatabaseClient databaseClient;
+
+    private Throwable translateException(R2dbcDataIntegrityViolationException err) {
+        log.debug("DB integrity error {}", err.getMessage());
+        String message = err.getMessage();
+
+        if (message.contains(UNIQUE_TAG_KEY_CONSTRAINT_NAME))
+            return new DuplicateTagKeyException("tag with given key already exists for given bookId");
+        else
+            return new PackageNotFoundException(
+                    List.of(new DefaultErrorDetails("some bookId(s) is/are invalid")));
+    }
 
     @Override
     @Transactional
@@ -50,7 +62,7 @@ public class R2dbcPostgresqlPackageTagDao implements PackageTagDao {
                 return Flux.error(new NullPointerException("given tags is null"));
             }
 
-            if(tags.isEmpty()) {
+            if (tags.isEmpty()) {
                 log.debug("Empty collection tags. returning empty Flux");
                 return Flux.empty();
             }
@@ -77,16 +89,7 @@ public class R2dbcPostgresqlPackageTagDao implements PackageTagDao {
                         return Flux.from(statement.execute());
                     })
                     .flatMapSequential(result -> result.map((row, rowMetadata) -> row.get("id", UUID.class)))
-                    .onErrorMap(R2dbcDataIntegrityViolationException.class, err -> {
-                        log.debug("DB integrity error {}", err.getMessage());
-                        String message = err.getMessage();
-
-                        if (message.contains(UNIQUE_TAG_KEY_CONSTRAINT_NAME))
-                            return new DuplicateTagKeyException("tag with given key already exists for given bookId");
-                        else
-                            return new PackageNotFoundException(
-                                    List.of(new DefaultErrorDetails("some bookId(s) is/are invalid")));
-                    })
+                    .onErrorMap(R2dbcDataIntegrityViolationException.class, this::translateException)
                     .map(Object::toString);
         });
     }
@@ -136,15 +139,17 @@ public class R2dbcPostgresqlPackageTagDao implements PackageTagDao {
                                 continue;
                             }
                             statement = statement
-                                    .bind("$1", tag.getValue())
-                                    .bind("$2", uuid)
+                                    .bind("$1", tag.getKey())
+                                    .bind("$2", tag.getValue())
+                                    .bind("$3", uuid)
                                     .add();
                         }
 
                         return Flux.from(statement.execute());
                     }).flatMap(Result::getRowsUpdated)
                     .reduce(Integer::sum)
-                    .doOnSuccess(updateCount -> log.debug("author update count {}", updateCount))
+                    .doOnSuccess(updateCount -> log.debug("tag update count {}", updateCount))
+                    .onErrorMap(R2dbcDataIntegrityViolationException.class, this::translateException)
                     .then();
         });
     }
@@ -166,11 +171,41 @@ public class R2dbcPostgresqlPackageTagDao implements PackageTagDao {
             }
 
             return this.databaseClient
-                    .sql(DELETE_STATEMENT)
+                    .sql(DELETE_BY_PACKAGE_ID_STATEMENT)
                     .bind("$1", uuid)
                     .fetch()
                     .rowsUpdated()
                     .doOnSuccess(deleteCount -> log.debug("tags delete count: {}", deleteCount))
+                    .then();
+        });
+    }
+
+    @Override
+    @Transactional
+    public Mono<Void> deleteTagById(String tagId) {
+        return Mono.defer(() -> {
+            if (tagId == null) {
+                log.debug("null tagId, returning Mono.error(NullPointerException)");
+                return Mono.error(new NullPointerException("tagId can't be null"));
+            }
+
+            UUID id;
+            try {
+                id = UUID.fromString(tagId);
+            } catch (IllegalArgumentException e) {
+                log.debug("{} is not valid uuid, returning empty Mono", tagId);
+                return Mono.empty();
+            }
+
+            return databaseClient
+                    .sql(DELETE_BY_ID_STATEMENT)
+                    .bind("$1", id)
+                    .fetch()
+                    .rowsUpdated()
+                    .doOnNext(deleteCount -> {
+                        if (deleteCount > 0) log.debug("deleted package tag with id {}", id);
+                        else log.debug("no package tag found with id {}", id);
+                    })
                     .then();
         });
     }

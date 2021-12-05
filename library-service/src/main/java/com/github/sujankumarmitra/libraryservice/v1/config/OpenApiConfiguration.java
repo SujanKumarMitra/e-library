@@ -129,7 +129,11 @@ public class OpenApiConfiguration {
     }
 
 
-    @ApiResponse(responseCode = "202", description = "Server acknowledged the request")
+    @ApiResponse(
+            responseCode = "202",
+            description = "Server acknowledged the request",
+            content = @Content(schema = @Schema)
+    )
     @Target({METHOD, TYPE})
     @Retention(RUNTIME)
     public @interface ApiAcceptedResponse {
@@ -144,7 +148,8 @@ public class OpenApiConfiguration {
                     schema = @Schema(
                             example = "7d553b6b-c6e4-42a7-bc8d-7cda07909b2f"
                     )
-            )
+            ),
+            content = @Content(schema = @Schema)
     )
     @Target({METHOD, TYPE})
     @Retention(RUNTIME)

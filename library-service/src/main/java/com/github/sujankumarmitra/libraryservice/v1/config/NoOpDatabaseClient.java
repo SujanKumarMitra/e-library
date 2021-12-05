@@ -5,7 +5,6 @@ import io.r2dbc.spi.ConnectionFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.dao.DataAccessException;
 import org.springframework.r2dbc.core.DatabaseClient;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
