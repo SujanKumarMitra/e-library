@@ -10,7 +10,7 @@ import java.util.List;
  * @author skmitra
  * @since Dec 03/12/21, 2021
  */
-public class NegativeMoneyAmountException extends ApiOperationException {
+public final class NegativeMoneyAmountException extends ApiOperationException {
 
     private final Collection<ErrorDetails> errors;
 

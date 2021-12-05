@@ -2,11 +2,11 @@ package com.github.sujankumarmitra.libraryservice.v1.openapi.schema;
 
 import com.github.sujankumarmitra.libraryservice.v1.model.Package;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.Collections;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.Collections;
 import java.util.Set;
 
 /**

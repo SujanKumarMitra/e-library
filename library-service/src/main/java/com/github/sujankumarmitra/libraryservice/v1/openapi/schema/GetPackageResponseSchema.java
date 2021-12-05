@@ -1,10 +1,10 @@
 package com.github.sujankumarmitra.libraryservice.v1.openapi.schema;
 
 import com.github.sujankumarmitra.libraryservice.v1.model.Package;
-import java.util.Collections;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.util.Collections;
 import java.util.Set;
 
 /**

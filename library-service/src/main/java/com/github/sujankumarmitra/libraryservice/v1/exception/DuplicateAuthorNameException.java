@@ -1,5 +1,8 @@
 package com.github.sujankumarmitra.libraryservice.v1.exception;
 
+import lombok.Getter;
+import lombok.NonNull;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -7,8 +10,10 @@ import java.util.List;
  * @author skmitra
  * @since Nov 25/11/21, 2021
  */
+@Getter
 public final class DuplicateAuthorNameException extends ApiOperationException {
 
+    @NonNull
     private final Collection<ErrorDetails> errors;
 
     public DuplicateAuthorNameException(String authorName) {
@@ -19,8 +24,4 @@ public final class DuplicateAuthorNameException extends ApiOperationException {
         this.errors = errors;
     }
 
-    @Override
-    public Collection<ErrorDetails> getErrors() {
-        return errors;
-    }
 }

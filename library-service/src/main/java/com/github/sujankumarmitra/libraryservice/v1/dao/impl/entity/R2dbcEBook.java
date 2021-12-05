@@ -1,6 +1,9 @@
 package com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity;
 
-import com.github.sujankumarmitra.libraryservice.v1.model.*;
+import com.github.sujankumarmitra.libraryservice.v1.model.Author;
+import com.github.sujankumarmitra.libraryservice.v1.model.BookTag;
+import com.github.sujankumarmitra.libraryservice.v1.model.EBook;
+import com.github.sujankumarmitra.libraryservice.v1.model.EBookFormat;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;

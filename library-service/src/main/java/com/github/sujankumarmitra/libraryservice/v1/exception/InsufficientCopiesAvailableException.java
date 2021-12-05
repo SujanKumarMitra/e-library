@@ -10,8 +10,7 @@ import java.util.List;
  * @since Dec 03/12/21, 2021
  */
 @Getter
-public class InsufficientCopiesAvailableException extends ApiOperationException {
-
+public final class InsufficientCopiesAvailableException extends ApiOperationException {
 
     private final Collection<ErrorDetails> errors;
 

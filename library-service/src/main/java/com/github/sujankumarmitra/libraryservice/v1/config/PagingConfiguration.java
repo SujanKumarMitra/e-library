@@ -1,6 +1,5 @@
 package com.github.sujankumarmitra.libraryservice.v1.config;
 
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,5 +1,7 @@
 package com.github.sujankumarmitra.libraryservice.v1.exception;
 
+import lombok.Getter;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -7,6 +9,7 @@ import java.util.List;
  * @author skmitra
  * @since Nov 23/11/21, 2021
  */
+@Getter
 public final class BookNotFoundException extends ApiOperationException {
 
     private final Collection<ErrorDetails> errors;
@@ -19,8 +22,4 @@ public final class BookNotFoundException extends ApiOperationException {
         this(List.of(new DefaultErrorDetails("book with id '" + bookId + "' not found")));
     }
 
-    @Override
-    public Collection<ErrorDetails> getErrors() {
-        return errors;
-    }
 }

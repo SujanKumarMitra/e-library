@@ -3,7 +3,10 @@ package com.github.sujankumarmitra.libraryservice.v1.openapi.schema;
 import com.github.sujankumarmitra.libraryservice.v1.model.PhysicalBook;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import javax.validation.constraints.*;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.Collections;
 import java.util.Set;
 

@@ -32,17 +32,6 @@ public class GlobalExceptionHandler {
                 .map(badRequest()::body);
     }
 
-//    @ExceptionHandler(Throwable.class)
-//    public Mono<ResponseEntity<ErrorResponse>> genericExceptionHandler(Throwable th) {
-//        return Mono
-//                .just(th.getMessage())
-//                .map(DefaultErrorDetails::new)
-//                .cast(ErrorDetails.class)
-//                .map(Collections::singleton)
-//                .map(ErrorResponse::new)
-//                .map(internalServerError()::body);
-//    }
-
     @ExceptionHandler(WebExchangeBindException.class)
     public Mono<ResponseEntity<ErrorResponse>> methodArgumentNotValidExceptionHandler(WebExchangeBindException ex) {
         Collection<ErrorDetails> errorDetails = extractErrors(ex);
