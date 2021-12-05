@@ -2,6 +2,7 @@ package com.github.sujankumarmitra.libraryservice.v1.service.impl;
 
 import com.github.sujankumarmitra.libraryservice.v1.dao.EBookDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.PhysicalBookDao;
+import com.github.sujankumarmitra.libraryservice.v1.model.Book;
 import com.github.sujankumarmitra.libraryservice.v1.model.EBook;
 import com.github.sujankumarmitra.libraryservice.v1.model.PhysicalBook;
 import com.github.sujankumarmitra.libraryservice.v1.service.BookService;
@@ -32,6 +33,14 @@ public class DefaultBookService implements BookService {
     @Override
     public Mono<String> createBook(EBook book) {
         return eBookDao.createBook(book);
+    }
+
+    @Override
+    public Mono<Book> getBook(String bookId) {
+        return physicalBookDao
+                .getBook(bookId)
+                .cast(Book.class)
+                .switchIfEmpty(Mono.defer(() -> eBookDao.getBook(bookId)));
     }
 
     @Override

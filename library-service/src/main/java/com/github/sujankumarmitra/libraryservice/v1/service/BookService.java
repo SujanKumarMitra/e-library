@@ -1,5 +1,6 @@
 package com.github.sujankumarmitra.libraryservice.v1.service;
 
+import com.github.sujankumarmitra.libraryservice.v1.model.Book;
 import com.github.sujankumarmitra.libraryservice.v1.model.EBook;
 import com.github.sujankumarmitra.libraryservice.v1.model.PhysicalBook;
 import reactor.core.publisher.Mono;
@@ -13,6 +14,8 @@ public interface BookService {
     Mono<String> createBook(PhysicalBook book);
 
     Mono<String> createBook(EBook book);
+
+    Mono<Book> getBook(String bookId);
 
     Mono<Void> updateBook(PhysicalBook book);
 

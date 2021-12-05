@@ -3,6 +3,7 @@ package com.github.sujankumarmitra.libraryservice.v1.controller;
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiAcceptedResponse;
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiBadRequestResponse;
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiCreatedResponse;
+import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiNotFoundResponse;
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.*;
 import com.github.sujankumarmitra.libraryservice.v1.model.Book;
 import com.github.sujankumarmitra.libraryservice.v1.model.EBook;
@@ -25,6 +26,7 @@ import reactor.core.publisher.Mono;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.net.URI;
+import java.util.List;
 
 import static com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonBookType.EBOOK;
 import static com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonBookType.PHYSICAL;
@@ -70,7 +72,7 @@ public class BookController {
 
 
     @Operation(
-            summary = "Search books by title and author",
+            summary = "Fetch a book by Id",
             description = "Librarians/Teachers/Students will invoke this API." +
                     "<br> Please refer to the response schema to see how book type is determined",
             responses = {
@@ -78,18 +80,63 @@ public class BookController {
                             responseCode = "200",
                             content = @Content(
                                     mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    array = @ArraySchema(
-                                            schema = @Schema(
-                                                    oneOf = {GetPhysicalBookResponseSchema.class, GetEBookResponseSchema.class}
-                                            )
+                                    schema = @Schema(
+                                            oneOf = {GetPhysicalBookResponseSchema.class, GetEBookResponseSchema.class}
                                     )
                             )
                     )
             }
     )
+    @ApiNotFoundResponse
+    @GetMapping("/{bookId}")
+    public Mono<ResponseEntity<Object>> getBookById(@PathVariable String bookId) {
+        return bookService
+                .getBook(bookId)
+                .map(this::adaptToJacksonBook)
+                .map(body -> ResponseEntity.ok((Object) body))
+                .switchIfEmpty(Mono.fromSupplier(() -> ResponseEntity.notFound().build()));
+    }
+
+    private JacksonGetBookResponse adaptToJacksonBook(Book book) {
+
+        JacksonBookType type = determineBookType(book);
+        if (type == PHYSICAL) {
+            return new JacksonGetPhysicalBookResponse((PhysicalBook) book);
+        } else if (type == EBOOK) {
+            return new JacksonGetEBookResponse((EBook) book);
+        } else {
+            // this should not happen
+            throw new IllegalArgumentException("could not determine book type");
+        }
+
+    }
+
+    private JacksonBookType determineBookType(Book book) {
+        if (book instanceof PhysicalBook) return PHYSICAL;
+        if (book instanceof EBook) return EBOOK;
+        return null;
+    }
+
+
+    @Operation(
+            summary = "Search books by title and author",
+            description = "Librarians/Teachers/Students will invoke this API." +
+                    "<br> Please refer to the response schema to see how book type is determined"
+    )
+    @ApiResponse(
+            responseCode = "200",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    array = @ArraySchema(schema = @Schema(
+                            oneOf = {GetPhysicalBookResponseSchema.class, GetEBookResponseSchema.class}
+                    )
+                    )
+            )
+    )
     @GetMapping("/search")
     public Flux<Book> getBooksByTitle(
             @RequestParam(required = false) String title,
+            @RequestParam(required = false) List<String> author,
             @RequestParam(value = "page_no", defaultValue = "0") long pageNo) {
         return Flux.empty();
     }
