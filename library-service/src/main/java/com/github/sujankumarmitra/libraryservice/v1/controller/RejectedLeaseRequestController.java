@@ -1,13 +1,16 @@
 package com.github.sujankumarmitra.libraryservice.v1.controller;
 
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiNotFoundResponse;
-import com.github.sujankumarmitra.libraryservice.v1.model.RejectedLease;
+import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonRejectedLease;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.GetRejectedLeaseRequestResponseSchema;
+import com.github.sujankumarmitra.libraryservice.v1.service.RejectedLeaseRequestService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,11 +25,15 @@ import reactor.core.publisher.Mono;
  */
 @RestController
 @RequestMapping("/api/v1/lease-requests/rejected")
+@AllArgsConstructor
 @Tag(
         name = "RejectedLeaseRequestController",
         description = "### Controller for rejected lease requests"
 )
 public class RejectedLeaseRequestController {
+
+    @NonNull
+    private final RejectedLeaseRequestService rejectedLeaseRequestService;
 
     @Operation(
             summary = "Fetch rejected lease by leaseRequestId",
@@ -40,7 +47,11 @@ public class RejectedLeaseRequestController {
     )
     @ApiNotFoundResponse
     @GetMapping("/{leaseRequestId}")
-    public Mono<ResponseEntity<RejectedLease>> getRejectedLeaseById(@PathVariable String leaseRequestId) {
-        return Mono.empty();
+    public Mono<ResponseEntity<JacksonRejectedLease>> getRejectedLeaseById(@PathVariable String leaseRequestId) {
+        return rejectedLeaseRequestService
+                .getByLeaseRequestId(leaseRequestId)
+                .map(JacksonRejectedLease::new)
+                .map(ResponseEntity::ok)
+                .switchIfEmpty(Mono.fromSupplier(() -> ResponseEntity.notFound().build()));
     }
 }
