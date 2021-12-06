@@ -14,5 +14,5 @@ public abstract class LeaseRequest {
 
     public abstract LeaseStatus getStatus();
 
-    public abstract long getTimestamp();
+    public abstract Long getTimestamp();
 }

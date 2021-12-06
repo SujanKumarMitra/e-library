@@ -117,10 +117,9 @@ CREATE TABLE IF NOT EXISTS lease_requests (
 	book_id uuid,
 	user_id text,
 	timestamp bigint DEFAULT extract(epoch from now()),
-	status text,
+	status text DEFAULT 'PENDING',
 	CONSTRAINT pk_lease_requests PRIMARY KEY(id),
  	CONSTRAINT fk_lease_requests_books FOREIGN KEY(book_id) REFERENCES books(id),
-	CONSTRAINT uq_lease_requests_book_id_user_id UNIQUE (book_id,user_id),
 	CONSTRAINT chk_lease_requests_book_id_not_null CHECK(book_id IS NOT NULL),
 	CONSTRAINT chk_lease_requests_user_id_not_null CHECK(user_id IS NOT NULL),
 	CONSTRAINT chk_lease_requests_user_id_not_empty CHECK(LENGTH(user_id) > 0),
@@ -130,15 +129,24 @@ CREATE TABLE IF NOT EXISTS lease_requests (
 	CONSTRAINT chk_lease_requests_status_valid CHECK(status IN ('PENDING', 'ACCEPTED', 'REJECTED', 'EXPIRED'))
 );
 
-CREATE TABLE IF NOT EXISTS lease_records(
+CREATE TABLE IF NOT EXISTS accepted_lease_requests(
 	lease_request_id uuid,
 	start_time bigint DEFAULT extract(epoch from now()),
 	end_time bigint,
 	relinquished boolean DEFAULT FALSE,
-	CONSTRAINT pk_lease_records PRIMARY KEY(lease_request_id),
-	CONSTRAINT fk_lease_records_lease_requests FOREIGN KEY(lease_request_id) REFERENCES lease_requests(id),
-	CONSTRAINT chk_lease_records_start_time_not_null CHECK(start_time IS NOT NULL),
-	CONSTRAINT chk_lease_records_start_time_positive CHECK(start_time >= 0),
-	CONSTRAINT chk_lease_records_end_time_positive CHECK(end_time >= 0),
-	CONSTRAINT chk_lease_records_relinquished_not_null CHECK(relinquished IS NOT NULL)
+	CONSTRAINT pk_accepted_lease_requests PRIMARY KEY(lease_request_id),
+	CONSTRAINT fk_accepted_lease_requests_lease_requests FOREIGN KEY(lease_request_id) REFERENCES lease_requests(id),
+	CONSTRAINT chk_accepted_lease_requests_start_time_not_null CHECK(start_time IS NOT NULL),
+	CONSTRAINT chk_accepted_lease_requests_start_time_positive CHECK(start_time >= 0),
+	CONSTRAINT chk_accepted_lease_requests_end_time_positive CHECK(end_time >= 0),
+	CONSTRAINT chk_accepted_lease_requests_relinquished_not_null CHECK(relinquished IS NOT NULL)
+);
+
+CREATE TABLE IF NOT EXISTS rejected_lease_requests(
+	lease_request_id uuid,
+	reason_phrase text,
+	CONSTRAINT pk_rejected_lease_requests PRIMARY KEY(lease_request_id),
+	CONSTRAINT fk_rejected_lease_requests_lease_requests FOREIGN KEY(lease_request_id) REFERENCES lease_requests(id),
+	CONSTRAINT chk_rejected_lease_requests_reason_phrase_not_null CHECK(reason_phrase IS NOT NULL),
+	CONSTRAINT chk_rejected_lease_requests_reason_phrase_not_empty CHECK(LENGTH(reason_phrase) > 0)
 );

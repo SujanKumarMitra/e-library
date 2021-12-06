@@ -40,7 +40,7 @@ public class GetPendingLeaseRequestResponseSchema extends LeaseRequest {
 
     @Override
     @Schema(description = "the timestamp when the lease request is being made. Represented in UNIX epoch milliseconds")
-    public long getTimestamp() {
-        return 0;
+    public Long getTimestamp() {
+        return null;
     }
 }

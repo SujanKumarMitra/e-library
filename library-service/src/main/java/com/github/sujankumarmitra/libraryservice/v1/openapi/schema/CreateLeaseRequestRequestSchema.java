@@ -38,7 +38,7 @@ public class CreateLeaseRequestRequestSchema extends LeaseRequest {
 
     @Override
     @Schema(hidden = true)
-    public long getTimestamp() {
-        return 0;
+    public Long getTimestamp() {
+        return null;
     }
 }
