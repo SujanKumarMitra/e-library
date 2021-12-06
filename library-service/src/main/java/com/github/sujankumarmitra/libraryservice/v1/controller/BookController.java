@@ -40,7 +40,7 @@ import static com.github.sujankumarmitra.libraryservice.v1.controller.dto.Jackso
 @AllArgsConstructor
 @Tag(
         name = "BookController",
-        description = "### Controller for managing books"
+        description = "Controller for managing books"
 )
 public class BookController {
 

@@ -34,7 +34,7 @@ import java.net.URI;
 @RequestMapping("/api/v1/books/{bookId}/authors")
 @Tag(
         name = "AuthorController",
-        description = "### Controller for managing book authors"
+        description = "Controller for managing book authors"
 )
 public class AuthorController {
 

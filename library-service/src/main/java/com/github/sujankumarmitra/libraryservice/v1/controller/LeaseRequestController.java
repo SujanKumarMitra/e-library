@@ -31,7 +31,7 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/api/v1/lease-requests")
 @Tag(
         name = "LeaseRequestController",
-        description = "### Controller for managing book leases requests"
+        description = "Controller for managing book leases requests"
 )
 public class LeaseRequestController {
 

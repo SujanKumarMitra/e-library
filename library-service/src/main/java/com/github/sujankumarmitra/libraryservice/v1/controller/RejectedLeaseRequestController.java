@@ -28,7 +28,7 @@ import reactor.core.publisher.Mono;
 @AllArgsConstructor
 @Tag(
         name = "RejectedLeaseRequestController",
-        description = "### Controller for rejected lease requests"
+        description = "Controller for rejected lease requests"
 )
 public class RejectedLeaseRequestController {
 

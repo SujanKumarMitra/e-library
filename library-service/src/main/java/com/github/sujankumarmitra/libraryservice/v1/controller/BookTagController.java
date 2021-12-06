@@ -34,7 +34,7 @@ import static org.springframework.http.HttpStatus.CONFLICT;
 @AllArgsConstructor
 @Tag(
         name = "BookTagController",
-        description = "### Controller for managing book tags"
+        description = "Controller for managing book tags"
 )
 public class BookTagController {
 

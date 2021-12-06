@@ -26,10 +26,10 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequestMapping("/api/v1/lease-requests/active")
 @Tag(
-        name = "ActiveLeaseRequestController",
-        description = "### Controller for active book leases requests"
+        name = "ActiveLeaseController",
+        description = "Controller for active book leases requests"
 )
-public class ActiveLeaseRequestController {
+public class ActiveLeaseController {
 
     @Operation(
             summary = "Fetch all active leases",

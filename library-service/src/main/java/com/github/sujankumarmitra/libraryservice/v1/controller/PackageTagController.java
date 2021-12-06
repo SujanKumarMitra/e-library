@@ -34,7 +34,7 @@ import static org.springframework.http.HttpStatus.CONFLICT;
 @AllArgsConstructor
 @Tag(
         name = "PackageTagController",
-        description = "### Controller for managing package tags"
+        description = "Controller for managing package tags"
 )
 public class PackageTagController {
 

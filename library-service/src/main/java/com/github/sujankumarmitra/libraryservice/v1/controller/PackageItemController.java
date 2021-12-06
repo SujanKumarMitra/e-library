@@ -34,7 +34,7 @@ import static org.springframework.http.HttpStatus.CONFLICT;
 @RequestMapping("/api/v1/packages/{packageId}/items")
 @Tag(
         name = "PackageItemController",
-        description = "### Controller for managing package items"
+        description = "Controller for managing package items"
 )
 public class PackageItemController {
 

@@ -35,7 +35,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Tag(
         name = "PackageController",
-        description = "### Controller for managing packages"
+        description = "Controller for managing packages"
 )
 public class PackageController {
 
