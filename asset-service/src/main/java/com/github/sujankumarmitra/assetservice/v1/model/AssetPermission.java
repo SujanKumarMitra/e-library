@@ -21,9 +21,12 @@ public abstract class AssetPermission {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        DefaultAssetPermission that = (DefaultAssetPermission) o;
-        return getGrantStartEpochMilliseconds() == that.getGrantStartEpochMilliseconds() && getGrantDurationInMilliseconds() == that.getGrantDurationInMilliseconds() && getAssetId().equals(that.getAssetId()) && getSubjectId().equals(that.getSubjectId());
+        if (!(o instanceof AssetPermission)) return false;
+        AssetPermission that = (AssetPermission) o;
+        return getGrantStartEpochMilliseconds() == that.getGrantStartEpochMilliseconds() &&
+         getGrantDurationInMilliseconds() == that.getGrantDurationInMilliseconds() && 
+         getAssetId().equals(that.getAssetId()) && 
+         getSubjectId().equals(that.getSubjectId());
     }
 
     @Override
