@@ -11,7 +11,7 @@ import java.util.List;
  * @since Dec 07/12/21, 2021
  */
 @Getter
-public class LeaseRequestAlreadyHandledException extends ApiOperationException {
+public final class LeaseRequestAlreadyHandledException extends ApiOperationException {
     private final Collection<ErrorDetails> errors;
 
     public LeaseRequestAlreadyHandledException(String leaseRequestId, LeaseStatus status) {
