@@ -8,10 +8,10 @@ public abstract class LeaseRecord {
 
     public abstract String getLeaseRequestId();
 
-    public abstract long getStartTime();
+    public abstract Long getStartTime();
 
-    public abstract long getEndTime();
+    public abstract Long getEndTime();
 
-    public abstract boolean isRelinquished();
+    public abstract Boolean isRelinquished();
 
 }

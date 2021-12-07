@@ -21,6 +21,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -46,6 +47,7 @@ import static org.springframework.http.ResponseEntity.accepted;
 )
 public class LeaseRequestController {
 
+    @NonNull
     private final LeaseRequestService leaseRequestService;
 
     @Operation(
