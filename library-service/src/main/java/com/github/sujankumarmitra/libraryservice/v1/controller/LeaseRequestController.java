@@ -3,25 +3,35 @@ package com.github.sujankumarmitra.libraryservice.v1.controller;
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiAcceptedResponse;
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiBadRequestResponse;
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiConflictResponse;
-import com.github.sujankumarmitra.libraryservice.v1.controller.dto.ErrorResponse;
+import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiCreatedResponse;
+import com.github.sujankumarmitra.libraryservice.v1.controller.dto.*;
+import com.github.sujankumarmitra.libraryservice.v1.model.AcceptedLease;
 import com.github.sujankumarmitra.libraryservice.v1.model.LeaseRequest;
+import com.github.sujankumarmitra.libraryservice.v1.model.LeaseStatus;
+import com.github.sujankumarmitra.libraryservice.v1.model.RejectedLease;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.AcceptLeaseRequestRequestSchema;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.CreateLeaseRequestRequestSchema;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.GetPendingLeaseRequestResponseSchema;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.RejectLeaseRequestRequestSchema;
+import com.github.sujankumarmitra.libraryservice.v1.service.LeaseRequestService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import javax.validation.Valid;
+import java.net.URI;
+
+import static com.github.sujankumarmitra.libraryservice.v1.model.LeaseStatus.*;
+import static org.springframework.http.ResponseEntity.accepted;
 
 /**
  * @author skmitra
@@ -29,16 +39,18 @@ import reactor.core.publisher.Mono;
  */
 @RestController
 @RequestMapping("/api/v1/lease-requests")
+@AllArgsConstructor
 @Tag(
         name = "LeaseRequestController",
         description = "Controller for managing book leases requests"
 )
 public class LeaseRequestController {
 
+    private final LeaseRequestService leaseRequestService;
 
     @Operation(
             summary = "Fetch all pending lease requests",
-            description = " Librarians will invoke this API to fetch all pending lease requests"
+            description = "Librarians will invoke this API to fetch all pending lease requests"
     )
     @ApiResponse(
             responseCode = "200",
@@ -50,13 +62,13 @@ public class LeaseRequestController {
             )
     )
     @GetMapping("/pending")
-    public Flux<LeaseRequest> getAllPendingLeases(@RequestParam(name = "page_no", defaultValue = "0") long pageNo) {
-        return Flux.empty();
+    public Flux<LeaseRequest> getPendingLeases(@RequestParam(name = "page_no", defaultValue = "0") int pageNo) {
+        return leaseRequestService.getPendingLeaseRequests(pageNo);
     }
 
     @Operation(
             summary = "Fetch all pending lease requests for currently authenticated user",
-            description = " Students will invoke this API to see their currently pending lease requests" +
+            description = "Students will invoke this API to see their currently pending lease requests" +
                     "<br> Student id is taken from JWT sub claim")
     @ApiResponse(
             responseCode = "200",
@@ -68,67 +80,90 @@ public class LeaseRequestController {
             )
     )
     @GetMapping("/pending/self")
-    public Flux<LeaseRequest> getAllPendingLeasesForCurrentUser(@RequestParam(name = "page_no", defaultValue = "0") long pageNo) {
-        return Flux.empty();
+    public Flux<LeaseRequest> getAllPendingLeasesForCurrentUser(@RequestParam(name = "page_no", defaultValue = "0") int pageNo) {
+        String userId = ""; // TODO Spring Security Authentication.getName()
+        return leaseRequestService
+                .getPendingLeaseRequests(userId, pageNo);
     }
 
     @Operation(
             summary = "Create a lease request",
-            description = " Students will invoke this api to create a lease request" +
+            description = "Students will invoke this api to create a lease request" +
                     "<br> Student id is taken from JWT sub claim")
-    @ApiResponse(
-            responseCode = "201",
-            headers = @Header(
-                    name = "Location",
-                    description = "Unique ID pointing to this lease request",
-                    schema = @Schema(
-                            example = "7d553b6b-c6e4-42a7-bc8d-7cda07909b2f"
-                    )
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            content = @Content(schema = @Schema(implementation = CreateLeaseRequestRequestSchema.class)
             )
     )
+    @ApiCreatedResponse
     @ApiBadRequestResponse
     @ApiConflictResponse
     @PostMapping
-    public Mono<ResponseEntity<Void>> createLeaseRequest(CreateLeaseRequestRequestSchema request) {
-        return Mono.empty();
+    public Mono<ResponseEntity<Void>> createLeaseRequest(@RequestBody JacksonValidCreateLeaseRequest request) {
+        String userId = ""; // TODO Spring Security Authentication.getName()
+
+        request.setUserId(userId);
+        request.setStatus(PENDING);
+        request.setTimestamp(System.currentTimeMillis());
+
+        System.out.println(request);
+        return leaseRequestService
+                .createLeaseRequest(request)
+                .map(URI::create)
+                .map(location -> ResponseEntity.created(location).build());
     }
 
 
     @Operation(
             summary = "Accept/Reject a lease request",
-            description = " Librarians will invoke this API to either accept or reject a leaseRequest." +
-                    "<br> Please refer the request body to see the payload type",
-            requestBody = @RequestBody(
-                    content = @Content(
-                            schema = @Schema(
-                                    oneOf = {AcceptLeaseRequestRequestSchema.class, RejectLeaseRequestRequestSchema.class}
-                            )
-                    )
-            )
+            description = "Librarians will invoke this API to either accept or reject a leaseRequest." +
+                    "<br> Please refer the request body to see the payload type")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            content = @Content(schema = @Schema(
+                    oneOf = {AcceptLeaseRequestRequestSchema.class, RejectLeaseRequestRequestSchema.class}
+            ))
     )
-    @ApiResponse(
-            responseCode = "400",
-            description = "payload is inconsistent",
-            content = @Content(
-                    mediaType = MediaType.APPLICATION_JSON_VALUE,
-                    schema = @Schema(implementation = ErrorResponse.class)
-            )
-    )
+    @ApiBadRequestResponse
     @ApiAcceptedResponse
     @ApiConflictResponse
     @PatchMapping("/{leaseRequestId}")
-    public Mono<ResponseEntity<Void>> handleLeaseRequest(@PathVariable String leaseRequestId) {
-        return Mono.empty();
-    }
+    public Mono<ResponseEntity<Void>> handleLeaseRequest(@PathVariable String leaseRequestId,
+                                                         @RequestBody @Valid JacksonValidHandleLeaseRequestRequest request) {
 
+        request.setLeaseRequestId(leaseRequestId);
+        LeaseStatus status = request.getStatus();
+
+        if (status == ACCEPTED) {
+            AcceptedLease acceptedLease = new JacksonValidAcceptLeaseRequestRequestAdaptor((JacksonValidAcceptLeaseRequestRequest) request);
+            System.out.println(acceptedLease);
+            return leaseRequestService
+                    .acceptLeaseRequest(acceptedLease)
+                    .then(Mono.fromSupplier(() -> ResponseEntity.accepted().build()));
+
+        } else if (status == REJECTED) {
+            RejectedLease rejectedLease = new JacksonValidRejectLeaseRequestRequestAdaptor((JacksonValidRejectLeaseRequestRequest) request);
+            System.out.println(rejectedLease);
+            return
+                    leaseRequestService
+                            .rejectLeaseRequest(rejectedLease)
+                            .then(Mono.fromSupplier(() -> ResponseEntity.accepted().build()));
+        } else {
+            // this should not happen
+            return Mono.error(new RuntimeException("could not determine request type"));
+        }
+    }
 
     @Operation(
             summary = "Deletes a lease request",
-            description = " Students will invoke this API to cancel a lease request.")
+            description = "Students will invoke this API to cancel a lease request.")
     @ApiAcceptedResponse
     @DeleteMapping("/{leaseRequestId}")
     public Mono<ResponseEntity<Void>> deleteLeaseRequest(@PathVariable String leaseRequestId) {
-        return Mono.empty();
+
+        System.out.println(leaseRequestId);
+
+        return leaseRequestService
+                .deleteLeaseRequest(leaseRequestId)
+                .then(Mono.fromSupplier(accepted()::build));
     }
 
 }

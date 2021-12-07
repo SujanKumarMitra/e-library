@@ -26,13 +26,15 @@ public class AcceptLeaseRequestRequestSchema {
         return null;
     }
 
-    @Schema(description = "the timestamp from which the lease will take effect. Represented in UNIX epoch milliseconds")
+    @Schema(description = "the timestamp from which the lease will take effect. Represented in UNIX epoch milliseconds." +
+            "<br> start time must be present or future timestamp")
     @NotEmpty
     public long getStartTime() {
         return 0L;
     }
 
-    @Schema(description = "the timestamp from which the lease will expire. Represented in UNIX epoch milliseconds")
+    @Schema(description = "the timestamp from which the lease will expire. Represented in UNIX epoch milliseconds." +
+            "<br> end time must be greater than start time")
     @NotEmpty
     public long getEndTime() {
         return 0L;
