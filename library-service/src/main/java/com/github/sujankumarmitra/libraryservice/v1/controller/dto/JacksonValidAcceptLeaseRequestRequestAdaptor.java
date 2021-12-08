@@ -17,13 +17,13 @@ public class JacksonValidAcceptLeaseRequestRequestAdaptor extends AcceptedLease 
     }
 
     @Override
-    public Long getStartTime() {
-        return request.getStartTime();
+    public Long getStartTimeInEpochMilliseconds() {
+        return request.getStartTimeInEpochMilliseconds();
     }
 
     @Override
-    public Long getEndTime() {
-        return request.getEndTime();
+    public Long getDurationInMilliseconds() {
+        return request.getDurationInMilliseconds();
     }
 
 }

@@ -204,8 +204,8 @@ class DefaultBookServiceTest {
     private AcceptedLease buildAcceptedLease(UUID validLeaseRequestId) {
         DefaultAcceptedLease acceptedLease = new DefaultAcceptedLease();
         acceptedLease.setLeaseRequestId(validLeaseRequestId.toString());
-        acceptedLease.setStartTime(System.currentTimeMillis());
-        acceptedLease.setEndTime(System.currentTimeMillis() + Duration.ofDays(180).toMillis());
+        acceptedLease.setStartTimeInEpochMilliseconds(System.currentTimeMillis());
+        acceptedLease.setDurationInMilliseconds(System.currentTimeMillis() + Duration.ofDays(180).toMillis());
         return acceptedLease;
     }
 }

@@ -19,9 +19,9 @@ public final class R2dbcLeaseRecord extends LeaseRecord {
     @Column("lease_request_id")
     private UUID leaseRequestId;
     @Column("start_time")
-    private Long startTime;
-    @Column("end_time")
-    private Long endTime;
+    private Long startTimeInEpochMilliseconds;
+    @Column("duration")
+    private Long durationInMilliseconds;
     @Column("relinquished")
     private Boolean relinquished;
 

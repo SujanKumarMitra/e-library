@@ -17,9 +17,9 @@ public class DefaultLeaseRecord extends LeaseRecord {
     @NonNull
     private final String leaseRequestId;
     @NonNull
-    private final Long startTime;
+    private final Long startTimeInEpochMilliseconds;
     @NonNull
-    private final Long endTime;
+    private final Long durationInMilliseconds;
     @NonNull
     private final Boolean relinquished;
 

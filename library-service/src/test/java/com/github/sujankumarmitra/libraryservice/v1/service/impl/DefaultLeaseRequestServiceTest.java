@@ -94,8 +94,8 @@ class DefaultLeaseRequestServiceTest {
 
         DefaultAcceptedLease acceptedLease = new DefaultAcceptedLease();
         acceptedLease.setLeaseRequestId(validLeaseRequestId.toString());
-        acceptedLease.setStartTime(System.currentTimeMillis());
-        acceptedLease.setEndTime(System.currentTimeMillis() + Duration.ofHours(2).toMillis());
+        acceptedLease.setStartTimeInEpochMilliseconds(System.currentTimeMillis());
+        acceptedLease.setDurationInMilliseconds(System.currentTimeMillis() + Duration.ofHours(2).toMillis());
 
         leaseRequestService
                 .acceptLeaseRequest(acceptedLease)
@@ -137,8 +137,8 @@ class DefaultLeaseRequestServiceTest {
 
         DefaultAcceptedLease acceptedLease = new DefaultAcceptedLease();
         acceptedLease.setLeaseRequestId(validLeaseRequestId.toString());
-        acceptedLease.setStartTime(System.currentTimeMillis());
-        acceptedLease.setEndTime(System.currentTimeMillis() + Duration.ofHours(2).toMillis());
+        acceptedLease.setStartTimeInEpochMilliseconds(System.currentTimeMillis());
+        acceptedLease.setDurationInMilliseconds(System.currentTimeMillis() + Duration.ofHours(2).toMillis());
 
         leaseRequestService
                 .acceptLeaseRequest(acceptedLease)
@@ -167,8 +167,8 @@ class DefaultLeaseRequestServiceTest {
 
         DefaultAcceptedLease acceptedLease = new DefaultAcceptedLease();
         acceptedLease.setLeaseRequestId(validLeaseRequestId.toString());
-        acceptedLease.setStartTime(System.currentTimeMillis());
-        acceptedLease.setEndTime(System.currentTimeMillis() + Duration.ofHours(2).toMillis());
+        acceptedLease.setStartTimeInEpochMilliseconds(System.currentTimeMillis());
+        acceptedLease.setDurationInMilliseconds(System.currentTimeMillis() + Duration.ofHours(2).toMillis());
 
         leaseRequestService
                 .acceptLeaseRequest(acceptedLease)
@@ -200,8 +200,8 @@ class DefaultLeaseRequestServiceTest {
 
         DefaultAcceptedLease acceptedLease = new DefaultAcceptedLease();
         acceptedLease.setLeaseRequestId(validLeaseRequestId.toString());
-        acceptedLease.setStartTime(System.currentTimeMillis());
-        acceptedLease.setEndTime(System.currentTimeMillis() + Duration.ofHours(2).toMillis());
+        acceptedLease.setStartTimeInEpochMilliseconds(System.currentTimeMillis());
+        acceptedLease.setDurationInMilliseconds(System.currentTimeMillis() + Duration.ofHours(2).toMillis());
 
         leaseRequestService
                 .acceptLeaseRequest(acceptedLease)

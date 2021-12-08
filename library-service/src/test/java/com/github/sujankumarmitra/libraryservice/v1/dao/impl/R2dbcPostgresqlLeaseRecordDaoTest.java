@@ -65,9 +65,9 @@ class R2dbcPostgresqlLeaseRecordDaoTest extends AbstractDataR2dbcPostgreSQLConta
 
         R2dbcLeaseRecord leaseRecord = new R2dbcLeaseRecord();
 
-        leaseRecord.setStartTime(System.currentTimeMillis());
+        leaseRecord.setStartTimeInEpochMilliseconds(System.currentTimeMillis());
         leaseRecord.setRelinquished(FALSE);
-        leaseRecord.setEndTime(System.currentTimeMillis() + Duration.ofDays(180).toMillis());
+        leaseRecord.setDurationInMilliseconds(System.currentTimeMillis() + Duration.ofDays(180).toMillis());
 
         BookDaoTestUtils
                 .insertDummyBook(entityTemplate.getDatabaseClient())
@@ -99,9 +99,9 @@ class R2dbcPostgresqlLeaseRecordDaoTest extends AbstractDataR2dbcPostgreSQLConta
         R2dbcLeaseRecord leaseRecord = new R2dbcLeaseRecord();
 
         leaseRecord.setLeaseRequestId(UUID.randomUUID());
-        leaseRecord.setStartTime(System.currentTimeMillis());
+        leaseRecord.setStartTimeInEpochMilliseconds(System.currentTimeMillis());
         leaseRecord.setRelinquished(FALSE);
-        leaseRecord.setEndTime(System.currentTimeMillis() + Duration.ofDays(180).toMillis());
+        leaseRecord.setDurationInMilliseconds(System.currentTimeMillis() + Duration.ofDays(180).toMillis());
 
         leaseRecordDao.createLeaseRecord(leaseRecord)
                 .as(StepVerifier::create)
@@ -119,9 +119,9 @@ class R2dbcPostgresqlLeaseRecordDaoTest extends AbstractDataR2dbcPostgreSQLConta
 
         R2dbcLeaseRecord leaseRecord = new R2dbcLeaseRecord();
 
-        leaseRecord.setStartTime(System.currentTimeMillis());
+        leaseRecord.setStartTimeInEpochMilliseconds(System.currentTimeMillis());
         leaseRecord.setRelinquished(FALSE);
-        leaseRecord.setEndTime(System.currentTimeMillis() + Duration.ofDays(180).toMillis());
+        leaseRecord.setDurationInMilliseconds(System.currentTimeMillis() + Duration.ofDays(180).toMillis());
 
         BookDaoTestUtils
                 .insertDummyBook(entityTemplate.getDatabaseClient())
@@ -133,8 +133,8 @@ class R2dbcPostgresqlLeaseRecordDaoTest extends AbstractDataR2dbcPostgreSQLConta
                         .getDatabaseClient()
                         .sql(R2dbcPostgresqlLeaseRecordDao.INSERT_STATEMENT)
                         .bind("$1", leaseRecord.getLeaseRequestUuid())
-                        .bind("$2", leaseRecord.getStartTime())
-                        .bind("$3", leaseRecord.getEndTime())
+                        .bind("$2", leaseRecord.getStartTimeInEpochMilliseconds())
+                        .bind("$3", leaseRecord.getDurationInMilliseconds())
                         .bind("$4", leaseRecord.isRelinquished())
                         .fetch()
                         .rowsUpdated()))

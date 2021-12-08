@@ -6,6 +6,7 @@ import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiCreatedResponse;
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.*;
 import com.github.sujankumarmitra.libraryservice.v1.exception.ApiOperationException;
+import com.github.sujankumarmitra.libraryservice.v1.exception.LeaseRequestNotFoundException;
 import com.github.sujankumarmitra.libraryservice.v1.model.AcceptedLease;
 import com.github.sujankumarmitra.libraryservice.v1.model.LeaseRequest;
 import com.github.sujankumarmitra.libraryservice.v1.model.LeaseStatus;
@@ -132,7 +133,7 @@ public class LeaseRequestController {
     @ApiConflictResponse
     @PatchMapping("/{leaseRequestId}")
     public Mono<ResponseEntity<Object>> handleLeaseRequest(@PathVariable String leaseRequestId,
-                                                         @RequestBody @Valid JacksonValidHandleLeaseRequestRequest request) {
+                                                           @RequestBody @Valid JacksonValidHandleLeaseRequestRequest request) {
 
         request.setLeaseRequestId(leaseRequestId);
         LeaseStatus status = request.getStatus();
@@ -157,6 +158,8 @@ public class LeaseRequestController {
             completionMono = Mono.error(new RuntimeException("could not determine request type"));
         }
         return completionMono
+                .onErrorResume(LeaseRequestNotFoundException.class,
+                        err -> Mono.fromSupplier(() -> ResponseEntity.notFound().build()))
                 .onErrorResume(ApiOperationException.class,
                         err -> Mono.fromSupplier(() -> ResponseEntity.status(CONFLICT).body(err.getErrors())));
     }

@@ -1,6 +1,7 @@
 package com.github.sujankumarmitra.libraryservice.v1.openapi.schema;
 
 import com.github.sujankumarmitra.libraryservice.v1.model.LeaseStatus;
+import com.github.sujankumarmitra.libraryservice.v1.model.RejectedLease;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.validation.constraints.NotEmpty;
@@ -10,7 +11,7 @@ import javax.validation.constraints.NotEmpty;
  * @since Dec 01/12/21, 2021
  */
 @Schema(description = "Payload when lease request is being rejected")
-public class RejectLeaseRequestRequestSchema {
+public class RejectLeaseRequestRequestSchema extends RejectedLease {
 
     @Schema(hidden = true)
     public String getLeaseRequestId() {
@@ -28,7 +29,7 @@ public class RejectLeaseRequestRequestSchema {
 
     @Schema(description = "a human readable reason for request rejection")
     @NotEmpty
-    public String getReason() {
+    public String getReasonPhrase() {
         return null;
     }
 

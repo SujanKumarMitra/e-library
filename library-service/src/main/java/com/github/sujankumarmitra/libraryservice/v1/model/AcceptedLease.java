@@ -8,18 +8,20 @@ import java.util.Objects;
  */
 public abstract class AcceptedLease {
 
+    public static final Long INFINITE_LEASE_DURATION = -1L;
+
     public abstract String getLeaseRequestId();
 
-    public abstract Long getStartTime();
+    public abstract Long getStartTimeInEpochMilliseconds();
 
-    public abstract Long getEndTime();
+    public abstract Long getDurationInMilliseconds();
 
     @Override
     public int hashCode() {
         return Objects.hash(
                 getLeaseRequestId(),
-                getStartTime(),
-                getEndTime());
+                getStartTimeInEpochMilliseconds(),
+                getDurationInMilliseconds());
     }
 
     @Override
@@ -29,16 +31,16 @@ public abstract class AcceptedLease {
 
         AcceptedLease other = (AcceptedLease) obj;
         return Objects.equals(getLeaseRequestId(), other.getLeaseRequestId()) &&
-                Objects.equals(getStartTime(), other.getStartTime()) &&
-                Objects.equals(getEndTime(), other.getEndTime());
+                Objects.equals(getStartTimeInEpochMilliseconds(), other.getStartTimeInEpochMilliseconds()) &&
+                Objects.equals(getDurationInMilliseconds(), other.getDurationInMilliseconds());
     }
 
     @Override
     public String toString() {
         return "AcceptedLease{" +
                 "leaseRequestId='" + getLeaseRequestId() + '\'' +
-                ", startTime=" + getStartTime() +
-                ", endTime=" + getEndTime() +
+                ", startTime=" + getStartTimeInEpochMilliseconds() +
+                ", endTime=" + getDurationInMilliseconds() +
                 "}";
     }
 }

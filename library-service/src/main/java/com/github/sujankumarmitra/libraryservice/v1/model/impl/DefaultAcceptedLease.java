@@ -12,8 +12,8 @@ import lombok.Setter;
 @Setter
 public class DefaultAcceptedLease extends AcceptedLease {
     private String leaseRequestId;
-    private Long startTime;
-    private Long endTime;
+    private Long startTimeInEpochMilliseconds;
+    private Long durationInMilliseconds;
 
     @Override
     public int hashCode() {

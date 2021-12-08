@@ -10,9 +10,9 @@ public abstract class LeaseRecord {
 
     public abstract String getLeaseRequestId();
 
-    public abstract Long getStartTime();
+    public abstract Long getStartTimeInEpochMilliseconds();
 
-    public abstract Long getEndTime();
+    public abstract Long getDurationInMilliseconds();
 
     public abstract Boolean isRelinquished();
 
@@ -23,8 +23,8 @@ public abstract class LeaseRecord {
 
         LeaseRecord that = (LeaseRecord) o;
         return Objects.equals(getLeaseRequestId(), that.getLeaseRequestId()) &&
-                Objects.equals(getStartTime(), that.getStartTime()) &&
-                Objects.equals(getEndTime(), that.getEndTime()) &&
+                Objects.equals(getStartTimeInEpochMilliseconds(), that.getStartTimeInEpochMilliseconds()) &&
+                Objects.equals(getDurationInMilliseconds(), that.getDurationInMilliseconds()) &&
                 Objects.equals(isRelinquished(), that.isRelinquished());
     }
 
@@ -32,8 +32,8 @@ public abstract class LeaseRecord {
     public int hashCode() {
         return Objects.hash(
                 getLeaseRequestId(),
-                getStartTime(),
-                getEndTime(),
+                getStartTimeInEpochMilliseconds(),
+                getDurationInMilliseconds(),
                 isRelinquished());
     }
 
@@ -41,8 +41,8 @@ public abstract class LeaseRecord {
     public String toString() {
         return "LeaseRecord{" +
                 "leaseRequestId='" + getLeaseRequestId() + '\'' +
-                ", startTime=" + getStartTime() +
-                ", endTime=" + getEndTime() +
+                ", startTime=" + getStartTimeInEpochMilliseconds() +
+                ", endTime=" + getDurationInMilliseconds() +
                 ", relinquished=" + isRelinquished() +
                 '}';
     }

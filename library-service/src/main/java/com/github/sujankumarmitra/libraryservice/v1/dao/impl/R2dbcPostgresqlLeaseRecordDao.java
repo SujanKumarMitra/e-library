@@ -24,7 +24,7 @@ import java.util.UUID;
 @Slf4j
 public class R2dbcPostgresqlLeaseRecordDao implements LeaseRecordDao {
 
-    public static final String INSERT_STATEMENT = "INSERT INTO accepted_lease_requests(lease_request_id,start_time,end_time,relinquished) values($1,$2,$3,$4)";
+    public static final String INSERT_STATEMENT = "INSERT INTO accepted_lease_requests(lease_request_id,start_time,duration,relinquished) values($1,$2,$3,$4)";
     public static final String LEASE_REQUESTS_FOREIGN_KEY_CONSTRAINT_NAME = "fk_accepted_lease_requests_lease_requests";
     public static final String ACCEPTED_LEASE_REQUESTS_PRIMARY_KEY_CONSTRAINT_NAME = "pk_accepted_lease_requests";
 
@@ -49,8 +49,8 @@ public class R2dbcPostgresqlLeaseRecordDao implements LeaseRecordDao {
                     .getDatabaseClient()
                     .sql(INSERT_STATEMENT)
                     .bind("$1", uuid)
-                    .bind("$2", leaseRecord.getStartTime())
-                    .bind("$3", leaseRecord.getEndTime())
+                    .bind("$2", leaseRecord.getStartTimeInEpochMilliseconds())
+                    .bind("$3", leaseRecord.getDurationInMilliseconds())
                     .bind("$4", leaseRecord.isRelinquished())
                     .fetch()
                     .rowsUpdated()

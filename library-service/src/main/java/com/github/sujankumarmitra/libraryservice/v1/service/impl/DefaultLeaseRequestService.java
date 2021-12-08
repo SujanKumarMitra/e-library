@@ -82,6 +82,7 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
 
     @Override
     public Mono<String> createLeaseRequest(@NonNull LeaseRequest request) {
+//        TODO Send notification to librarians
         return leaseRequestDao.createLeaseRequest(request);
     }
 
@@ -190,8 +191,8 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
     private LeaseRecord buildLeaseRecord(AcceptedLease acceptedLease) {
         return new DefaultLeaseRecord(
                 acceptedLease.getLeaseRequestId(),
-                acceptedLease.getStartTime(),
-                acceptedLease.getEndTime(),
+                acceptedLease.getStartTimeInEpochMilliseconds(),
+                acceptedLease.getDurationInMilliseconds(),
                 FALSE);
     }
 
@@ -240,7 +241,7 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
                 .sendNotification(notification)
                 .subscribe(sink::success,
                         err -> {
-                            log.warn("Error in sending Notification ", err);
+                            log.warn("Error in sending Notification :: {}", err.getMessage());
                             sink.success();
                         },
                         sink::success));

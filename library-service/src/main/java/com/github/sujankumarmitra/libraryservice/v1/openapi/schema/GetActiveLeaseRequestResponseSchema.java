@@ -22,14 +22,16 @@ public class GetActiveLeaseRequestResponseSchema extends LeaseRecord {
     @Override
     @Schema(description = "the timestamp at which lease will take effect. Represented in UNIX epoch milliseconds")
     @NotEmpty
-    public Long getStartTime() {
+    public Long getStartTimeInEpochMilliseconds() {
         return null;
     }
 
     @Override
-    @Schema(description = "the timestamp at which lease will expire. Represented in UNIX epoch milliseconds")
+    @Schema(description = "the duration for which the lease will be active after <i>startTime</i>." +
+            "<br> The value must be either <i>-1</i>, which depicts infinite duration (generally given to teachers), or a positive value." +
+            "<br> The time unit is in milliseconds")
     @NotEmpty
-    public Long getEndTime() {
+    public Long getDurationInMilliseconds() {
         return null;
     }
 
