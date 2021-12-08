@@ -126,7 +126,7 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
 
         return getValidLeaseRequest(leaseRequestId)
                 .handle((leaseRequest, sink) -> {
-                    Mono<Void> createRecordMono = leaseRecordDao.createLeaseRecord(createLeaseRecord(acceptedLease));
+                    Mono<Void> createRecordMono = leaseRecordDao.createLeaseRecord(buildLeaseRecord(acceptedLease));
                     Mono<Void> updateStatusMono = leaseRequestDao.setLeaseStatus(leaseRequestId, ACCEPTED);
                     Mono<Void> sendNotificationMono = createAndSendNotification(leaseRequest, ACCEPTED);
                     Mono<Void> handleLeaseAcceptMono = bookService.handleLeaseAccept(acceptedLease);
@@ -189,7 +189,7 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
                 .handle(this::emitErrorIfNotInPendingState);
     }
 
-    private LeaseRecord createLeaseRecord(AcceptedLease acceptedLease) {
+    private LeaseRecord buildLeaseRecord(AcceptedLease acceptedLease) {
         return new DefaultLeaseRecord(
                 acceptedLease.getLeaseRequestId(),
                 acceptedLease.getStartTime(),
