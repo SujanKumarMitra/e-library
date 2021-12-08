@@ -3,6 +3,7 @@ package com.github.sujankumarmitra.libraryservice.v1.service.impl;
 import com.github.sujankumarmitra.libraryservice.v1.dao.EBookDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.LeaseRequestDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.PhysicalBookDao;
+import com.github.sujankumarmitra.libraryservice.v1.exception.InsufficientCopiesAvailableException;
 import com.github.sujankumarmitra.libraryservice.v1.model.*;
 import com.github.sujankumarmitra.libraryservice.v1.model.impl.DefaultEBookPermission;
 import com.github.sujankumarmitra.libraryservice.v1.service.BookService;
@@ -32,7 +33,7 @@ public class DefaultBookService implements BookService {
     @NotNull
     private final LeaseRequestDao leaseRequestDao;
     @NotNull
-    private EBookPermissionService eBookPermissionService;
+    private final EBookPermissionService eBookPermissionService;
 
     @Override
     public Mono<String> createBook(PhysicalBook book) {
@@ -81,12 +82,16 @@ public class DefaultBookService implements BookService {
         AcceptedLease acceptedLease = tuple3.getT2();
         Book book = tuple3.getT3();
 
+        String bookId = book.getId();
         if (book instanceof PhysicalBook) {
-            return physicalBookDao.decrementCopiesAvailable(book.getId());
+            if (((PhysicalBook) book).getCopiesAvailable() > 0)
+                return physicalBookDao.decrementCopiesAvailable(bookId);
+            else
+                return Mono.error(new InsufficientCopiesAvailableException(bookId));
         } else if (book instanceof EBook) {
             DefaultEBookPermission permission = new DefaultEBookPermission();
 
-            permission.setBookId(book.getId());
+            permission.setBookId(bookId);
             permission.setUserId(leaseRequest.getUserId());
             permission.setStartTime(acceptedLease.getStartTime());
             permission.setEndTime(acceptedLease.getEndTime());

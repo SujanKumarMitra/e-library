@@ -65,7 +65,7 @@ public class R2dbcPostgresqlPhysicalBookDao implements PhysicalBookDao {
             Long copiesAvailable = book.getCopiesAvailable();
             if (copiesAvailable < 0) {
                 log.debug("invalid copiesAvailable {}", copiesAvailable);
-                return Mono.error(new InsufficientCopiesAvailableException(copiesAvailable));
+                return Mono.error(new InsufficientCopiesAvailableException(book.getId()));
             }
 
             BigDecimal amount = book.getFinePerDay().getAmount();
@@ -191,7 +191,7 @@ public class R2dbcPostgresqlPhysicalBookDao implements PhysicalBookDao {
             Long copiesAvailable = book.getCopiesAvailable();
             if (copiesAvailable != null && copiesAvailable < 0) {
                 log.debug("invalid copiesAvailable {}", copiesAvailable);
-                return Mono.error(new InsufficientCopiesAvailableException(copiesAvailable));
+                return Mono.error(new InsufficientCopiesAvailableException(book.getId()));
             }
 
             Money finePerDay = book.getFinePerDay();
@@ -287,16 +287,16 @@ public class R2dbcPostgresqlPhysicalBookDao implements PhysicalBookDao {
                     .rowsUpdated()
                     .doOnNext(updateCount -> log.debug("Rows Updated {}", updateCount))
                     .then()
-                    .onErrorMap(DataIntegrityViolationException.class, this::translateError);
+                    .onErrorMap(DataIntegrityViolationException.class, err -> translateError(err, bookId));
         });
     }
 
-    private Throwable translateError(DataIntegrityViolationException e) {
+    private Throwable translateError(DataIntegrityViolationException e, String bookId) {
         log.debug("DB integrity error", e);
         String message = e.getMessage();
 
         if (message != null && message.contains(POSITIVE_COPIES_AVAILABLE_CONSTRAINT_NAME))
-            return new InsufficientCopiesAvailableException(0);
+            return new InsufficientCopiesAvailableException(bookId);
 
         log.debug("failed to translate error, falling back to orginal thrown error");
         return e;
