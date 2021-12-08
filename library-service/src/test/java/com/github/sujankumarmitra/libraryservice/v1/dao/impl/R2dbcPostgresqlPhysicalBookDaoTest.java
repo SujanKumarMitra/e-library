@@ -281,33 +281,7 @@ class R2dbcPostgresqlPhysicalBookDaoTest extends AbstractDataR2dbcPostgreSQLCont
     @Test
     void givenValidBook_whenUpdate_shouldUpdate() {
         R2dbcPhysicalBook book = createBook();
-        entityTemplate
-                .getDatabaseClient()
-                .sql(R2dbcPostgresqlBookDao.INSERT_STATEMENT)
-                .bind("$1", book.getTitle())
-                .bind("$2", book.getPublisher())
-                .bind("$3", book.getEdition())
-                .bind("$4", book.getCoverPageImageAssetId())
-                .map(row -> row.get("id", UUID.class))
-                .one()
-                .doOnSuccess(book::setId)
-                .doOnSuccess(id -> book.getAuthors().forEach(author -> author.setBookId(id)))
-                .doOnSuccess(id -> book.getTags().forEach(tag -> tag.setBookId(id)))
-                .flatMap(id -> entityTemplate
-                        .getDatabaseClient()
-                        .sql(R2dbcPostgresqlPhysicalBookDao.INSERT_STATEMENT)
-                        .bind("$1", id)
-                        .bind("$2", book.getCopiesAvailable())
-                        .bind("$3", book.getFinePerDay().getAmount())
-                        .bind("$4", book.getFinePerDay().getCurrencyCode())
-                        .fetch()
-                        .rowsUpdated()
-                        .thenReturn(id))
-                .as(StepVerifier::create)
-                .expectSubscription()
-                .expectNextCount(1L)
-                .verifyComplete();
-
+        insertPhysicalBook(book);
 
         book.setCopiesAvailable(20L);
         book.getFinePerDay().setAmount(new BigDecimal("10.00"));
@@ -336,6 +310,35 @@ class R2dbcPostgresqlPhysicalBookDaoTest extends AbstractDataR2dbcPostgreSQLCont
 
                     assertThat(actualBook).isEqualTo(book);
                 })
+                .verifyComplete();
+    }
+
+    private void insertPhysicalBook(R2dbcPhysicalBook book) {
+        entityTemplate
+                .getDatabaseClient()
+                .sql(R2dbcPostgresqlBookDao.INSERT_STATEMENT)
+                .bind("$1", book.getTitle())
+                .bind("$2", book.getPublisher())
+                .bind("$3", book.getEdition())
+                .bind("$4", book.getCoverPageImageAssetId())
+                .map(row -> row.get("id", UUID.class))
+                .one()
+                .doOnSuccess(book::setId)
+                .doOnSuccess(id -> book.getAuthors().forEach(author -> author.setBookId(id)))
+                .doOnSuccess(id -> book.getTags().forEach(tag -> tag.setBookId(id)))
+                .flatMap(id -> entityTemplate
+                        .getDatabaseClient()
+                        .sql(R2dbcPostgresqlPhysicalBookDao.INSERT_STATEMENT)
+                        .bind("$1", id)
+                        .bind("$2", book.getCopiesAvailable())
+                        .bind("$3", book.getFinePerDay().getAmount())
+                        .bind("$4", book.getFinePerDay().getCurrencyCode())
+                        .fetch()
+                        .rowsUpdated()
+                        .thenReturn(id))
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectNextCount(1L)
                 .verifyComplete();
     }
 
@@ -375,4 +378,77 @@ class R2dbcPostgresqlPhysicalBookDaoTest extends AbstractDataR2dbcPostgreSQLCont
 
         return physicalBook;
     }
+
+    @Test
+    void givenValidBookIdWithSufficientCopiesAvailable_whenDecrementCopiesAvailable_shouldDecrement() {
+
+        long initialCopiesAvailable = 10;
+        long finalCopiesAvailable = initialCopiesAvailable - 1;
+
+        R2dbcPhysicalBook book = createBook();
+        book.setCopiesAvailable(initialCopiesAvailable);
+
+        insertPhysicalBook(book);
+
+
+        assertThat(book.getId()).isNotNull();
+
+        physicalBookDao.decrementCopiesAvailable(book.getId())
+                .then(entityTemplate
+                        .getDatabaseClient()
+                        .sql("SELECT copies_available FROM physical_books WHERE book_id=$1")
+                        .bind("$1", book.getUuid())
+                        .map(row -> row.get("copies_available", Long.class))
+                        .one())
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .consumeNextWith(actualCount -> {
+                    log.info("Expected {}", finalCopiesAvailable);
+                    log.info("Actual {}", actualCount);
+
+                    assertThat(actualCount).isEqualTo(finalCopiesAvailable);
+                })
+                .expectComplete()
+                .verify();
+    }
+
+    @Test
+    void givenValidBookIdWithNoCopiesAvailable_whenDecrementCopiesAvailable_shouldEmitError() {
+
+        long initialCopiesAvailable = 0;
+
+        R2dbcPhysicalBook book = createBook();
+        book.setCopiesAvailable(initialCopiesAvailable);
+
+        insertPhysicalBook(book);
+
+
+        assertThat(book.getId()).isNotNull();
+
+        physicalBookDao.decrementCopiesAvailable(book.getId())
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectError(InsufficientCopiesAvailableException.class)
+                .verify();
+    }
+
+    @Test
+    void givenNonExistingBookId_whenDecrementCount_shouldEmitComplete() {
+        physicalBookDao.decrementCopiesAvailable(UUID.randomUUID().toString())
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectComplete()
+                .verify();
+    }
+
+    @Test
+    void givenMalformedBookUuid_whenDecrementCount_shouldEmitComplete() {
+        physicalBookDao.decrementCopiesAvailable("malformed")
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectComplete()
+                .verify();
+    }
+
+
 }

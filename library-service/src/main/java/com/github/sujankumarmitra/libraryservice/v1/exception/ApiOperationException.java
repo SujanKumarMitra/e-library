@@ -7,5 +7,5 @@ import java.util.Collection;
  * @since Sep 24/09/21, 2021
  */
 public abstract class ApiOperationException extends RuntimeException {
-    public abstract Collection<ErrorDetails> getErrors();
+    public abstract <E extends ErrorDetails> Collection<E> getErrors();
 }

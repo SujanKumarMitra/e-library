@@ -13,7 +13,7 @@ import java.util.List;
  */
 @Getter
 @AllArgsConstructor
-public class LeaseRequestNotFoundException extends ApiOperationException {
+public final class LeaseRequestNotFoundException extends ApiOperationException {
     @NonNull
     private final Collection<ErrorDetails> errors;
 

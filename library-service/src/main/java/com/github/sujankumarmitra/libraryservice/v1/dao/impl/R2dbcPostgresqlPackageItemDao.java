@@ -27,7 +27,7 @@ import java.util.UUID;
 @Repository
 @AllArgsConstructor
 @Slf4j
-public class R2dbcPackageItemDao implements PackageItemDao {
+public class R2dbcPostgresqlPackageItemDao implements PackageItemDao {
 
     public static final String INSERT_STATEMENT = "INSERT INTO package_items(package_id,book_id) VALUES ($1,$2) RETURNING id";
     public static final String SELECT_STATEMENT = "SELECT id,package_id,book_id FROM package_items WHERE package_id=$1";

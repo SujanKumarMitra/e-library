@@ -132,13 +132,14 @@ CREATE TABLE IF NOT EXISTS lease_requests (
 CREATE TABLE IF NOT EXISTS accepted_lease_requests(
 	lease_request_id uuid,
 	start_time bigint DEFAULT extract(epoch from now()),
-	end_time bigint,
+	duration bigint,
 	relinquished boolean DEFAULT FALSE,
 	CONSTRAINT pk_accepted_lease_requests PRIMARY KEY(lease_request_id),
 	CONSTRAINT fk_accepted_lease_requests_lease_requests FOREIGN KEY(lease_request_id) REFERENCES lease_requests(id),
 	CONSTRAINT chk_accepted_lease_requests_start_time_not_null CHECK(start_time IS NOT NULL),
 	CONSTRAINT chk_accepted_lease_requests_start_time_positive CHECK(start_time >= 0),
-	CONSTRAINT chk_accepted_lease_requests_end_time_positive CHECK(end_time >= 0),
+	CONSTRAINT chk_accepted_lease_requests_duration_not_null CHECK(duration IS NOT NULL),
+	CONSTRAINT chk_accepted_lease_requests_duration_valid CHECK((duration = -1 OR duration > 0)),
 	CONSTRAINT chk_accepted_lease_requests_relinquished_not_null CHECK(relinquished IS NOT NULL)
 );
 

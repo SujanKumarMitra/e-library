@@ -25,21 +25,22 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @since Nov 28/11/21, 2021
  */
 @Slf4j
-class R2dbcPackageItemDaoTest extends AbstractDataR2dbcPostgreSQLContainerDependentTest {
+class R2DbcPostgresqlPackageItemDaoTest extends AbstractDataR2dbcPostgreSQLContainerDependentTest {
 
-    private R2dbcPackageItemDao packageItemDao;
+    private R2dbcPostgresqlPackageItemDao packageItemDao;
+    @SuppressWarnings("FieldMayBeFinal")
     @Autowired
     private R2dbcEntityTemplate entityTemplate = null;
 
     @BeforeEach
     void setUp() {
-        packageItemDao = new R2dbcPackageItemDao(entityTemplate.getDatabaseClient());
+        packageItemDao = new R2dbcPostgresqlPackageItemDao(entityTemplate.getDatabaseClient());
     }
 
     @AfterEach
     void tearDown() {
         entityTemplate
-                .delete(R2dbcPackageItemDao.class)
+                .delete(R2dbcPostgresqlPackageItemDao.class)
                 .from("package_items")
                 .all()
                 .block();
@@ -191,7 +192,7 @@ class R2dbcPackageItemDaoTest extends AbstractDataR2dbcPostgreSQLContainerDepend
         Mono.zip(packageIdMono, bookIdMono, Tuples::of)
                 .flatMap(tuple2 ->
                         entityTemplate.getDatabaseClient()
-                                .sql(R2dbcPackageItemDao.INSERT_STATEMENT)
+                                .sql(R2dbcPostgresqlPackageItemDao.INSERT_STATEMENT)
                                 .bind("$1", tuple2.getT1())
                                 .bind("$2", tuple2.getT2())
                                 .map(row -> row.get("id", UUID.class))
@@ -244,12 +245,12 @@ class R2dbcPackageItemDaoTest extends AbstractDataR2dbcPostgreSQLContainerDepend
         }
 
         R2dbcPackageItem previousItem = new R2dbcPackageItem();
-        previousItem.setPackageId(aPackage.getUuid());
+        previousItem.setPackageId(Objects.requireNonNull(aPackage).getUuid());
         previousItem.setBookId(books.get(0).getUuid());
 
         entityTemplate
                 .getDatabaseClient()
-                .sql(R2dbcPackageItemDao.INSERT_STATEMENT)
+                .sql(R2dbcPostgresqlPackageItemDao.INSERT_STATEMENT)
                 .bind("$1", previousItem.getPackageUuid())
                 .bind("$2", previousItem.getBookUuid())
                 .map(row -> row.get("id",UUID.class))
@@ -290,12 +291,12 @@ class R2dbcPackageItemDaoTest extends AbstractDataR2dbcPostgreSQLContainerDepend
                 .block();
 
         R2dbcPackageItem previousItem = new R2dbcPackageItem();
-        previousItem.setPackageId(aPackage.getUuid());
-        previousItem.setBookId(book.getUuid());
+        previousItem.setPackageId(Objects.requireNonNull(aPackage).getUuid());
+        previousItem.setBookId(Objects.requireNonNull(book).getUuid());
 
         entityTemplate
                 .getDatabaseClient()
-                .sql(R2dbcPackageItemDao.INSERT_STATEMENT)
+                .sql(R2dbcPostgresqlPackageItemDao.INSERT_STATEMENT)
                 .bind("$1", previousItem.getPackageUuid())
                 .bind("$2", previousItem.getBookUuid())
                 .map(row -> row.get("id",UUID.class))
@@ -328,7 +329,7 @@ class R2dbcPackageItemDaoTest extends AbstractDataR2dbcPostgreSQLContainerDepend
         Mono.zip(packageIdMono, bookIdMono, Tuples::of)
                 .flatMap(tuple2 ->
                         entityTemplate.getDatabaseClient()
-                                .sql(R2dbcPackageItemDao.INSERT_STATEMENT)
+                                .sql(R2dbcPostgresqlPackageItemDao.INSERT_STATEMENT)
                                 .bind("$1", tuple2.getT1())
                                 .bind("$2", tuple2.getT2())
                                 .map(row -> row.get("id", UUID.class))

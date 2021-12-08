@@ -14,9 +14,9 @@ public final class InsufficientCopiesAvailableException extends ApiOperationExce
 
     private final Collection<ErrorDetails> errors;
 
-    public InsufficientCopiesAvailableException(long copiesAvailable) {
+    public InsufficientCopiesAvailableException(String bookId) {
         this.errors = List.of(
-                new DefaultErrorDetails("Insufficient copies available = " + copiesAvailable)
+                new DefaultErrorDetails("Insufficient copies available for physical book with bookId '" + bookId + "'")
         );
     }
 }

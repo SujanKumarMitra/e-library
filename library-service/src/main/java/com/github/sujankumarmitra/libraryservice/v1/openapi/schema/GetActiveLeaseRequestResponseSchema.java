@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.validation.constraints.NotEmpty;
 
+import static java.lang.Boolean.FALSE;
+
 /**
  * @author skmitra
  * @since Dec 02/12/21, 2021
@@ -20,20 +22,22 @@ public class GetActiveLeaseRequestResponseSchema extends LeaseRecord {
     @Override
     @Schema(description = "the timestamp at which lease will take effect. Represented in UNIX epoch milliseconds")
     @NotEmpty
-    public long getStartTime() {
-        return 0;
+    public Long getStartTimeInEpochMilliseconds() {
+        return null;
     }
 
     @Override
-    @Schema(description = "the timestamp at which lease will expire. Represented in UNIX epoch milliseconds")
+    @Schema(description = "the duration for which the lease will be active after <i>startTime</i>." +
+            "<br> The value must be either <i>-1</i>, which depicts infinite duration (generally given to teachers), or a positive value." +
+            "<br> The time unit is in milliseconds")
     @NotEmpty
-    public long getEndTime() {
-        return 0;
+    public Long getDurationInMilliseconds() {
+        return null;
     }
 
     @Override
     @Schema(hidden = true)
-    public boolean isRelinquished() {
-        return false;
+    public Boolean isRelinquished() {
+        return FALSE;
     }
 }

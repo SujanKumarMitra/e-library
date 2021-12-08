@@ -13,6 +13,7 @@ import io.r2dbc.spi.Row;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +40,8 @@ public class R2dbcPostgresqlPhysicalBookDao implements PhysicalBookDao {
     public static final String SELECT_STATEMENT = "SELECT pb.book_id, pb.copies_available, pb.fine_amount, pb.fine_currency_code FROM physical_books pb WHERE pb.book_id=$1";
     public static final String UPDATE_STATEMENT = "UPDATE physical_books SET copies_available=$1, fine_amount=$2, fine_currency_code=$3 WHERE book_id=$4";
     public static final String DELETE_STATEMENT = "DELETE FROM physical_books WHERE book_id=$1";
+    public static final String UPDATE_COPIES_AVAILABLE_STATEMENT = "UPDATE physical_books SET copies_available=copies_available-1 WHERE book_id=$1";
+    public static final String POSITIVE_COPIES_AVAILABLE_CONSTRAINT_NAME = "chk_physical_book_copies_positive";
 
     @NonNull
     private final DatabaseClient databaseClient;
@@ -62,7 +65,7 @@ public class R2dbcPostgresqlPhysicalBookDao implements PhysicalBookDao {
             Long copiesAvailable = book.getCopiesAvailable();
             if (copiesAvailable < 0) {
                 log.debug("invalid copiesAvailable {}", copiesAvailable);
-                return Mono.error(new InsufficientCopiesAvailableException(copiesAvailable));
+                return Mono.error(new InsufficientCopiesAvailableException(book.getId()));
             }
 
             BigDecimal amount = book.getFinePerDay().getAmount();
@@ -188,7 +191,7 @@ public class R2dbcPostgresqlPhysicalBookDao implements PhysicalBookDao {
             Long copiesAvailable = book.getCopiesAvailable();
             if (copiesAvailable != null && copiesAvailable < 0) {
                 log.debug("invalid copiesAvailable {}", copiesAvailable);
-                return Mono.error(new InsufficientCopiesAvailableException(copiesAvailable));
+                return Mono.error(new InsufficientCopiesAvailableException(book.getId()));
             }
 
             Money finePerDay = book.getFinePerDay();
@@ -261,5 +264,41 @@ public class R2dbcPostgresqlPhysicalBookDao implements PhysicalBookDao {
                     .rowsUpdated()
                     .then(bookDao.deleteBook(bookId));
         });
+    }
+
+
+    @Override
+    @Transactional
+    public Mono<Void> decrementCopiesAvailable(@NonNull String bookId) {
+        return Mono.defer(() -> {
+
+            UUID id;
+            try {
+                id = UUID.fromString(bookId);
+            } catch (IllegalArgumentException e) {
+                log.debug("{} is not a valid uuid, returning empty Mono", bookId);
+                return Mono.empty();
+            }
+
+            return databaseClient
+                    .sql(UPDATE_COPIES_AVAILABLE_STATEMENT)
+                    .bind("$1", id)
+                    .fetch()
+                    .rowsUpdated()
+                    .doOnNext(updateCount -> log.debug("Rows Updated {}", updateCount))
+                    .then()
+                    .onErrorMap(DataIntegrityViolationException.class, err -> translateError(err, bookId));
+        });
+    }
+
+    private Throwable translateError(DataIntegrityViolationException e, String bookId) {
+        log.debug("DB integrity error", e);
+        String message = e.getMessage();
+
+        if (message != null && message.contains(POSITIVE_COPIES_AVAILABLE_CONSTRAINT_NAME))
+            return new InsufficientCopiesAvailableException(bookId);
+
+        log.debug("failed to translate error, falling back to orginal thrown error");
+        return e;
     }
 }
