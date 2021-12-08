@@ -5,6 +5,7 @@ import com.github.sujankumarmitra.libraryservice.v1.model.LeaseStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author skmitra
@@ -39,8 +40,9 @@ public class GetPendingLeaseRequestResponseSchema extends LeaseRequest {
     }
 
     @Override
+    @NotNull
     @Schema(description = "the timestamp when the lease request is being made. Represented in UNIX epoch milliseconds")
     public Long getTimestamp() {
-        return null;
+        return 0L;
     }
 }

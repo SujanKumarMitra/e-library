@@ -125,16 +125,15 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
         String leaseRequestId = acceptedLease.getLeaseRequestId();
 
         return getValidLeaseRequest(leaseRequestId)
-                .handle((leaseRequest, sink) -> {
+                .flatMap(leaseRequest -> {
                     Mono<Void> createRecordMono = leaseRecordDao.createLeaseRecord(buildLeaseRecord(acceptedLease));
                     Mono<Void> updateStatusMono = leaseRequestDao.setLeaseStatus(leaseRequestId, ACCEPTED);
                     Mono<Void> sendNotificationMono = createAndSendNotification(leaseRequest, ACCEPTED);
                     Mono<Void> handleLeaseAcceptMono = bookService.handleLeaseAccept(acceptedLease);
 
-                    handleLeaseAcceptMono
+                    return handleLeaseAcceptMono
                             .then(Mono.when(createRecordMono, updateStatusMono))
-                            .then(sendNotificationMono)
-                            .subscribe(sink::next, sink::error, sink::complete);
+                            .then(sendNotificationMono);
                 });
     }
 
@@ -171,14 +170,13 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
     public Mono<Void> rejectLeaseRequest(@NonNull RejectedLease rejectedLease) {
         String leaseRequestId = rejectedLease.getLeaseRequestId();
         return getValidLeaseRequest(leaseRequestId)
-                .handle((leaseRequest, sink) -> {
+                .flatMap(leaseRequest -> {
                     Mono<Void> updateStatusMono = leaseRequestDao.setLeaseStatus(leaseRequestId, REJECTED);
                     Mono<Void> createRejectedLeaseMono = rejectedLeaseDao.createRejectedLease(rejectedLease);
                     Mono<Void> sendNotificationMono = createAndSendNotification(leaseRequest, REJECTED);
 
-                    Mono.when(updateStatusMono, createRejectedLeaseMono)
-                            .then(sendNotificationMono)
-                            .subscribe(sink::next, sink::error, sink::complete);
+                    return Mono.when(updateStatusMono, createRejectedLeaseMono)
+                            .then(sendNotificationMono);
                 });
     }
 

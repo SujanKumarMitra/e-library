@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
 import java.util.UUID;
@@ -31,6 +32,7 @@ public class R2dbcPostgresqlLeaseRecordDao implements LeaseRecordDao {
     private final R2dbcEntityTemplate entityTemplate;
 
     @Override
+    @Transactional
     public Mono<Void> createLeaseRecord(@NonNull LeaseRecord leaseRecord) {
         return Mono.defer(() -> {
             String leaseRequestId = leaseRecord.getLeaseRequestId();

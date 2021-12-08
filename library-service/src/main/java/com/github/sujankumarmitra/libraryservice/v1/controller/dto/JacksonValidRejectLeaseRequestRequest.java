@@ -3,6 +3,8 @@ package com.github.sujankumarmitra.libraryservice.v1.controller.dto;
 import com.github.sujankumarmitra.libraryservice.v1.model.LeaseStatus;
 import lombok.Data;
 
+import javax.validation.constraints.NotEmpty;
+
 import static com.github.sujankumarmitra.libraryservice.v1.model.LeaseStatus.REJECTED;
 
 /**
@@ -11,6 +13,7 @@ import static com.github.sujankumarmitra.libraryservice.v1.model.LeaseStatus.REJ
  */
 @Data
 public class JacksonValidRejectLeaseRequestRequest extends JacksonValidHandleLeaseRequestRequest {
+    @NotEmpty
     private String reasonPhrase;
 
     @Override

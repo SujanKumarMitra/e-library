@@ -5,6 +5,7 @@ import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiConflictResponse;
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiCreatedResponse;
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.*;
+import com.github.sujankumarmitra.libraryservice.v1.exception.ApiOperationException;
 import com.github.sujankumarmitra.libraryservice.v1.model.AcceptedLease;
 import com.github.sujankumarmitra.libraryservice.v1.model.LeaseRequest;
 import com.github.sujankumarmitra.libraryservice.v1.model.LeaseStatus;
@@ -32,6 +33,7 @@ import javax.validation.Valid;
 import java.net.URI;
 
 import static com.github.sujankumarmitra.libraryservice.v1.model.LeaseStatus.*;
+import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.ResponseEntity.accepted;
 
 /**
@@ -82,8 +84,9 @@ public class LeaseRequestController {
             )
     )
     @GetMapping("/pending/self")
-    public Flux<LeaseRequest> getAllPendingLeasesForCurrentUser(@RequestParam(name = "page_no", defaultValue = "0") int pageNo) {
-        String userId = ""; // TODO Spring Security Authentication.getName()
+//    public Flux<LeaseRequest> getAllPendingLeasesForCurrentUser(@RequestParam(name = "page_no", defaultValue = "0") int pageNo) {
+    public Flux<LeaseRequest> getAllPendingLeasesForCurrentUser(@RequestParam(name = "page_no", defaultValue = "0") int pageNo, @RequestParam String userId) {
+//        String userId = ""; // TODO Spring Security Authentication.getName()
         return leaseRequestService
                 .getPendingLeaseRequests(userId, pageNo);
     }
@@ -100,8 +103,8 @@ public class LeaseRequestController {
     @ApiBadRequestResponse
     @ApiConflictResponse
     @PostMapping
-    public Mono<ResponseEntity<Void>> createLeaseRequest(@RequestBody JacksonValidCreateLeaseRequest request) {
-        String userId = ""; // TODO Spring Security Authentication.getName()
+    public Mono<ResponseEntity<Void>> createLeaseRequest(@RequestBody JacksonValidCreateLeaseRequest request, @RequestParam String userId) {
+//        String userId = ""; // TODO Spring Security Authentication.getName()
 
         request.setUserId(userId);
         request.setStatus(PENDING);
@@ -128,30 +131,34 @@ public class LeaseRequestController {
     @ApiAcceptedResponse
     @ApiConflictResponse
     @PatchMapping("/{leaseRequestId}")
-    public Mono<ResponseEntity<Void>> handleLeaseRequest(@PathVariable String leaseRequestId,
+    public Mono<ResponseEntity<Object>> handleLeaseRequest(@PathVariable String leaseRequestId,
                                                          @RequestBody @Valid JacksonValidHandleLeaseRequestRequest request) {
 
         request.setLeaseRequestId(leaseRequestId);
         LeaseStatus status = request.getStatus();
 
+        Mono<ResponseEntity<Object>> completionMono;
+
         if (status == ACCEPTED) {
             AcceptedLease acceptedLease = new JacksonValidAcceptLeaseRequestRequestAdaptor((JacksonValidAcceptLeaseRequestRequest) request);
             System.out.println(acceptedLease);
-            return leaseRequestService
+            completionMono = leaseRequestService
                     .acceptLeaseRequest(acceptedLease)
-                    .then(Mono.fromSupplier(() -> ResponseEntity.accepted().build()));
+                    .then(Mono.fromSupplier(() -> accepted().build()));
 
         } else if (status == REJECTED) {
             RejectedLease rejectedLease = new JacksonValidRejectLeaseRequestRequestAdaptor((JacksonValidRejectLeaseRequestRequest) request);
             System.out.println(rejectedLease);
-            return
-                    leaseRequestService
-                            .rejectLeaseRequest(rejectedLease)
-                            .then(Mono.fromSupplier(() -> ResponseEntity.accepted().build()));
+            completionMono = leaseRequestService
+                    .rejectLeaseRequest(rejectedLease)
+                    .then(Mono.fromSupplier(() -> ResponseEntity.accepted().build()));
         } else {
             // this should not happen
-            return Mono.error(new RuntimeException("could not determine request type"));
+            completionMono = Mono.error(new RuntimeException("could not determine request type"));
         }
+        return completionMono
+                .onErrorResume(ApiOperationException.class,
+                        err -> Mono.fromSupplier(() -> ResponseEntity.status(CONFLICT).body(err.getErrors())));
     }
 
     @Operation(
