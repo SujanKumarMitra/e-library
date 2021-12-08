@@ -1,5 +1,6 @@
 package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 
+import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBook;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcLeaseRecord;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcLeaseRequest;
 import com.github.sujankumarmitra.libraryservice.v1.exception.LeaseRecordAlreadyExistsException;
@@ -16,7 +17,10 @@ import reactor.test.StepVerifier;
 import java.time.Duration;
 import java.util.UUID;
 
+import static com.github.sujankumarmitra.libraryservice.v1.dao.impl.BookDaoTestUtils.insertDummyBook;
+import static com.github.sujankumarmitra.libraryservice.v1.dao.impl.LeaseRequestDaoTestUtils.insertLeaseRequest;
 import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -75,10 +79,8 @@ class R2dbcPostgresqlLeaseRecordDaoTest extends AbstractDataR2dbcPostgreSQLConta
         leaseRecord.setRelinquished(FALSE);
         leaseRecord.setDurationInMilliseconds(System.currentTimeMillis() + Duration.ofDays(180).toMillis());
 
-        BookDaoTestUtils
-                .insertDummyBook(entityTemplate.getDatabaseClient())
-                .flatMap(book -> LeaseRequestDaoTestUtils
-                        .insertLeaseRequest(entityTemplate.getDatabaseClient(), book.getUuid()))
+        insertDummyBook(entityTemplate.getDatabaseClient())
+                .flatMap(book -> insertLeaseRequest(entityTemplate.getDatabaseClient(), book.getUuid()))
                 .map(R2dbcLeaseRequest::getUuid)
                 .doOnNext(leaseRecord::setLeaseRequestId)
                 .then(leaseRecordDao.createLeaseRecord(leaseRecord))
@@ -129,10 +131,8 @@ class R2dbcPostgresqlLeaseRecordDaoTest extends AbstractDataR2dbcPostgreSQLConta
         leaseRecord.setRelinquished(FALSE);
         leaseRecord.setDurationInMilliseconds(System.currentTimeMillis() + Duration.ofDays(180).toMillis());
 
-        BookDaoTestUtils
-                .insertDummyBook(entityTemplate.getDatabaseClient())
-                .flatMap(book -> LeaseRequestDaoTestUtils
-                        .insertLeaseRequest(entityTemplate.getDatabaseClient(), book.getUuid()))
+        insertDummyBook(entityTemplate.getDatabaseClient())
+                .flatMap(book -> insertLeaseRequest(entityTemplate.getDatabaseClient(), book.getUuid()))
                 .map(R2dbcLeaseRequest::getUuid)
                 .doOnNext(leaseRecord::setLeaseRequestId)
                 .then(Mono.defer(() -> entityTemplate
@@ -157,32 +157,116 @@ class R2dbcPostgresqlLeaseRecordDaoTest extends AbstractDataR2dbcPostgreSQLConta
 
     @Test
     void givenValidLeaseRequestId_whenGetLeaseRecord_shouldGetRecord() {
-//        TODO
+        R2dbcLeaseRecord leaseRecord = new R2dbcLeaseRecord();
+
+        leaseRecord.setRelinquished(FALSE);
+        leaseRecord.setStartTimeInEpochMilliseconds(System.currentTimeMillis());
+        leaseRecord.setDurationInMilliseconds(Duration.ofDays(30).toMillis());
+
+        insertDummyBook(entityTemplate.getDatabaseClient())
+                .map(R2dbcBook::getUuid)
+                .flatMap(id -> insertLeaseRequest(entityTemplate.getDatabaseClient(), id))
+                .map(R2dbcLeaseRequest::getUuid)
+                .doOnNext(id -> leaseRecord.setLeaseRequestId(id))
+                .then(Mono.defer(() -> entityTemplate
+                        .getDatabaseClient()
+                        .sql(R2dbcPostgresqlLeaseRecordDao.INSERT_STATEMENT)
+                        .bind("$1", leaseRecord.getLeaseRequestUuid())
+                        .bind("$2", leaseRecord.getStartTimeInEpochMilliseconds())
+                        .bind("$3", leaseRecord.getDurationInMilliseconds())
+                        .bind("$4", leaseRecord.getRelinquished())
+                        .fetch()
+                        .rowsUpdated()
+                        .then()))
+                .then(Mono.defer(() -> leaseRecordDao.getLeaseRecord(leaseRecord.getLeaseRequestId())))
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .consumeNextWith(actualLeaseRecord -> {
+                    log.info("Expected {}", leaseRecord);
+                    log.info("Actual {}", actualLeaseRecord);
+
+                    assertThat(actualLeaseRecord).isEqualTo(leaseRecord);
+                })
+                .expectComplete()
+                .verify();
     }
 
     @Test
     void givenNonExistingLeaseRequestId_whenGetLeaseRecord_shouldEmitEmpty() {
-//        TODO
+        leaseRecordDao
+                .getLeaseRecord(UUID.randomUUID().toString())
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectComplete()
+                .verify();
     }
 
     @Test
     void givenMalformedLeaseRequestUuid_whenGetLeaseRecord_shouldEmitEmpty() {
-//        TODO
+        leaseRecordDao
+                .getLeaseRecord("malformed")
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectComplete()
+                .verify();
     }
 
     @Test
     void givenValidLeaseRequestId_whenMarkAsRelinquished_shouldRelinquish() {
-//        TODO
+        R2dbcLeaseRecord leaseRecord = new R2dbcLeaseRecord();
+
+        leaseRecord.setRelinquished(FALSE);
+        leaseRecord.setStartTimeInEpochMilliseconds(System.currentTimeMillis());
+        leaseRecord.setDurationInMilliseconds(Duration.ofDays(30).toMillis());
+
+        insertDummyBook(entityTemplate.getDatabaseClient())
+                .map(R2dbcBook::getUuid)
+                .flatMap(id -> insertLeaseRequest(entityTemplate.getDatabaseClient(), id))
+                .map(R2dbcLeaseRequest::getUuid)
+                .doOnNext(id -> leaseRecord.setLeaseRequestId(id))
+                .then(Mono.defer(() -> entityTemplate
+                        .getDatabaseClient()
+                        .sql(R2dbcPostgresqlLeaseRecordDao.INSERT_STATEMENT)
+                        .bind("$1", leaseRecord.getLeaseRequestUuid())
+                        .bind("$2", leaseRecord.getStartTimeInEpochMilliseconds())
+                        .bind("$3", leaseRecord.getDurationInMilliseconds())
+                        .bind("$4", leaseRecord.getRelinquished())
+                        .fetch()
+                        .rowsUpdated()
+                        .then()))
+                .doOnSuccess(v -> leaseRecord.setRelinquished(TRUE))
+                .then(Mono.defer(() -> leaseRecordDao.markAsRelinquished(leaseRecord.getLeaseRequestId())))
+                .then(entityTemplate.select(R2dbcLeaseRecord.class).one())
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .consumeNextWith(actualLeaseRecord -> {
+                    log.info("Expected {}", leaseRecord);
+                    log.info("Actual {}", actualLeaseRecord);
+
+                    assertThat(actualLeaseRecord).isEqualTo(leaseRecord);
+                })
+                .expectComplete()
+                .verify();
     }
 
     @Test
     void givenNonExistingLeaseRequestId_whenMarkAsRelinquished_shouldEmitEmpty() {
-//        TODO
+        leaseRecordDao
+                .markAsRelinquished(UUID.randomUUID().toString())
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectComplete()
+                .verify();
     }
 
     @Test
     void givenMalformedLeaseRequestUuid_whenMarkAsRelinquished_shouldRelinquish() {
-//        TODO
+        leaseRecordDao
+                .markAsRelinquished(UUID.randomUUID().toString())
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectComplete()
+                .verify();
     }
 
 
