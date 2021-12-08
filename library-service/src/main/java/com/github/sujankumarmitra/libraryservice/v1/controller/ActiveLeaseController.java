@@ -1,23 +1,26 @@
 package com.github.sujankumarmitra.libraryservice.v1.controller;
 
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiAcceptedResponse;
-import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiConflictResponse;
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiNotFoundResponse;
 import com.github.sujankumarmitra.libraryservice.v1.model.LeaseRecord;
 import com.github.sujankumarmitra.libraryservice.v1.model.Money;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.GetActiveLeaseRequestResponseSchema;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.MoneySchema;
+import com.github.sujankumarmitra.libraryservice.v1.service.ActiveLeaseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * @author skmitra
@@ -25,11 +28,15 @@ import reactor.core.publisher.Mono;
  */
 @RestController
 @RequestMapping("/api/v1/lease-requests/active")
+@AllArgsConstructor
 @Tag(
         name = "ActiveLeaseController",
         description = "Controller for active book leases requests"
 )
 public class ActiveLeaseController {
+
+    @NotNull
+    private final ActiveLeaseService activeLeaseService;
 
     @Operation(
             summary = "Fetch all active leases",
@@ -45,7 +52,7 @@ public class ActiveLeaseController {
     )
     @GetMapping
     public Flux<LeaseRecord> getActiveLeases(@RequestParam(value = "page_no", defaultValue = "0") long pageNo) {
-        return Flux.empty();
+        return activeLeaseService.getAllActiveLeases(pageNo);
     }
 
     @Operation(
@@ -63,7 +70,8 @@ public class ActiveLeaseController {
     )
     @GetMapping("/self")
     public Flux<LeaseRecord> getActiveLeasesForCurrentUser(@RequestParam(value = "page_no", defaultValue = "0") long pageNo) {
-        return Flux.empty();
+        String userId = ""; // TODO Spring Security Authentication.getName()
+        return activeLeaseService.getAllActiveLeases(userId, pageNo);
     }
 
     @Operation(
@@ -80,7 +88,9 @@ public class ActiveLeaseController {
     )
     @GetMapping("/{leaseRequestId}/fine")
     public Mono<ResponseEntity<Money>> getFineForActiveLease(@PathVariable String leaseRequestId) {
-        return Mono.empty();
+        return activeLeaseService
+                .getFineForActiveLease(leaseRequestId)
+                .map(ResponseEntity::ok);
     }
 
     @Operation(
@@ -90,10 +100,11 @@ public class ActiveLeaseController {
                     "<br> For EBook leases, the system will automatically relinquish the lease, when current time" +
                     "becomes greater than leaseEndTime")
     @ApiAcceptedResponse
-    @ApiConflictResponse
     @PatchMapping("/{leaseRequestId}/relinquish")
     public Mono<ResponseEntity<Void>> relinquishActiveLease(@PathVariable String leaseRequestId) {
-        return Mono.empty();
+        return activeLeaseService
+                .relinquishActiveLease(leaseRequestId)
+                .then(Mono.fromSupplier(() -> ResponseEntity.accepted().build()));
     }
 
     @Operation(
@@ -105,8 +116,10 @@ public class ActiveLeaseController {
     )
     @ApiAcceptedResponse
     @PutMapping("/invalidate")
-    public Mono<ResponseEntity<Void>> invalidateStaleLeases() {
-        return Mono.empty();
+    public Mono<ResponseEntity<Void>> invalidateStaleEBookLeases() {
+        return activeLeaseService
+                .invalidateStateEBookLeases()
+                .then(Mono.fromSupplier(() -> ResponseEntity.accepted().build()));
     }
 
 
