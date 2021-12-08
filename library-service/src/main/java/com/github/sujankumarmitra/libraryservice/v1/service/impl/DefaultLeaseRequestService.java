@@ -59,9 +59,8 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
         int pageSize = pagingProperties.getDefaultPageSize();
 
         int skip = pageNo * pageSize;
-        int limit = skip + pageSize;
 
-        return leaseRequestDao.getPendingLeaseRequests(skip, limit);
+        return leaseRequestDao.getPendingLeaseRequests(skip, pageSize);
     }
 
     @Override
@@ -69,9 +68,8 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
         int pageSize = pagingProperties.getDefaultPageSize();
 
         int skip = pageNo * pageSize;
-        int limit = skip + pageSize;
 
-        return leaseRequestDao.getPendingLeaseRequests(userId, skip, limit);
+        return leaseRequestDao.getPendingLeaseRequests(userId, skip, pageSize);
     }
 
     @Override

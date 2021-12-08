@@ -64,14 +64,13 @@ CREATE TABLE IF NOT EXISTS ebooks(
 	CONSTRAINT chk_ebook_format_valid CHECK(format IN ('PDF'))
 );
 
-
 CREATE TABLE IF NOT EXISTS ebook_segments(
 	id text,
 	book_id uuid,
 	index bigint,
 	asset_id text,
 	CONSTRAINT pk_ebook_segments PRIMARY KEY(id),
-	CONSTRAINT fk_ebook_segments_books FOREIGN KEY(book_id) REFERENCES books(id),
+	CONSTRAINT fk_ebook_segments_books FOREIGN KEY(book_id) REFERENCES ebooks(book_id),
 	CONSTRAINT chk_ebook_book_id_not_null CHECK(book_id IS NOT NULL),
 	CONSTRAINT chk_ebook_index_not_null CHECK(index IS NOT NULL),
 	CONSTRAINT chk_ebook_index_positive CHECK(index >= 0),

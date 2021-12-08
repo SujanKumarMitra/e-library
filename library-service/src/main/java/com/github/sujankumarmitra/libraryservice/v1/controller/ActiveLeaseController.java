@@ -51,7 +51,7 @@ public class ActiveLeaseController {
             )
     )
     @GetMapping
-    public Flux<LeaseRecord> getActiveLeases(@RequestParam(value = "page_no", defaultValue = "0") long pageNo) {
+    public Flux<LeaseRecord> getActiveLeases(@RequestParam(value = "page_no", defaultValue = "0") int pageNo) {
         return activeLeaseService.getAllActiveLeases(pageNo);
     }
 
@@ -69,7 +69,7 @@ public class ActiveLeaseController {
             )
     )
     @GetMapping("/self")
-    public Flux<LeaseRecord> getActiveLeasesForCurrentUser(@RequestParam(value = "page_no", defaultValue = "0") long pageNo) {
+    public Flux<LeaseRecord> getActiveLeasesForCurrentUser(@RequestParam(value = "page_no", defaultValue = "0") int pageNo) {
         String userId = ""; // TODO Spring Security Authentication.getName()
         return activeLeaseService.getAllActiveLeases(userId, pageNo);
     }

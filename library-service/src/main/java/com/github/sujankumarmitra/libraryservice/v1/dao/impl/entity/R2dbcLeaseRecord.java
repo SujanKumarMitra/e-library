@@ -4,6 +4,7 @@ import com.github.sujankumarmitra.libraryservice.v1.model.LeaseRecord;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.UUID;
 
@@ -15,6 +16,7 @@ import static com.github.sujankumarmitra.libraryservice.v1.util.StringUtil.nulla
  */
 @Getter
 @Setter
+@Table("accepted_lease_requests")
 public final class R2dbcLeaseRecord extends LeaseRecord {
     @Column("lease_request_id")
     private UUID leaseRequestId;

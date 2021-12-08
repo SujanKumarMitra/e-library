@@ -27,9 +27,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 class R2dbcPostgresqlLeaseRecordDaoTest extends AbstractDataR2dbcPostgreSQLContainerDependentTest {
 
     private R2dbcPostgresqlLeaseRecordDao leaseRecordDao;
-    @SuppressWarnings("FieldMayBeFinal")
     @Autowired
-    private R2dbcEntityTemplate entityTemplate = null;
+    private R2dbcEntityTemplate entityTemplate;
 
     @BeforeEach
     void setUp() {
@@ -48,6 +47,13 @@ class R2dbcPostgresqlLeaseRecordDaoTest extends AbstractDataR2dbcPostgreSQLConta
         entityTemplate
                 .getDatabaseClient()
                 .sql("DELETE FROM lease_requests")
+                .fetch()
+                .rowsUpdated()
+                .block();
+
+        entityTemplate
+                .getDatabaseClient()
+                .sql("DELETE FROM physical_books")
                 .fetch()
                 .rowsUpdated()
                 .block();
@@ -147,5 +153,51 @@ class R2dbcPostgresqlLeaseRecordDaoTest extends AbstractDataR2dbcPostgreSQLConta
                 })
                 .verify();
 
+    }
+
+    @Test
+    void givenValidLeaseRequestId_whenGetLeaseRecord_shouldGetRecord() {
+//        TODO
+    }
+
+    @Test
+    void givenNonExistingLeaseRequestId_whenGetLeaseRecord_shouldEmitEmpty() {
+//        TODO
+    }
+
+    @Test
+    void givenMalformedLeaseRequestUuid_whenGetLeaseRecord_shouldEmitEmpty() {
+//        TODO
+    }
+
+    @Test
+    void givenValidLeaseRequestId_whenMarkAsRelinquished_shouldRelinquish() {
+//        TODO
+    }
+
+    @Test
+    void givenNonExistingLeaseRequestId_whenMarkAsRelinquished_shouldEmitEmpty() {
+//        TODO
+    }
+
+    @Test
+    void givenMalformedLeaseRequestUuid_whenMarkAsRelinquished_shouldRelinquish() {
+//        TODO
+    }
+
+
+    @Test
+    void givenSetOfActiveLeaseRecords_getActiveLeaseRecords_shouldGetActiveLeaseRecords() {
+//        TODO
+    }
+
+    @Test
+    void givenSetOfActiveLeaseRecords_getActiveLeaseRecordsByUserId_shouldGetActiveLeaseRecords() {
+//        TODO
+    }
+
+    @Test
+    void givenSetOfStaleEBookLeaseRecords_getgetStaleEBookLeaseRecordIds_shouldGetgetStaleEBookLeaseRecordIds() {
+//        TODO
     }
 }

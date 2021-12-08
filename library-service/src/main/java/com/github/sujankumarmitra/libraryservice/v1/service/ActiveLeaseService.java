@@ -10,9 +10,9 @@ import reactor.core.publisher.Mono;
  * @since Dec 08/12/21, 2021
  */
 public interface ActiveLeaseService {
-    Flux<LeaseRecord> getAllActiveLeases(long pageNo);
+    Flux<LeaseRecord> getAllActiveLeases(int pageNo);
 
-    Flux<LeaseRecord> getAllActiveLeases(String userId, long pageNo);
+    Flux<LeaseRecord> getAllActiveLeases(String userId, int pageNo);
 
     Mono<Money> getFineForActiveLease(String leaseRequestId);
 
