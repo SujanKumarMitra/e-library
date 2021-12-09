@@ -83,7 +83,7 @@ class DefaultBookServiceTest {
 
         AcceptedLease acceptedLease = buildAcceptedLease(validLeaseRequestId);
 
-        bookService.handleLeaseAccept(acceptedLease)
+        bookService.onLeaseAccept(acceptedLease)
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .expectComplete()
@@ -123,7 +123,7 @@ class DefaultBookServiceTest {
 
         AcceptedLease acceptedLease = buildAcceptedLease(validLeaseRequestId);
 
-        bookService.handleLeaseAccept(acceptedLease)
+        bookService.onLeaseAccept(acceptedLease)
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .expectComplete()
@@ -156,7 +156,7 @@ class DefaultBookServiceTest {
 
         AcceptedLease acceptedLease = buildAcceptedLease(validLeaseRequestId);
 
-        bookService.handleLeaseAccept(acceptedLease)
+        bookService.onLeaseAccept(acceptedLease)
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .expectError(InsufficientCopiesAvailableException.class)
@@ -193,7 +193,7 @@ class DefaultBookServiceTest {
 
         AcceptedLease acceptedLease = buildAcceptedLease(validLeaseRequestId);
 
-        bookService.handleLeaseAccept(acceptedLease)
+        bookService.onLeaseAccept(acceptedLease)
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .expectError()

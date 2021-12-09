@@ -451,4 +451,56 @@ class R2dbcPostgresqlPhysicalBookDaoTest extends AbstractDataR2dbcPostgreSQLCont
     }
 
 
+    @Test
+    void givenValidBookId_whenIncrementCopiesAvailable_shouldIncrement() {
+
+        long initialCopiesAvailable = 10;
+        long finalCopiesAvailable = initialCopiesAvailable + 1;
+
+        R2dbcPhysicalBook book = createBook();
+        book.setCopiesAvailable(initialCopiesAvailable);
+
+        insertPhysicalBook(book);
+
+
+        assertThat(book.getId()).isNotNull();
+
+        physicalBookDao.incrementCopiesAvailable(book.getId())
+                .then(entityTemplate
+                        .getDatabaseClient()
+                        .sql("SELECT copies_available FROM physical_books WHERE book_id=$1")
+                        .bind("$1", book.getUuid())
+                        .map(row -> row.get("copies_available", Long.class))
+                        .one())
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .consumeNextWith(actualCount -> {
+                    log.info("Expected {}", finalCopiesAvailable);
+                    log.info("Actual {}", actualCount);
+
+                    assertThat(actualCount).isEqualTo(finalCopiesAvailable);
+                })
+                .expectComplete()
+                .verify();
+    }
+
+    @Test
+    void givenNonExistingBookId_whenIncrementCount_shouldEmitComplete() {
+        physicalBookDao.incrementCopiesAvailable(UUID.randomUUID().toString())
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectComplete()
+                .verify();
+    }
+
+    @Test
+    void givenMalformedBookUuid_whenIncrementCount_shouldEmitComplete() {
+        physicalBookDao.incrementCopiesAvailable("malformed")
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectComplete()
+                .verify();
+    }
+
+
 }

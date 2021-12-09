@@ -80,7 +80,7 @@ class DefaultLeaseRequestServiceTest {
                 .when(leaseRequestDao).getLeaseRequest(validLeaseRequestId.toString());
 
         Mockito.doReturn(Mono.empty())
-                .when(bookService).handleLeaseAccept(any());
+                .when(bookService).onLeaseAccept(any());
 
         Mockito.doReturn(Mono.empty())
                 .when(leaseRecordDao).createLeaseRecord(any());
@@ -123,7 +123,7 @@ class DefaultLeaseRequestServiceTest {
                 .when(leaseRequestDao).getLeaseRequest(validLeaseRequestId.toString());
 
         Mockito.doReturn(Mono.empty())
-                .when(bookService).handleLeaseAccept(any());
+                .when(bookService).onLeaseAccept(any());
 
         Mockito.doReturn(Mono.empty())
                 .when(leaseRecordDao).createLeaseRecord(any());
@@ -196,7 +196,7 @@ class DefaultLeaseRequestServiceTest {
                 .when(leaseRequestDao).getLeaseRequest(validLeaseRequestId.toString());
 
         Mockito.doReturn(Mono.error(new InsufficientCopiesAvailableException("bookId")))
-                .when(bookService).handleLeaseAccept(any());
+                .when(bookService).onLeaseAccept(any());
 
         DefaultAcceptedLease acceptedLease = new DefaultAcceptedLease();
         acceptedLease.setLeaseRequestId(validLeaseRequestId.toString());

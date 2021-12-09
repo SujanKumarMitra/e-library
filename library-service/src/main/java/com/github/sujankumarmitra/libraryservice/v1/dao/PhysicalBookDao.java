@@ -9,4 +9,6 @@ import reactor.core.publisher.Mono;
  */
 public interface PhysicalBookDao extends BookDao<PhysicalBook> {
     Mono<Void> decrementCopiesAvailable(String bookId);
+
+    Mono<Void> incrementCopiesAvailable(String bookId);
 }

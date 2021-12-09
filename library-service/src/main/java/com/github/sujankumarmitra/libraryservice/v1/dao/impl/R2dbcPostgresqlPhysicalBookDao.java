@@ -40,7 +40,8 @@ public class R2dbcPostgresqlPhysicalBookDao implements PhysicalBookDao {
     public static final String SELECT_STATEMENT = "SELECT pb.book_id, pb.copies_available, pb.fine_amount, pb.fine_currency_code FROM physical_books pb WHERE pb.book_id=$1";
     public static final String UPDATE_STATEMENT = "UPDATE physical_books SET copies_available=$1, fine_amount=$2, fine_currency_code=$3 WHERE book_id=$4";
     public static final String DELETE_STATEMENT = "DELETE FROM physical_books WHERE book_id=$1";
-    public static final String UPDATE_COPIES_AVAILABLE_STATEMENT = "UPDATE physical_books SET copies_available=copies_available-1 WHERE book_id=$1";
+    public static final String DECREMENT_COPIES_AVAILABLE_STATEMENT = "UPDATE physical_books SET copies_available=copies_available-1 WHERE book_id=$1";
+    public static final String INCREMENT_COPIES_AVAILABLE_STATEMENT = "UPDATE physical_books SET copies_available=copies_available+1 WHERE book_id=$1";
     public static final String POSITIVE_COPIES_AVAILABLE_CONSTRAINT_NAME = "chk_physical_book_copies_positive";
 
     @NonNull
@@ -281,7 +282,31 @@ public class R2dbcPostgresqlPhysicalBookDao implements PhysicalBookDao {
             }
 
             return databaseClient
-                    .sql(UPDATE_COPIES_AVAILABLE_STATEMENT)
+                    .sql(DECREMENT_COPIES_AVAILABLE_STATEMENT)
+                    .bind("$1", id)
+                    .fetch()
+                    .rowsUpdated()
+                    .doOnNext(updateCount -> log.debug("Rows Updated {}", updateCount))
+                    .then()
+                    .onErrorMap(DataIntegrityViolationException.class, err -> translateError(err, bookId));
+        });
+    }
+
+    @Override
+    @Transactional
+    public Mono<Void> incrementCopiesAvailable(String bookId) {
+        return Mono.defer(() -> {
+
+            UUID id;
+            try {
+                id = UUID.fromString(bookId);
+            } catch (IllegalArgumentException e) {
+                log.debug("{} is not a valid uuid, returning empty Mono", bookId);
+                return Mono.empty();
+            }
+
+            return databaseClient
+                    .sql(INCREMENT_COPIES_AVAILABLE_STATEMENT)
                     .bind("$1", id)
                     .fetch()
                     .rowsUpdated()

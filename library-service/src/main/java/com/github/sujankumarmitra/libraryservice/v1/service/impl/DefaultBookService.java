@@ -69,7 +69,7 @@ public class DefaultBookService implements BookService {
     }
 
     @Override
-    public Mono<Void> handleLeaseAccept(AcceptedLease acceptedLease) {
+    public Mono<Void> onLeaseAccept(AcceptedLease acceptedLease) {
         return leaseRequestDao
                 .getLeaseRequest(acceptedLease.getLeaseRequestId())
                 .flatMap(leaseRequest -> getBook(leaseRequest.getBookId())
@@ -78,9 +78,26 @@ public class DefaultBookService implements BookService {
     }
 
     @Override
-    public Mono<Void> handleLeaseRelinquish(@NotNull LeaseRecord leaseRecord) {
-//        TODO increment physical book copies
-        return Mono.error(new RuntimeException("implement me"));
+    public Mono<Void> onLeaseRelinquish(@NotNull LeaseRecord leaseRecord) {
+        return leaseRequestDao
+                .getLeaseRequest(leaseRecord.getLeaseRequestId())
+                .map(LeaseRequest::getBookId)
+                .flatMap(this::getBook)
+                .flatMap(this::handleLeaseRelinquishForBook);
+    }
+
+    private Mono<Void> handleLeaseRelinquishForBook(Book book) {
+        if (book instanceof PhysicalBook) {
+            return physicalBookDao.incrementCopiesAvailable(book.getId());
+        } else if (book instanceof EBook) {
+            // nothing to do for ebooks
+            return Mono.empty();
+        } else {
+            // this should not happen
+            String type = book.getClass().getSimpleName();
+            log.warn("Unknown book type {}", type);
+            return Mono.error(new RuntimeException("could not determine book type " + type));
+        }
     }
 
     private Mono<Void> handleLeaseAcceptForBook(Tuple3<LeaseRequest, AcceptedLease, Book> tuple3) {

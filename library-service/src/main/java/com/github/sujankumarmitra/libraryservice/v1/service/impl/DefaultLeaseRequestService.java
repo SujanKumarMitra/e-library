@@ -128,7 +128,7 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
                     Mono<Void> createRecordMono = leaseRecordDao.createLeaseRecord(buildLeaseRecord(acceptedLease));
                     Mono<Void> updateStatusMono = leaseRequestDao.setLeaseStatus(leaseRequestId, ACCEPTED);
                     Mono<Void> sendNotificationMono = createAndSendNotification(leaseRequest, ACCEPTED);
-                    Mono<Void> handleLeaseAcceptMono = bookService.handleLeaseAccept(acceptedLease);
+                    Mono<Void> handleLeaseAcceptMono = bookService.onLeaseAccept(acceptedLease);
 
                     return handleLeaseAcceptMono
                             .then(Mono.when(createRecordMono, updateStatusMono))

@@ -21,7 +21,7 @@ public interface BookService {
 
     Mono<Void> deleteBook(String bookId);
 
-    Mono<Void> handleLeaseAccept(AcceptedLease request);
+    Mono<Void> onLeaseAccept(AcceptedLease request);
 
-    Mono<Void> handleLeaseRelinquish(LeaseRecord leaseRecord);
+    Mono<Void> onLeaseRelinquish(LeaseRecord leaseRecord);
 }
