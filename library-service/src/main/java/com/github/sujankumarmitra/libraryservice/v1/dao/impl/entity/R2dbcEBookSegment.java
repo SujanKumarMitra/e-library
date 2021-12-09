@@ -45,9 +45,17 @@ public final class R2dbcEBookSegment extends EBookSegment {
         return nullableToString(id);
     }
 
+    public UUID getUuid() {
+        return id;
+    }
+
     @Override
     public String getBookId() {
         return nullableToString(bookId);
+    }
+
+    public UUID getBookUuid() {
+        return bookId;
     }
 
 }

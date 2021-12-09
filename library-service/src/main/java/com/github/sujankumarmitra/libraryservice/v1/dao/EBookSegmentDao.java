@@ -15,5 +15,5 @@ public interface EBookSegmentDao {
 
     Mono<String> createSegment(EBookSegment ebookSegment);
 
-    Mono<Void> deleteAllSegmentsByBookId(String ebookId);
+    Mono<Void> deleteSegmentsByBookId(String ebookId);
 }

@@ -45,6 +45,6 @@ public class DefaultEBookSegmentService implements EBookSegmentService {
 
     @Override
     public Mono<Void> deleteSegmentsByBookId(@NonNull String ebookId) {
-        return ebookSegmentDao.deleteAllSegmentsByBookId(ebookId);
+        return ebookSegmentDao.deleteSegmentsByBookId(ebookId);
     }
 }
