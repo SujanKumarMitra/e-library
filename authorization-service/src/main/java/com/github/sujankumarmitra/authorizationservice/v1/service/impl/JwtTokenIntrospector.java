@@ -61,10 +61,6 @@ public class JwtTokenIntrospector implements TokenIntrospector {
 
         try {
             DecodedJWT decode = JWT.decode(token);
-            if (decode == null) {
-                log.debug("JWT.decode() returned null, returning inactive token");
-                return INACTIVE_TOKEN_RESPONSE;
-            }
 
             String subject = decode.getClaim(SUBJECT_CLAIM_KEY).asString();
             List<String> scopes = decode.getClaim(SCOPES_CLAIM_KEY).asList(String.class);
@@ -80,7 +76,7 @@ public class JwtTokenIntrospector implements TokenIntrospector {
                 return INACTIVE_TOKEN_RESPONSE;
             }
 
-            return DefaultTokenIntrospectionResponse
+            TokenIntrospectionResponse response = DefaultTokenIntrospectionResponse
                     .newBuilder()
                     .active(true)
                     .subject(subject)
@@ -88,6 +84,9 @@ public class JwtTokenIntrospector implements TokenIntrospector {
                     .expiry(expiry)
                     .notBefore(notBefore)
                     .build();
+
+            log.info("Token {}", response);
+            return response;
 
         } catch (JWTDecodeException ex) {
             log.debug("Exception thrown while decoding jwt, returning inactive response", ex);

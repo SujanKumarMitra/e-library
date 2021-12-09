@@ -11,12 +11,10 @@ import org.springframework.web.bind.support.WebExchangeBindException;
 import reactor.core.publisher.Mono;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 import static org.springframework.http.ResponseEntity.badRequest;
-import static org.springframework.http.ResponseEntity.internalServerError;
 
 /**
  * @author skmitra
@@ -34,22 +32,12 @@ public class GlobalExceptionHandler {
                 .map(badRequest()::body);
     }
 
-    @ExceptionHandler(Throwable.class)
-    public Mono<ResponseEntity<ErrorResponse>> apiExceptionHandler(Throwable th) {
-        return Mono
-                .just(th.getMessage())
-                .map(DefaultErrorDetails::new)
-                .cast(ErrorDetails.class)
-                .map(Collections::singleton)
-                .map(ErrorResponse::new)
-                .map(internalServerError()::body);
-    }
-
     @ExceptionHandler(WebExchangeBindException.class)
     public Mono<ResponseEntity<ErrorResponse>> methodArgumentNotValidExceptionHandler(WebExchangeBindException ex) {
         Collection<ErrorDetails> errorDetails = extractErrors(ex);
         return Mono.just(buildResponseBody(errorDetails));
     }
+
 
     private ResponseEntity<ErrorResponse> buildResponseBody(Collection<ErrorDetails> errorDetails) {
         return badRequest()

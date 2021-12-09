@@ -21,7 +21,7 @@ public class TokenAuthenticationManager implements ReactiveAuthenticationManager
     @Override
     public Mono<Authentication> authenticate(Authentication authentication) {
 
-        if (!AuthenticationRequestToken.class.isAssignableFrom(authentication.getClass()))
+        if (!(authentication instanceof AuthenticationRequestToken))
             return Mono.empty();
 
         String token = ((AuthenticationRequestToken) authentication).getTokenValue();

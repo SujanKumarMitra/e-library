@@ -48,28 +48,27 @@ public class AuthorizationServerTokenIntrospector implements TokenIntrospector {
                 .bodyToMono(IntrospectionResponse.class)
                 .filter(IntrospectionResponse::isActive)
                 .switchIfEmpty(Mono.error(new CredentialsExpiredException("Token is invalid")))
-                .map(this::buildToken);
+                .map(response -> buildToken(token, response));
     }
 
-    private AuthenticationToken buildToken(IntrospectionResponse response) {
-        String subject = response.sub.get();
+    private AuthenticationToken buildToken(String token, IntrospectionResponse response) {
+        String subject = response.sub;
         Collection<GrantedAuthority> scopes = response.scopes
-                .get()
                 .stream()
                 .map(SimpleGrantedAuthority::new)
                 .collect(toList());
 
-        long expiresAt = response.exp.get();
+        long expiresAt = response.exp;
 
-        return new AuthenticationToken(subject, scopes, expiresAt);
+        return new AuthenticationToken(token, subject, scopes, expiresAt);
     }
 
 
     @Data
     static class IntrospectionResponse {
         private boolean active;
-        private final Optional<String> sub;
-        private final Optional<Collection<String>> scopes;
-        private final Optional<Long> exp;
+        private final String sub;
+        private final Collection<String> scopes;
+        private final Long exp;
     }
 }

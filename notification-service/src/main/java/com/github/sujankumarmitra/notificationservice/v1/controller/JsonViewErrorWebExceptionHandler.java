@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.sujankumarmitra.notificationservice.v1.controller.dto.ErrorResponse;
 import com.github.sujankumarmitra.notificationservice.v1.exception.DefaultErrorDetails;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -18,13 +19,16 @@ import reactor.core.publisher.SynchronousSink;
 
 import java.util.List;
 
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 /**
  * @author skmitra
  * @since Sep 30/09/21, 2021
  */
 @Component
+@Slf4j
 @AllArgsConstructor
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class JsonViewErrorWebExceptionHandler implements ErrorWebExceptionHandler {
@@ -33,12 +37,17 @@ public class JsonViewErrorWebExceptionHandler implements ErrorWebExceptionHandle
 
     @Override
     public Mono<Void> handle(ServerWebExchange exchange, Throwable ex) {
+
+        log.debug("handling:: ", ex);
+
         ErrorResponse errorResponse = buildErrorResponse(ex);
         ServerHttpResponse httpResponse = exchange.getResponse();
 
         Mono<DataBuffer> dataBufferMono = Mono.just(errorResponse)
                 .handle(this::convertToBytes)
                 .map(httpResponse.bufferFactory()::wrap);
+
+        httpResponse.getHeaders().add(CONTENT_TYPE, APPLICATION_JSON_VALUE);
 
         if (ex instanceof ResponseStatusException)
             httpResponse.setStatusCode(((ResponseStatusException) ex).getStatus());

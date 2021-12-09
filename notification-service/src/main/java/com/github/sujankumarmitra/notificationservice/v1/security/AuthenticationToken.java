@@ -13,9 +13,18 @@ import java.util.Collection;
 @AllArgsConstructor
 public final class AuthenticationToken implements Authentication {
 
+    private final String tokenValue;
     private final String subject;
     private final Collection<GrantedAuthority> credentials;
     private final long expiresAt;
+
+    public String getTokenValue() {
+        return tokenValue;
+    }
+
+    public String getSubject() {
+        return subject;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
