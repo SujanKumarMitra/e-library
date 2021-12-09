@@ -96,7 +96,9 @@ public class DefaultBookService implements BookService {
 
     @Override
     public Mono<Void> deleteBook(String bookId) {
-        return Mono.when(physicalBookDao.deleteBook(bookId), eBookDao.deleteBook(bookId));
+        return physicalBookDao
+                .deleteBook(bookId)
+                .then(eBookDao.deleteBook(bookId));
     }
 
     @Override

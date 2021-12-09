@@ -1,7 +1,9 @@
 package com.github.sujankumarmitra.libraryservice.v1.controller;
 
+import com.github.sujankumarmitra.libraryservice.v1.controller.dto.ErrorResponse;
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonGetEBookSegmentResponse;
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonValidCreateEBookSegmentRequest;
+import com.github.sujankumarmitra.libraryservice.v1.exception.ApiOperationException;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.CreateEBookSegmentRequestSchema;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.GetEBookSegmentResponseSchema;
 import com.github.sujankumarmitra.libraryservice.v1.security.SecurityAnnotations.RoleStudent;
@@ -20,10 +22,12 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import javax.validation.Valid;
 import java.net.URI;
 
 import static com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.*;
 import static com.github.sujankumarmitra.libraryservice.v1.security.SecurityAnnotations.RoleLibrarian;
+import static org.springframework.http.HttpStatus.CONFLICT;
 
 /**
  * @author skmitra
@@ -78,7 +82,7 @@ public class EBookSegmentController {
     @ApiNotFoundResponse
     @RoleStudent
     public Mono<ResponseEntity<JacksonGetEBookSegmentResponse>> getSegmentByIndex(@PathVariable String bookId,
-                                                                @PathVariable int segmentIndex) {
+                                                                                  @PathVariable int segmentIndex) {
         return ebookSegmentService
                 .getSegmentByBookIdAndIndex(bookId, segmentIndex)
                 .map(JacksonGetEBookSegmentResponse::new)
@@ -98,13 +102,15 @@ public class EBookSegmentController {
     @ApiBadRequestResponse
     @ApiConflictResponse
     @RoleLibrarian
-    public Mono<ResponseEntity<Void>> createSegment(@PathVariable String bookId, @RequestBody JacksonValidCreateEBookSegmentRequest request) {
+    public Mono<ResponseEntity<Object>> createSegment(@PathVariable String bookId, @RequestBody @Valid JacksonValidCreateEBookSegmentRequest request) {
 
         request.setBookId(bookId);
 
         return ebookSegmentService
                 .createSegment(request)
-                .map(id -> ResponseEntity.created(URI.create(id)).build());
+                .map(id -> ResponseEntity.created(URI.create(id)).build())
+                .onErrorResume(ApiOperationException.class,
+                        err -> Mono.fromSupplier(() -> ResponseEntity.status(CONFLICT).body(new ErrorResponse(err.getErrors()))));
     }
 
 

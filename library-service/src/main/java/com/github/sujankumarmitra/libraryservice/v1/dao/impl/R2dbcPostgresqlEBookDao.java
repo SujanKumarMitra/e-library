@@ -1,9 +1,6 @@
 package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 
-import com.github.sujankumarmitra.libraryservice.v1.dao.AuthorDao;
-import com.github.sujankumarmitra.libraryservice.v1.dao.BookDao;
-import com.github.sujankumarmitra.libraryservice.v1.dao.BookTagDao;
-import com.github.sujankumarmitra.libraryservice.v1.dao.EBookDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.*;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcEBook;
 import com.github.sujankumarmitra.libraryservice.v1.model.*;
 import io.r2dbc.spi.Row;
@@ -44,6 +41,8 @@ public class R2dbcPostgresqlEBookDao implements EBookDao {
     private final AuthorDao authorDao;
     @NonNull
     private final BookTagDao tagDao;
+    @NonNull
+    private final EBookSegmentDao segmentDao;
 
     @Override
     @Transactional
@@ -200,11 +199,15 @@ public class R2dbcPostgresqlEBookDao implements EBookDao {
                 log.debug("{} is not a valid uuid, return empty Mono", bookId);
                 return Mono.empty();
             }
-            return this.databaseClient
-                    .sql(DELETE_STATEMENT)
-                    .bind("$1", uuid)
-                    .fetch()
-                    .rowsUpdated()
+
+            return segmentDao
+                    .deleteSegmentsByBookId(bookId)
+                    .then(this.databaseClient
+                            .sql(DELETE_STATEMENT)
+                            .bind("$1", uuid)
+                            .fetch()
+                            .rowsUpdated()
+                            .then())
                     .then(bookDao.deleteBook(bookId));
         });
     }

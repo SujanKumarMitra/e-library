@@ -4,6 +4,7 @@ import com.github.javafaker.Faker;
 import com.github.sujankumarmitra.libraryservice.v1.dao.AuthorDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.BookDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.BookTagDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.EBookSegmentDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcAuthor;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBookTag;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcEBook;
@@ -43,6 +44,8 @@ class R2dbcPostgresqlEBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDe
     private AuthorDao mockAuthorDao;
     @Mock
     private BookTagDao mockBookTagDao;
+    @Mock
+    private EBookSegmentDao mockSegmentDao;
     @SuppressWarnings("FieldMayBeFinal")
     @Autowired
     private R2dbcEntityTemplate entityTemplate = null;
@@ -55,11 +58,15 @@ class R2dbcPostgresqlEBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDe
                 entityTemplate.getDatabaseClient(),
                 mockBookDao,
                 mockAuthorDao,
-                mockBookTagDao
+                mockBookTagDao,
+                mockSegmentDao
         );
 
         Mockito.doReturn(Mono.empty())
                 .when(mockBookDao).deleteBook(any());
+
+        Mockito.doReturn(Mono.empty())
+                .when(mockSegmentDao).deleteSegmentsByBookId(any());
     }
 
     @AfterEach

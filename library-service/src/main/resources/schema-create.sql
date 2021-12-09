@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS ebooks(
 );
 
 CREATE TABLE IF NOT EXISTS ebook_segments(
-	id text,
+	id text DEFAULT uuid_generate_v4(),
 	book_id uuid,
 	index integer,
 	asset_id text,
