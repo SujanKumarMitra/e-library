@@ -3,6 +3,7 @@ package com.github.sujankumarmitra.authorizationservice.v1.model.impl;
 import com.github.sujankumarmitra.authorizationservice.v1.model.TokenIntrospectionResponse;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -15,6 +16,7 @@ import static java.util.Optional.ofNullable;
  */
 
 @Getter
+@ToString
 public class DefaultTokenIntrospectionResponse extends TokenIntrospectionResponse {
     private boolean active;
 

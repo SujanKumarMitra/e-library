@@ -1,14 +1,11 @@
 package com.github.sujankumarmitra.libraryservice.v1.controller;
 
-import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiAcceptedResponse;
-import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiBadRequestResponse;
-import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiConflictResponse;
-import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiCreatedResponse;
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonValidCreateBookTagRequest;
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonValidUpdateBookTagRequest;
 import com.github.sujankumarmitra.libraryservice.v1.exception.ApiOperationException;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.CreateBookTagRequestSchema;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.UpdateBookTagRequestSchema;
+import com.github.sujankumarmitra.libraryservice.v1.security.SecurityAnnotations.RoleLibrarian;
 import com.github.sujankumarmitra.libraryservice.v1.service.BookTagService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -22,6 +19,7 @@ import reactor.core.publisher.Mono;
 
 import java.net.URI;
 
+import static com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.*;
 import static org.springframework.http.HttpStatus.CONFLICT;
 
 /**
@@ -36,6 +34,8 @@ import static org.springframework.http.HttpStatus.CONFLICT;
         name = "BookTagController",
         description = "Controller for managing book tags"
 )
+@ApiSecurityScheme
+@ApiSecurityResponse
 public class BookTagController {
 
     @NonNull
@@ -48,6 +48,7 @@ public class BookTagController {
     @ApiAcceptedResponse
     @ApiConflictResponse
     @PostMapping
+    @RoleLibrarian
     public Mono<ResponseEntity<Object>> createTag(@PathVariable String bookId,
                                                   @RequestBody JacksonValidCreateBookTagRequest request) {
 
@@ -68,6 +69,7 @@ public class BookTagController {
     @ApiConflictResponse
     @ApiBadRequestResponse
     @ApiAcceptedResponse
+    @RoleLibrarian
     @PatchMapping(path = "/{tagId}", consumes = {"application/merge-patch+json", "application/json"})
     public Mono<ResponseEntity<Object>> updateTag(@PathVariable String bookId,
                                                   @PathVariable String tagId,
@@ -87,6 +89,7 @@ public class BookTagController {
 
     @Operation(summary = "Delete a book tag", description = "Librarians will invoke this api")
     @ApiAcceptedResponse
+    @RoleLibrarian
     @DeleteMapping("/{tagId}")
     public Mono<ResponseEntity<Void>> deleteTag(@PathVariable String bookId,
                                                 @PathVariable String tagId) {

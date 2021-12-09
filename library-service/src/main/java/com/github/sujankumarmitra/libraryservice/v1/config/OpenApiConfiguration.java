@@ -53,10 +53,9 @@ public class OpenApiConfiguration {
     )
     @SecurityScheme(
             name = "Bearer",
-            paramName = "Authorization",
             scheme = "bearer",
             type = HTTP,
-            bearerFormat = "Bearer "
+            bearerFormat = "JWT"
 
     )
     @Target({METHOD, TYPE})

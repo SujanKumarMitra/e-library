@@ -48,9 +48,7 @@ public class JsonViewErrorWebExceptionHandler implements ErrorWebExceptionHandle
                 .handle(this::convertToBytes)
                 .map(httpResponse.bufferFactory()::wrap);
 
-        httpResponse
-                .getHeaders()
-                .add(CONTENT_TYPE, APPLICATION_JSON_VALUE);
+        httpResponse.getHeaders().add(CONTENT_TYPE, APPLICATION_JSON_VALUE);
 
         if (ex instanceof ResponseStatusException)
             httpResponse.setStatusCode(((ResponseStatusException) ex).getStatus());

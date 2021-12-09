@@ -1,4 +1,4 @@
-package com.github.sujankumarmitra.assetservice.v1.security;
+package com.github.sujankumarmitra.libraryservice.v1.security;
 
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;

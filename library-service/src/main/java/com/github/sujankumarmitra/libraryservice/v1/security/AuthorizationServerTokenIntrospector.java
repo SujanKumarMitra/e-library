@@ -1,9 +1,7 @@
-package com.github.sujankumarmitra.assetservice.v1.security;
+package com.github.sujankumarmitra.libraryservice.v1.security;
 
-import com.github.sujankumarmitra.assetservice.v1.config.AuthenticationProperties;
+import com.github.sujankumarmitra.libraryservice.v1.config.AuthenticationProperties;
 import lombok.Data;
-import org.springframework.security.authentication.AuthenticationServiceException;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

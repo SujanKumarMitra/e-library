@@ -1,6 +1,7 @@
 package com.github.sujankumarmitra.libraryservice.v1.controller;
 
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiNotFoundResponse;
+import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiSecurityResponse;
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonRejectedLease;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.GetRejectedLeaseRequestResponseSchema;
 import com.github.sujankumarmitra.libraryservice.v1.service.RejectedLeaseRequestService;
@@ -19,6 +20,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
+import static com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiSecurityScheme;
+import static com.github.sujankumarmitra.libraryservice.v1.security.SecurityAnnotations.RoleStudent;
+
 /**
  * @author skmitra
  * @since Dec 01/12/21, 2021
@@ -30,6 +34,8 @@ import reactor.core.publisher.Mono;
         name = "RejectedLeaseRequestController",
         description = "Controller for rejected lease requests"
 )
+@ApiSecurityScheme
+@ApiSecurityResponse
 public class RejectedLeaseRequestController {
 
     @NonNull
@@ -45,6 +51,7 @@ public class RejectedLeaseRequestController {
                     schema = @Schema(implementation = GetRejectedLeaseRequestResponseSchema.class)
             )
     )
+    @RoleStudent
     @ApiNotFoundResponse
     @GetMapping("/{leaseRequestId}")
     public Mono<ResponseEntity<JacksonRejectedLease>> getRejectedLeaseById(@PathVariable String leaseRequestId) {

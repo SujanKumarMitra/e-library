@@ -1,67 +1,58 @@
-package com.github.sujankumarmitra.assetservice.v1.security;
+package com.github.sujankumarmitra.libraryservice.v1.security;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NonNull;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Collection;
 
+import static java.util.Collections.emptyList;
+
 /**
  * @author skmitra
- * @since Nov 13/11/21, 2021
+ * @since Sep 27/09/21, 2021
  */
 @AllArgsConstructor
-public final class AuthenticationToken implements Authentication {
+@Getter
+public final class AuthenticationRequestToken implements Authentication {
 
+    @NonNull
     private final String tokenValue;
-    private final String subject;
-    private final Collection<GrantedAuthority> credentials;
-    private final long expiresAt;
-
-    public String getTokenValue() {
-        return tokenValue;
-    }
-
-    public String getSubject() {
-        return subject;
-    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return credentials;
-    }
-
-    public long getExpiresAt() {
-        return expiresAt;
+        return emptyList();
     }
 
     @Override
     public Object getCredentials() {
-        return subject;
+        return tokenValue;
     }
 
     @Override
     public Object getDetails() {
-        return null;
+        return tokenValue;
     }
 
     @Override
     public Object getPrincipal() {
-        return subject;
+        return tokenValue;
     }
 
     @Override
     public boolean isAuthenticated() {
-        return true;
+        return false;
     }
 
     @Override
     public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
-        throw new IllegalArgumentException("Operation not allowed");
+        throw new IllegalArgumentException("Operation not allowed here.");
     }
 
     @Override
     public String getName() {
-        return subject;
+        return tokenValue;
     }
 }

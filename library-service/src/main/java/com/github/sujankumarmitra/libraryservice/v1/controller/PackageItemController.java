@@ -9,6 +9,7 @@ import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonValidU
 import com.github.sujankumarmitra.libraryservice.v1.exception.ApiOperationException;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.CreatePackageItemRequestSchema;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.UpdatePackageItemRequestSchema;
+import com.github.sujankumarmitra.libraryservice.v1.security.SecurityAnnotations.RoleTeacher;
 import com.github.sujankumarmitra.libraryservice.v1.service.PackageItemService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -23,6 +24,8 @@ import reactor.core.publisher.Mono;
 import javax.validation.Valid;
 import java.net.URI;
 
+import static com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiSecurityResponse;
+import static com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiSecurityScheme;
 import static org.springframework.http.HttpStatus.CONFLICT;
 
 /**
@@ -36,6 +39,8 @@ import static org.springframework.http.HttpStatus.CONFLICT;
         name = "PackageItemController",
         description = "Controller for managing package items"
 )
+@ApiSecurityScheme
+@ApiSecurityResponse
 public class PackageItemController {
 
     @NonNull
@@ -51,6 +56,7 @@ public class PackageItemController {
     @ApiCreatedResponse
     @ApiBadRequestResponse
     @ApiConflictResponse
+    @RoleTeacher
     @PostMapping
     public Mono<ResponseEntity<Object>> createItem(@PathVariable String packageId,
                                                    @RequestBody @Valid JacksonValidCreatePackageItemRequest request) {
@@ -74,6 +80,7 @@ public class PackageItemController {
     @ApiAcceptedResponse
     @ApiConflictResponse
     @ApiBadRequestResponse
+    @RoleTeacher
     @PatchMapping(path = "/{itemId}", consumes = {"application/merge-patch+json", "application/json"})
     public Mono<ResponseEntity<Object>> updateItem(@PathVariable String packageId,
                                                    @PathVariable String itemId,
@@ -95,6 +102,7 @@ public class PackageItemController {
     @Operation(summary = "Deletes a package item",
             description = "Librarians/Teachers will invoke this API to delete a package item")
     @ApiAcceptedResponse
+    @RoleTeacher
     @DeleteMapping("/{itemId}")
     public Mono<ResponseEntity<Void>> deleteItem(@PathVariable String packageId,
                                                  @PathVariable String itemId) {

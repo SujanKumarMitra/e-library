@@ -37,7 +37,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
                 version = "1.0"
         ),
         security = {
-                @SecurityRequirement(name = "cookie"),
                 @SecurityRequirement(name = "access_token"),
                 @SecurityRequirement(name = "Bearer")
         }
@@ -52,10 +51,9 @@ public class OpenApiConfiguration {
     )
     @SecurityScheme(
             name = "Bearer",
-            paramName = "Authorization",
             scheme = "bearer",
             type = HTTP,
-            bearerFormat = "Bearer "
+            bearerFormat = "JWT"
 
     )
     @Target({METHOD, TYPE})
