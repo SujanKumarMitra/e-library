@@ -2,6 +2,7 @@ package com.github.sujankumarmitra.libraryservice.v1.controller;
 
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiAcceptedResponse;
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiNotFoundResponse;
+import com.github.sujankumarmitra.libraryservice.v1.exception.LeaseRequestNotFoundException;
 import com.github.sujankumarmitra.libraryservice.v1.model.LeaseRecord;
 import com.github.sujankumarmitra.libraryservice.v1.model.Money;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.GetActiveLeaseRequestResponseSchema;
@@ -69,8 +70,9 @@ public class ActiveLeaseController {
             )
     )
     @GetMapping("/self")
-    public Flux<LeaseRecord> getActiveLeasesForCurrentUser(@RequestParam(value = "page_no", defaultValue = "0") int pageNo) {
-        String userId = ""; // TODO Spring Security Authentication.getName()
+//    public Flux<LeaseRecord> getActiveLeasesForCurrentUser(@RequestParam(value = "page_no", defaultValue = "0") int pageNo) {
+    public Flux<LeaseRecord> getActiveLeasesForCurrentUser(@RequestParam(value = "page_no", defaultValue = "0") int pageNo, @RequestParam String userId) {
+//        String userId = ""; // TODO Spring Security Authentication.getName()
         return activeLeaseService.getAllActiveLeases(userId, pageNo);
     }
 
@@ -90,7 +92,10 @@ public class ActiveLeaseController {
     public Mono<ResponseEntity<Money>> getFineForActiveLease(@PathVariable String leaseRequestId) {
         return activeLeaseService
                 .getFineForActiveLease(leaseRequestId)
-                .map(ResponseEntity::ok);
+                .map(ResponseEntity::ok)
+                .onErrorResume(LeaseRequestNotFoundException.class, err ->
+                        Mono.fromSupplier(() -> ResponseEntity.notFound().build()));
+
     }
 
     @Operation(

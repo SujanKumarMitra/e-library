@@ -81,7 +81,21 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
     @Override
     public Mono<String> createLeaseRequest(@NonNull LeaseRequest request) {
 //        TODO Send notification to librarians
-        return leaseRequestDao.createLeaseRequest(request);
+
+        return bookService
+                .getBook(request.getBookId())
+                .filter(PhysicalBook.class::isInstance)
+                .cast(PhysicalBook.class)
+                .handle(this::emitErrorIfNoCopiesAvailable)
+                .then(leaseRequestDao.createLeaseRequest(request));
+    }
+
+    private void emitErrorIfNoCopiesAvailable(PhysicalBook book, SynchronousSink<Void> sink) {
+        if (book.getCopiesAvailable() > 0) {
+            sink.complete();
+        } else {
+            sink.error(new InsufficientCopiesAvailableException(book.getId()));
+        }
     }
 
     /**

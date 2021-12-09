@@ -7,8 +7,11 @@ import com.github.sujankumarmitra.libraryservice.v1.dao.LeaseRecordDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.LeaseRequestDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.RejectedLeaseDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcLeaseRequest;
+import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcMoney;
+import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcPhysicalBook;
 import com.github.sujankumarmitra.libraryservice.v1.exception.InsufficientCopiesAvailableException;
 import com.github.sujankumarmitra.libraryservice.v1.exception.LeaseRequestAlreadyHandledException;
+import com.github.sujankumarmitra.libraryservice.v1.model.LeaseRequest;
 import com.github.sujankumarmitra.libraryservice.v1.model.impl.DefaultAcceptedLease;
 import com.github.sujankumarmitra.libraryservice.v1.service.BookService;
 import com.github.sujankumarmitra.libraryservice.v1.service.NotificationService;
@@ -206,6 +209,33 @@ class DefaultLeaseRequestServiceTest {
         leaseRequestService
                 .acceptLeaseRequest(acceptedLease)
                 .log()
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectError(InsufficientCopiesAvailableException.class)
+                .verify();
+    }
+
+    @Test
+    void givenPhysicalBookWithNoCopiesAvailable_whenCreateLease_shouldEmitError() {
+        UUID validPhysicalBookId = UUID.randomUUID();
+
+
+        R2dbcPhysicalBook physicalBook = new R2dbcPhysicalBook();
+        physicalBook.setId(validPhysicalBookId);
+        physicalBook.setCopiesAvailable(0L);
+
+        Mockito.doReturn(Mono.fromSupplier(() -> physicalBook))
+                .when(bookService).getBook(validPhysicalBookId.toString());
+
+        R2dbcLeaseRequest leaseRequest = new R2dbcLeaseRequest();
+        leaseRequest.setBookId(validPhysicalBookId);
+
+        Mockito.doReturn(Mono.fromSupplier(() -> UUID.randomUUID().toString()))
+                .when(leaseRequestDao).createLeaseRequest(leaseRequest);
+
+
+        leaseRequestService
+                .createLeaseRequest(leaseRequest)
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .expectError(InsufficientCopiesAvailableException.class)

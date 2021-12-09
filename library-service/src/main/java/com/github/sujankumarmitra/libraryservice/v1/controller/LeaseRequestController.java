@@ -104,18 +104,19 @@ public class LeaseRequestController {
     @ApiBadRequestResponse
     @ApiConflictResponse
     @PostMapping
-    public Mono<ResponseEntity<Void>> createLeaseRequest(@RequestBody JacksonValidCreateLeaseRequest request, @RequestParam String userId) {
+    public Mono<ResponseEntity<Object>> createLeaseRequest(@RequestBody JacksonValidCreateLeaseRequest request, @RequestParam String userId) {
 //        String userId = ""; // TODO Spring Security Authentication.getName()
 
         request.setUserId(userId);
         request.setStatus(PENDING);
         request.setTimestamp(System.currentTimeMillis());
 
-        System.out.println(request);
         return leaseRequestService
                 .createLeaseRequest(request)
                 .map(URI::create)
-                .map(location -> ResponseEntity.created(location).build());
+                .map(location -> ResponseEntity.created(location).build())
+                .onErrorResume(ApiOperationException.class,
+                        err -> Mono.fromSupplier(() -> ResponseEntity.status(CONFLICT).body(new ErrorResponse(err.getErrors()))));
     }
 
 
@@ -142,14 +143,12 @@ public class LeaseRequestController {
 
         if (status == ACCEPTED) {
             AcceptedLease acceptedLease = new JacksonValidAcceptLeaseRequestRequestAdaptor((JacksonValidAcceptLeaseRequestRequest) request);
-            System.out.println(acceptedLease);
             completionMono = leaseRequestService
                     .acceptLeaseRequest(acceptedLease)
                     .then(Mono.fromSupplier(() -> accepted().build()));
 
         } else if (status == REJECTED) {
             RejectedLease rejectedLease = new JacksonValidRejectLeaseRequestRequestAdaptor((JacksonValidRejectLeaseRequestRequest) request);
-            System.out.println(rejectedLease);
             completionMono = leaseRequestService
                     .rejectLeaseRequest(rejectedLease)
                     .then(Mono.fromSupplier(() -> ResponseEntity.accepted().build()));
@@ -161,7 +160,7 @@ public class LeaseRequestController {
                 .onErrorResume(LeaseRequestNotFoundException.class,
                         err -> Mono.fromSupplier(() -> ResponseEntity.notFound().build()))
                 .onErrorResume(ApiOperationException.class,
-                        err -> Mono.fromSupplier(() -> ResponseEntity.status(CONFLICT).body(err.getErrors())));
+                        err -> Mono.fromSupplier(() -> ResponseEntity.status(CONFLICT).body(new ErrorResponse(err.getErrors()))));
     }
 
     @Operation(
@@ -170,8 +169,6 @@ public class LeaseRequestController {
     @ApiAcceptedResponse
     @DeleteMapping("/{leaseRequestId}")
     public Mono<ResponseEntity<Void>> deleteLeaseRequest(@PathVariable String leaseRequestId) {
-
-        System.out.println(leaseRequestId);
 
         return leaseRequestService
                 .deleteLeaseRequest(leaseRequestId)
