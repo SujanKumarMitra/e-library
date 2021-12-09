@@ -14,6 +14,7 @@ import com.github.sujankumarmitra.libraryservice.v1.model.*;
 import com.github.sujankumarmitra.libraryservice.v1.model.impl.DefaultMoney;
 import com.github.sujankumarmitra.libraryservice.v1.model.impl.DefaultNotification;
 import com.github.sujankumarmitra.libraryservice.v1.service.ActiveLeaseService;
+import com.github.sujankumarmitra.libraryservice.v1.service.BookService;
 import com.github.sujankumarmitra.libraryservice.v1.service.NotificationService;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -52,6 +53,8 @@ public class DefaultActiveLeaseService implements ActiveLeaseService {
     private final PagingProperties pagingProperties;
     @NonNull
     private final NotificationService notificationService;
+    @NonNull
+    private final BookService bookService;
     @NonNull
     private final ObjectMapper objectMapper;
 
@@ -135,10 +138,23 @@ public class DefaultActiveLeaseService implements ActiveLeaseService {
     @Override
     @Transactional
     public Mono<Void> relinquishActiveLease(String leaseRequestId) {
-        return leaseRecordDao
-                .markAsRelinquished(leaseRequestId)
-                .then(leaseRequestDao.setLeaseStatus(leaseRequestId, EXPIRED))
+        return leaseRequestDao
+                .getLeaseRequest(leaseRequestId)
+                .switchIfEmpty(Mono.error(new LeaseRequestNotFoundException(leaseRequestId)))
+                .handle(this::emitErrorIfAlreadyHandled)
+                .flatMap(leaseRequest -> leaseRecordDao
+                        .markAsRelinquished(leaseRequestId)
+                        .then(leaseRequestDao.setLeaseStatus(leaseRequestId, EXPIRED))
+                        .then(bookService.onLeaseRelinquish(leaseRequest)))
                 .then(Mono.fromRunnable(() -> sendNotification(leaseRequestId)));
+    }
+
+    private void emitErrorIfAlreadyHandled(LeaseRequest leaseRequest, SynchronousSink<LeaseRequest> sink) {
+        if (leaseRequest.getStatus() != ACCEPTED) {
+            sink.error(new LeaseRequestAlreadyHandledException(leaseRequest.getId(), EXPIRED));
+        } else {
+            sink.next(leaseRequest);
+        }
     }
 
     @Override

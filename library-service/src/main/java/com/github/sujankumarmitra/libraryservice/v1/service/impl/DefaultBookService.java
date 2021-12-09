@@ -9,6 +9,7 @@ import com.github.sujankumarmitra.libraryservice.v1.model.impl.DefaultEBookPermi
 import com.github.sujankumarmitra.libraryservice.v1.service.BookService;
 import com.github.sujankumarmitra.libraryservice.v1.service.EBookPermissionService;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -69,7 +70,7 @@ public class DefaultBookService implements BookService {
     }
 
     @Override
-    public Mono<Void> onLeaseAccept(AcceptedLease acceptedLease) {
+    public Mono<Void> onLeaseAccept(@NonNull AcceptedLease acceptedLease) {
         return leaseRequestDao
                 .getLeaseRequest(acceptedLease.getLeaseRequestId())
                 .flatMap(leaseRequest -> getBook(leaseRequest.getBookId())
@@ -78,11 +79,8 @@ public class DefaultBookService implements BookService {
     }
 
     @Override
-    public Mono<Void> onLeaseRelinquish(@NotNull LeaseRecord leaseRecord) {
-        return leaseRequestDao
-                .getLeaseRequest(leaseRecord.getLeaseRequestId())
-                .map(LeaseRequest::getBookId)
-                .flatMap(this::getBook)
+    public Mono<Void> onLeaseRelinquish(@NonNull LeaseRequest leaseRequest) {
+        return getBook(leaseRequest.getBookId())
                 .flatMap(this::handleLeaseRelinquishForBook);
     }
 

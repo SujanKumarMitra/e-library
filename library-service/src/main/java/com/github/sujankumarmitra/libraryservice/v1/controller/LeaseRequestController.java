@@ -6,9 +6,7 @@ import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiCreatedResponse;
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.*;
 import com.github.sujankumarmitra.libraryservice.v1.exception.ApiOperationException;
-import com.github.sujankumarmitra.libraryservice.v1.exception.LeaseRequestNotFoundException;
 import com.github.sujankumarmitra.libraryservice.v1.model.AcceptedLease;
-import com.github.sujankumarmitra.libraryservice.v1.model.LeaseRequest;
 import com.github.sujankumarmitra.libraryservice.v1.model.LeaseStatus;
 import com.github.sujankumarmitra.libraryservice.v1.model.RejectedLease;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.AcceptLeaseRequestRequestSchema;
@@ -67,8 +65,10 @@ public class LeaseRequestController {
             )
     )
     @GetMapping("/pending")
-    public Flux<LeaseRequest> getPendingLeases(@RequestParam(name = "page_no", defaultValue = "0") int pageNo) {
-        return leaseRequestService.getPendingLeaseRequests(pageNo);
+    public Flux<JacksonGetPendingLeaseRequestResponse> getPendingLeases(@RequestParam(name = "page_no", defaultValue = "0") int pageNo) {
+        return leaseRequestService
+                .getPendingLeaseRequests(pageNo)
+                .map(JacksonGetPendingLeaseRequestResponse::new);
     }
 
     @Operation(
@@ -86,10 +86,11 @@ public class LeaseRequestController {
     )
     @GetMapping("/pending/self")
 //    public Flux<LeaseRequest> getAllPendingLeasesForCurrentUser(@RequestParam(name = "page_no", defaultValue = "0") int pageNo) {
-    public Flux<LeaseRequest> getAllPendingLeasesForCurrentUser(@RequestParam(name = "page_no", defaultValue = "0") int pageNo, @RequestParam String userId) {
+    public Flux<JacksonGetPendingLeaseRequestResponse> getAllPendingLeasesForCurrentUser(@RequestParam(name = "page_no", defaultValue = "0") int pageNo, @RequestParam String userId) {
 //        String userId = ""; // TODO Spring Security Authentication.getName()
         return leaseRequestService
-                .getPendingLeaseRequests(userId, pageNo);
+                .getPendingLeaseRequests(userId, pageNo)
+                .map(JacksonGetPendingLeaseRequestResponse::new);
     }
 
     @Operation(
@@ -157,8 +158,6 @@ public class LeaseRequestController {
             completionMono = Mono.error(new RuntimeException("could not determine request type"));
         }
         return completionMono
-                .onErrorResume(LeaseRequestNotFoundException.class,
-                        err -> Mono.fromSupplier(() -> ResponseEntity.notFound().build()))
                 .onErrorResume(ApiOperationException.class,
                         err -> Mono.fromSupplier(() -> ResponseEntity.status(CONFLICT).body(new ErrorResponse(err.getErrors()))));
     }

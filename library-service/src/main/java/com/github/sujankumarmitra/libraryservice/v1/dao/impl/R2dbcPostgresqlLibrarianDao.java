@@ -42,6 +42,7 @@ public class R2dbcPostgresqlLibrarianDao implements LibrarianDao {
     }
 
     @Override
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public Flux<Librarian> getLibrarians() {
         return entityTemplate

@@ -1,7 +1,10 @@
 package com.github.sujankumarmitra.libraryservice.v1.controller;
 
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiAcceptedResponse;
+import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiConflictResponse;
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiNotFoundResponse;
+import com.github.sujankumarmitra.libraryservice.v1.controller.dto.ErrorResponse;
+import com.github.sujankumarmitra.libraryservice.v1.exception.ApiOperationException;
 import com.github.sujankumarmitra.libraryservice.v1.exception.LeaseRequestNotFoundException;
 import com.github.sujankumarmitra.libraryservice.v1.model.LeaseRecord;
 import com.github.sujankumarmitra.libraryservice.v1.model.Money;
@@ -22,6 +25,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.validation.constraints.NotNull;
+
+import static org.springframework.http.HttpStatus.CONFLICT;
 
 /**
  * @author skmitra
@@ -105,11 +110,14 @@ public class ActiveLeaseController {
                     "<br> For EBook leases, the system will automatically relinquish the lease, when current time" +
                     "becomes greater than leaseEndTime")
     @ApiAcceptedResponse
+    @ApiConflictResponse
     @PatchMapping("/{leaseRequestId}/relinquish")
-    public Mono<ResponseEntity<Void>> relinquishActiveLease(@PathVariable String leaseRequestId) {
+    public Mono<ResponseEntity<Object>> relinquishActiveLease(@PathVariable String leaseRequestId) {
         return activeLeaseService
                 .relinquishActiveLease(leaseRequestId)
-                .then(Mono.fromSupplier(() -> ResponseEntity.accepted().build()));
+                .then(Mono.fromSupplier(() -> ResponseEntity.accepted().build()))
+                .onErrorResume(ApiOperationException.class,
+                        err -> Mono.fromSupplier(() -> ResponseEntity.status(CONFLICT).body(new ErrorResponse(err.getErrors()))));
     }
 
     @Operation(

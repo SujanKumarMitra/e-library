@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -37,6 +38,7 @@ public class R2dbcPostgresqlLeaseRequestDao implements LeaseRequestDao {
 
     @Override
     @SuppressWarnings("unchecked")
+    @Transactional(readOnly = true)
     public Mono<R2dbcLeaseRequest> getLeaseRequest(@NonNull String leaseRequestId) {
         return Mono.defer(() -> {
             UUID uuid;
@@ -55,6 +57,7 @@ public class R2dbcPostgresqlLeaseRequestDao implements LeaseRequestDao {
     }
 
     @Override
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public Flux<R2dbcLeaseRequest> getPendingLeaseRequests(int skip, int limit) {
         return entityTemplate
@@ -66,6 +69,7 @@ public class R2dbcPostgresqlLeaseRequestDao implements LeaseRequestDao {
     }
 
     @Override
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public Flux<R2dbcLeaseRequest> getPendingLeaseRequests(@NonNull String userId, int skip, int limit) {
         return entityTemplate
@@ -78,6 +82,7 @@ public class R2dbcPostgresqlLeaseRequestDao implements LeaseRequestDao {
     }
 
     @Override
+    @Transactional
     public Mono<String> createLeaseRequest(@NonNull LeaseRequest leaseRequest) {
         return Mono.defer(() -> {
             R2dbcLeaseRequest r2dbcLeaseRequest = new R2dbcLeaseRequest();
@@ -119,6 +124,7 @@ public class R2dbcPostgresqlLeaseRequestDao implements LeaseRequestDao {
     }
 
     @Override
+    @Transactional
     public Mono<Void> deleteLeaseRequest(@NonNull String leaseRequestId) {
         return Mono.defer(() -> {
             UUID uuid;
@@ -142,6 +148,7 @@ public class R2dbcPostgresqlLeaseRequestDao implements LeaseRequestDao {
     }
 
     @Override
+    @Transactional
     public Mono<Void> setLeaseStatus(@NonNull String leaseRequestId, @NonNull LeaseStatus status) {
         return Mono.defer(() -> {
             UUID uuid;

@@ -23,5 +23,5 @@ public interface BookService {
 
     Mono<Void> onLeaseAccept(AcceptedLease request);
 
-    Mono<Void> onLeaseRelinquish(LeaseRecord leaseRecord);
+    Mono<Void> onLeaseRelinquish(LeaseRequest leaseRequest);
 }
