@@ -98,7 +98,7 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
 
     @Override
     @Transactional(readOnly = true)
-    public Flux<Package> getPackagesByNameStartsWith(@NonNull String prefix, int skip, int limit) {
+    public Flux<Package> getPackagesByNameStartingWith(@NonNull String prefix, int skip, int limit) {
         return databaseClient
                 .sql(SELECT_BY_NAME_STATEMENT)
                 .bind("$1", prefix + "%")

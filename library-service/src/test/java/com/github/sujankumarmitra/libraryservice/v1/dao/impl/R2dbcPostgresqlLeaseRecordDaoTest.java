@@ -257,7 +257,7 @@ class R2dbcPostgresqlLeaseRecordDaoTest extends AbstractDataR2dbcPostgreSQLConta
 
     @Test
     void givenSetOfActiveLeaseRecords_getActiveLeaseRecords_shouldGetActiveLeaseRecords() {
-        Resource dataScript = new ClassPathResource("stale_ebook_leases.sql");
+        Resource dataScript = new ClassPathResource("sample_data.sql");
         entityTemplate
                 .getDatabaseClient()
                 .inConnection(conn -> executeSqlScript(conn, dataScript))
@@ -271,7 +271,7 @@ class R2dbcPostgresqlLeaseRecordDaoTest extends AbstractDataR2dbcPostgreSQLConta
 
     @Test
     void givenSetOfActiveLeaseRecords_getActiveLeaseRecordsByUserId_shouldGetActiveLeaseRecords() {
-        Resource dataScript = new ClassPathResource("stale_ebook_leases.sql");
+        Resource dataScript = new ClassPathResource("sample_data.sql");
         entityTemplate
                 .getDatabaseClient()
                 .inConnection(conn -> executeSqlScript(conn, dataScript))
@@ -286,7 +286,7 @@ class R2dbcPostgresqlLeaseRecordDaoTest extends AbstractDataR2dbcPostgreSQLConta
     @Test
     void givenSetOfStaleEBookLeaseRecords_getgetStaleEBookLeaseRecordIds_shouldGetgetStaleEBookLeaseRecordIds() {
 
-        Resource staleEBookLeaseSqlScript = new ClassPathResource("stale_ebook_leases.sql");
+        Resource staleEBookLeaseSqlScript = new ClassPathResource("sample_data.sql");
 
         Set<UUID> expected = Set.of(
                 UUID.fromString("61c22813-7faa-4fb4-9aee-2ce132520d9e"),

@@ -14,7 +14,7 @@ public interface PackageDao {
 
     Flux<Package> getPackages(int skip, int limit);
 
-    Flux<Package> getPackagesByNameStartsWith(String prefix, int skip, int limit);
+    Flux<Package> getPackagesByNameStartingWith(String prefix, int skip, int limit);
 
     Mono<Package> getPackage(String packageId);
 

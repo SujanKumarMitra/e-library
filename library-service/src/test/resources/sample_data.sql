@@ -1,13 +1,23 @@
+-- books
 insert into books (id, title, publisher, edition, cover_page_image_asset_id) values ('d4c608c4-7ac6-48b9-b90d-9952e798578b', 'Lady Vengeance (Sympathy for Lady Vengeance) (Chinjeolhan geumjassi)', 'Wanda Sykes: Sick and Tired', 'Taboo (Gohatto)', '158NhLveCgNHGAaPjbz1E8AJD5X1SBy2HE');
 insert into books (id, title, publisher, edition, cover_page_image_asset_id) values ('1651bee3-4a18-412a-89bc-abb9dcdfe203', 'Amazing Johnathan: Wrong on Every Level', 'Cure, The', 'We the Party', '12Jc5gSRXy9SPrKCukXFCEeByaSSLHVpHJ');
 insert into books (id, title, publisher, edition, cover_page_image_asset_id) values ('7a900746-e6b7-4ddd-a3b5-99f4ad291321', 'Guard, The', 'That''s Entertainment! III', 'Bangkok Dangerous', '1vbuWupWzsiXN6eZ7PwBrsJXi2YpiTzT2');
 insert into books (id, title, publisher, edition, cover_page_image_asset_id) values ('60dc01ad-43be-4501-aaa8-3c12741dff4f', 'War', 'The Boy', 'American Ninja 5', '18YBxX6ZcfwJMDM7r1P1cYHbqJ1L4FpMpa');
 insert into books (id, title, publisher, edition, cover_page_image_asset_id) values ('2e611bfb-d06d-4ef9-9bf6-8d4f445ba736', 'Play Girl', 'Hong Kong Confidential (Amaya)', 'Hatchet', '15bFAeZ4oesWsgVE5cTqSqQxpQDHxmyezA');
 
+--authors
+insert into authors(book_id, name) values ('d4c608c4-7ac6-48b9-b90d-9952e798578b', 'Aimbo');
+insert into authors(book_id, name) values ('d4c608c4-7ac6-48b9-b90d-9952e798578b', 'Skipstorm');
+insert into authors(book_id, name) values ('1651bee3-4a18-412a-89bc-abb9dcdfe203', 'Demizz');
+insert into authors(book_id, name) values ('7a900746-e6b7-4ddd-a3b5-99f4ad291321', 'Jabberbean');
+insert into authors(book_id, name) values ('2e611bfb-d06d-4ef9-9bf6-8d4f445ba736', 'Fatz');
+
+-- physical books
 insert into physical_books (book_id, copies_available, fine_amount, fine_currency_code) values ('d4c608c4-7ac6-48b9-b90d-9952e798578b', 5, 44.25, 'JPY');
 insert into physical_books (book_id, copies_available, fine_amount, fine_currency_code) values ('1651bee3-4a18-412a-89bc-abb9dcdfe203', 10, 67.45, 'CNY');
 insert into physical_books (book_id, copies_available, fine_amount, fine_currency_code) values ('7a900746-e6b7-4ddd-a3b5-99f4ad291321', 9, 72.65, 'CNY');
 
+--ebooks
 insert into ebooks (book_id, format) values ('60dc01ad-43be-4501-aaa8-3c12741dff4f', 'PDF');
 insert into ebooks (book_id, format) values ('2e611bfb-d06d-4ef9-9bf6-8d4f445ba736', 'PDF');
 

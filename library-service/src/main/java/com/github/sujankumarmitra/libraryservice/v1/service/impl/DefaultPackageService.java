@@ -44,7 +44,7 @@ public class DefaultPackageService implements PackageService {
         int skip = pageNo * pageSize;
 
         return packageDao
-                .getPackagesByNameStartsWith(packageName, skip, pageSize);
+                .getPackagesByNameStartingWith(packageName, skip, pageSize);
     }
 
     @Override
