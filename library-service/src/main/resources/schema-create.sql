@@ -72,14 +72,16 @@ CREATE TABLE IF NOT EXISTS ebooks(
 CREATE TABLE IF NOT EXISTS ebook_segments(
 	id text,
 	book_id uuid,
-	index bigint,
+	index integer,
 	asset_id text,
 	CONSTRAINT pk_ebook_segments PRIMARY KEY(id),
 	CONSTRAINT fk_ebook_segments_books FOREIGN KEY(book_id) REFERENCES ebooks(book_id),
+	CONSTRAINT unq_ebook_segments_book_id_index UNIQUE(book_id, index),
 	CONSTRAINT chk_ebook_book_id_not_null CHECK(book_id IS NOT NULL),
 	CONSTRAINT chk_ebook_index_not_null CHECK(index IS NOT NULL),
 	CONSTRAINT chk_ebook_index_positive CHECK(index >= 0),
-	CONSTRAINT chk_ebook_asset_id_not_null CHECK(asset_id IS NOT NULL)
+	CONSTRAINT chk_ebook_asset_id_not_null CHECK(asset_id IS NOT NULL),
+	CONSTRAINT chk_ebook_asset_id_not_empty CHECK(LENGTH(asset_id) > 0)
 );
 
 CREATE TABLE IF NOT EXISTS packages(

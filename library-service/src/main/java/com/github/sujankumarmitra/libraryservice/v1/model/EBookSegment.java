@@ -12,7 +12,7 @@ public abstract class EBookSegment {
 
     public abstract String getBookId();
 
-    public abstract Long getIndex();
+    public abstract Integer getIndex();
 
     public abstract String getAssetId();
 
