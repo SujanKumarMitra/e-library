@@ -1,6 +1,8 @@
 package com.github.sujankumarmitra.libraryservice.v1.controller;
 
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiNotFoundResponse;
+import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiSecurityResponse;
+import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiSecurityScheme;
 import com.github.sujankumarmitra.libraryservice.v1.model.EBookSegment;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.GetEBookSegmentResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,6 +29,8 @@ import reactor.core.publisher.Mono;
         name = "EBookSegmentController",
         description = "Controller for ebook segments"
 )
+@ApiSecurityScheme
+@ApiSecurityResponse
 public class EBookSegmentController {
 
     @Operation(

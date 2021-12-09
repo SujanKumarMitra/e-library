@@ -1,14 +1,12 @@
 package com.github.sujankumarmitra.libraryservice.v1.controller;
 
-import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiAcceptedResponse;
-import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiBadRequestResponse;
-import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiConflictResponse;
-import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiCreatedResponse;
+import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.*;
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonValidCreatePackageTagRequest;
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonValidUpdatePackageTagRequest;
 import com.github.sujankumarmitra.libraryservice.v1.exception.ApiOperationException;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.CreatePackageTagRequestSchema;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.UpdatePackageTagRequestSchema;
+import com.github.sujankumarmitra.libraryservice.v1.security.SecurityAnnotations.RoleTeacher;
 import com.github.sujankumarmitra.libraryservice.v1.service.PackageTagService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -36,6 +34,8 @@ import static org.springframework.http.HttpStatus.CONFLICT;
         name = "PackageTagController",
         description = "Controller for managing package tags"
 )
+@ApiSecurityScheme
+@ApiSecurityResponse
 public class PackageTagController {
 
     @NonNull
@@ -50,6 +50,7 @@ public class PackageTagController {
     @ApiBadRequestResponse
     @ApiConflictResponse
     @PostMapping
+    @RoleTeacher
     public Mono<ResponseEntity<Object>> createTag(@PathVariable String packageId,
                                                   @RequestBody JacksonValidCreatePackageTagRequest request) {
 
@@ -69,6 +70,7 @@ public class PackageTagController {
     )
     @ApiConflictResponse
     @ApiAcceptedResponse
+    @RoleTeacher
     @PatchMapping(path = "/{tagId}", consumes = {"application/merge-patch+json", "application/json"})
     public Mono<ResponseEntity<Object>> updateTag(@PathVariable("packageId") String packageId,
                                                   @PathVariable("tagId") String tagId,
@@ -88,6 +90,7 @@ public class PackageTagController {
 
     @Operation(summary = "Delete a package tag", description = "Librarians/Teachers will invoke this API")
     @ApiAcceptedResponse
+    @RoleTeacher
     @DeleteMapping("/{tagId}")
     public Mono<ResponseEntity<Void>> deleteTag(@PathVariable String packageId,
                                                 @PathVariable String tagId) {

@@ -13,6 +13,8 @@ import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.AcceptLeaseRe
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.CreateLeaseRequestRequestSchema;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.GetPendingLeaseRequestResponseSchema;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.RejectLeaseRequestRequestSchema;
+import com.github.sujankumarmitra.libraryservice.v1.security.SecurityAnnotations.RoleLibrarian;
+import com.github.sujankumarmitra.libraryservice.v1.security.SecurityAnnotations.RoleStudent;
 import com.github.sujankumarmitra.libraryservice.v1.service.LeaseRequestService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -24,6 +26,7 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -31,6 +34,8 @@ import reactor.core.publisher.Mono;
 import javax.validation.Valid;
 import java.net.URI;
 
+import static com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiSecurityResponse;
+import static com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiSecurityScheme;
 import static com.github.sujankumarmitra.libraryservice.v1.model.LeaseStatus.*;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.ResponseEntity.accepted;
@@ -46,6 +51,8 @@ import static org.springframework.http.ResponseEntity.accepted;
         name = "LeaseRequestController",
         description = "Controller for managing book leases requests"
 )
+@ApiSecurityScheme
+@ApiSecurityResponse
 public class LeaseRequestController {
 
     @NonNull
@@ -64,6 +71,7 @@ public class LeaseRequestController {
                     )
             )
     )
+    @RoleLibrarian
     @GetMapping("/pending")
     public Flux<JacksonGetPendingLeaseRequestResponse> getPendingLeases(@RequestParam(name = "page_no", defaultValue = "0") int pageNo) {
         return leaseRequestService
@@ -84,12 +92,11 @@ public class LeaseRequestController {
                     )
             )
     )
+    @RoleStudent
     @GetMapping("/pending/self")
-//    public Flux<LeaseRequest> getAllPendingLeasesForCurrentUser(@RequestParam(name = "page_no", defaultValue = "0") int pageNo) {
-    public Flux<JacksonGetPendingLeaseRequestResponse> getAllPendingLeasesForCurrentUser(@RequestParam(name = "page_no", defaultValue = "0") int pageNo, @RequestParam String userId) {
-//        String userId = ""; // TODO Spring Security Authentication.getName()
+    public Flux<JacksonGetPendingLeaseRequestResponse> getAllPendingLeasesForCurrentUser(@RequestParam(name = "page_no", defaultValue = "0") int pageNo, Authentication authentication) {
         return leaseRequestService
-                .getPendingLeaseRequests(userId, pageNo)
+                .getPendingLeaseRequests(authentication.getName(), pageNo)
                 .map(JacksonGetPendingLeaseRequestResponse::new);
     }
 
@@ -105,10 +112,9 @@ public class LeaseRequestController {
     @ApiBadRequestResponse
     @ApiConflictResponse
     @PostMapping
-    public Mono<ResponseEntity<Object>> createLeaseRequest(@RequestBody JacksonValidCreateLeaseRequest request, @RequestParam String userId) {
-//        String userId = ""; // TODO Spring Security Authentication.getName()
-
-        request.setUserId(userId);
+    @RoleStudent
+    public Mono<ResponseEntity<Object>> createLeaseRequest(@RequestBody JacksonValidCreateLeaseRequest request, Authentication authentication) {
+        request.setUserId(authentication.getName());
         request.setStatus(PENDING);
         request.setTimestamp(System.currentTimeMillis());
 
@@ -133,6 +139,7 @@ public class LeaseRequestController {
     @ApiBadRequestResponse
     @ApiAcceptedResponse
     @ApiConflictResponse
+    @RoleLibrarian
     @PatchMapping("/{leaseRequestId}")
     public Mono<ResponseEntity<Object>> handleLeaseRequest(@PathVariable String leaseRequestId,
                                                            @RequestBody @Valid JacksonValidHandleLeaseRequestRequest request) {
@@ -166,6 +173,7 @@ public class LeaseRequestController {
             summary = "Deletes a lease request",
             description = "Students will invoke this API to cancel a lease request.")
     @ApiAcceptedResponse
+    @RoleStudent
     @DeleteMapping("/{leaseRequestId}")
     public Mono<ResponseEntity<Void>> deleteLeaseRequest(@PathVariable String leaseRequestId) {
 

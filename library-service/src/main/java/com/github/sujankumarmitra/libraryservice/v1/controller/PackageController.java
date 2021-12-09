@@ -7,6 +7,8 @@ import com.github.sujankumarmitra.libraryservice.v1.controller.dto.*;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.CreatePackageRequestSchema;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.GetPackageResponseSchema;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.UpdatePackageRequestSchema;
+import com.github.sujankumarmitra.libraryservice.v1.security.SecurityAnnotations.RoleStudent;
+import com.github.sujankumarmitra.libraryservice.v1.security.SecurityAnnotations.RoleTeacher;
 import com.github.sujankumarmitra.libraryservice.v1.service.PackageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -26,6 +28,9 @@ import javax.validation.Valid;
 import java.net.URI;
 import java.util.Set;
 
+import static com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiSecurityResponse;
+import static com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiSecurityScheme;
+
 /**
  * @author skmitra
  * @since Nov 29/11/21, 2021
@@ -37,6 +42,8 @@ import java.util.Set;
         name = "PackageController",
         description = "Controller for managing packages"
 )
+@ApiSecurityScheme
+@ApiSecurityResponse
 public class PackageController {
 
     @NonNull
@@ -54,6 +61,7 @@ public class PackageController {
                     )
             )
     )
+    @RoleStudent
     @GetMapping
     public Flux<JacksonGetPackageResponse> getPackages(@RequestParam(value = "page_no", defaultValue = "0") int pageNo) {
         return packageService
@@ -74,6 +82,7 @@ public class PackageController {
                     )
             )
     )
+    @RoleStudent
     @GetMapping("/search")
     public Flux<JacksonGetPackageResponse> getPackagesByNameStartingWith(@RequestParam(value = "name_prefix") String namePrefix,
                                                                          @RequestParam(value = "page_no", defaultValue = "0") int pageNo) {
@@ -89,6 +98,7 @@ public class PackageController {
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
             content = @Content(schema = @Schema(implementation = CreatePackageRequestSchema.class))
     )
+    @RoleTeacher
     @ApiCreatedResponse
     @ApiBadRequestResponse
     @PostMapping
@@ -106,6 +116,7 @@ public class PackageController {
                     schema = @Schema(implementation = UpdatePackageRequestSchema.class)
             )
     )
+    @RoleTeacher
     @ApiAcceptedResponse
     @ApiBadRequestResponse
     @PatchMapping(path = "/{packageId}", consumes = {"application/merge-patch+json", "application/json"})
@@ -127,6 +138,7 @@ public class PackageController {
     @Operation(summary = " Deletes a package",
             description = "Librarians/Teachers will invoke this API to delete a package")
     @ApiAcceptedResponse
+    @RoleTeacher
     @DeleteMapping("/{packageId}")
     public Mono<ResponseEntity<Void>> deletePackage(@PathVariable("packageId") String packageId) {
         return packageService

@@ -1,14 +1,11 @@
 package com.github.sujankumarmitra.libraryservice.v1.controller;
 
-import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiAcceptedResponse;
-import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiBadRequestResponse;
-import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiConflictResponse;
-import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiCreatedResponse;
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonValidCreateAuthorRequest;
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonValidUpdateAuthorRequest;
 import com.github.sujankumarmitra.libraryservice.v1.exception.ApiOperationException;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.CreateAuthorRequestSchema;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.UpdateBookAuthorRequestSchema;
+import com.github.sujankumarmitra.libraryservice.v1.security.SecurityAnnotations.RoleLibrarian;
 import com.github.sujankumarmitra.libraryservice.v1.service.AuthorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -24,6 +21,8 @@ import reactor.core.publisher.Mono;
 import javax.validation.Valid;
 import java.net.URI;
 
+import static com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.*;
+
 /**
  * @author skmitra
  * @since Nov 30/11/21, 2021
@@ -36,6 +35,8 @@ import java.net.URI;
         name = "AuthorController",
         description = "Controller for managing book authors"
 )
+@ApiSecurityScheme
+@ApiSecurityResponse
 public class AuthorController {
 
     @NonNull
@@ -51,6 +52,7 @@ public class AuthorController {
     @ApiBadRequestResponse
     @ApiConflictResponse
     @PostMapping
+    @RoleLibrarian
     public Mono<ResponseEntity<Object>> createAuthor(@PathVariable("bookId") String bookId,
                                                      @RequestBody @Valid JacksonValidCreateAuthorRequest request) {
 
@@ -72,6 +74,7 @@ public class AuthorController {
     )
     @ApiConflictResponse
     @ApiAcceptedResponse
+    @RoleLibrarian
     @PatchMapping(path = "/{authorId}", consumes = {"application/merge-patch+json", "application/json"})
     public Mono<ResponseEntity<Object>> updateAuthor(@PathVariable String bookId,
                                                      @PathVariable String authorId,
@@ -93,6 +96,7 @@ public class AuthorController {
             summary = "Delete an author",
             description = "Librarians will invoke this API")
     @ApiAcceptedResponse
+    @RoleLibrarian
     @DeleteMapping("/{authorId}")
     public Mono<ResponseEntity<Void>> deleteAuthor(
             @PathVariable String bookId,
