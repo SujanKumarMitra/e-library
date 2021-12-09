@@ -1,6 +1,7 @@
 package com.github.sujankumarmitra.libraryservice.v1.service;
 
 import com.github.sujankumarmitra.libraryservice.v1.model.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
@@ -12,6 +13,10 @@ public interface BookService {
     Mono<String> createBook(PhysicalBook book);
 
     Mono<String> createBook(EBook book);
+
+    Flux<Book> getBooks(int pageNo);
+
+    Flux<Book>  getBooksByTitleAndAuthor(String titlePrefix, String authorPrefix, int pageNo);
 
     Mono<Book> getBook(String bookId);
 

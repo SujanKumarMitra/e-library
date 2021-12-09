@@ -1,5 +1,7 @@
 package com.github.sujankumarmitra.libraryservice.v1.service.impl;
 
+import com.github.sujankumarmitra.libraryservice.v1.config.PagingProperties;
+import com.github.sujankumarmitra.libraryservice.v1.dao.BookSearchDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.EBookDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.LeaseRequestDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.PhysicalBookDao;
@@ -12,6 +14,8 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple3;
 import reactor.util.function.Tuples;
@@ -33,8 +37,12 @@ public class DefaultBookService implements BookService {
     private final EBookDao eBookDao;
     @NotNull
     private final LeaseRequestDao leaseRequestDao;
+    @NonNull
+    private final BookSearchDao bookSearchDao;
     @NotNull
     private final EBookPermissionService eBookPermissionService;
+    @NotNull
+    private final PagingProperties pagingProperties;
 
     @Override
     public Mono<String> createBook(PhysicalBook book) {
@@ -44,6 +52,28 @@ public class DefaultBookService implements BookService {
     @Override
     public Mono<String> createBook(EBook book) {
         return eBookDao.createBook(book);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Flux<Book> getBooks(int pageNo) {
+        int pageSize = pagingProperties.getDefaultPageSize();
+        int skip = pageNo * pageSize;
+
+        return bookSearchDao
+                .getBookIds(skip, pageSize)
+                .flatMap(this::getBook);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Flux<Book> getBooksByTitleAndAuthor(String titlePrefix, String authorPrefix, int pageNo) {
+        int pageSize = pagingProperties.getDefaultPageSize();
+        int skip = pageNo * pageSize;
+
+        return bookSearchDao
+                .getBookIdsByTitleAndAuthorStartingWith(titlePrefix, authorPrefix, skip, pageSize)
+                .flatMap(this::getBook);
     }
 
     @Override

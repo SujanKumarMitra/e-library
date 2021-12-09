@@ -14,7 +14,7 @@ public interface PackageService {
 
     Flux<Package> getPackages(int pageNo);
 
-    Flux<Package> getPackagesByName(String packageName, int pageNo);
+    Flux<Package> getPackagesByName(String namePrefix, int pageNo);
 
     Mono<Void> updatePackage(Package aPackage);
 

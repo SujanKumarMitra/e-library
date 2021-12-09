@@ -26,7 +26,6 @@ import reactor.core.publisher.Mono;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.net.URI;
-import java.util.List;
 
 import static com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonBookType.EBOOK;
 import static com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonBookType.PHYSICAL;
@@ -64,8 +63,10 @@ public class BookController {
             )
     )
     @GetMapping
-    public Flux<Book> getBooks(@RequestParam(value = "page_no", defaultValue = "0") long pageNo) {
-        return Flux.empty();
+    public Flux<JacksonGetBookResponse> getBooks(@RequestParam(value = "page_no", defaultValue = "0") int pageNo) {
+        return bookService
+                .getBooks(pageNo)
+                .map(this::adaptToJacksonBook);
     }
 
 
@@ -130,11 +131,14 @@ public class BookController {
             )
     )
     @GetMapping("/search")
-    public Flux<Book> getBooksByTitle(
-            @RequestParam(required = false) String title,
-            @RequestParam(required = false) List<String> author,
-            @RequestParam(value = "page_no", defaultValue = "0") long pageNo) {
-        return Flux.empty();
+    public Flux<JacksonGetBookResponse> getBooksByTitleAndAuthorStartingWith(
+            @RequestParam(name = "title_prefix", required = false) String titlePrefix,
+            @RequestParam(name = "author_prefix", required = false) String authorPrefix,
+            @RequestParam(value = "page_no", defaultValue = "0") int pageNo) {
+        return bookService
+                .getBooksByTitleAndAuthor(titlePrefix, authorPrefix, pageNo)
+                .map(this::adaptToJacksonBook);
+
     }
 
 

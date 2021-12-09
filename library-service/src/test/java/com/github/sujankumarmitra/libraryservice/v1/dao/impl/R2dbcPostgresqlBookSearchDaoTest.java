@@ -20,7 +20,7 @@ class R2dbcPostgresqlBookSearchDaoTest extends AbstractDataR2dbcPostgreSQLContai
 
     @Autowired
     private R2dbcEntityTemplate entityTemplate;
-    R2dbcPostgresqlBookSearchDao bookSearchDao;
+    private R2dbcPostgresqlBookSearchDao bookSearchDao;
 
     @BeforeEach
     void setUp() {

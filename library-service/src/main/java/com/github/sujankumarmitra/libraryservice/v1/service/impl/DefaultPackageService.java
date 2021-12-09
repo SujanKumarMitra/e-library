@@ -38,13 +38,13 @@ public class DefaultPackageService implements PackageService {
     }
 
     @Override
-    public Flux<Package> getPackagesByName(String packageName, int pageNo) {
+    public Flux<Package> getPackagesByName(String namePrefix, int pageNo) {
 
         int pageSize = pagingProperties.getDefaultPageSize();
         int skip = pageNo * pageSize;
 
         return packageDao
-                .getPackagesByNameStartingWith(packageName, skip, pageSize);
+                .getPackagesByNameStartingWith(namePrefix, skip, pageSize);
     }
 
     @Override

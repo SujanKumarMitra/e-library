@@ -1,5 +1,8 @@
 package com.github.sujankumarmitra.libraryservice.v1.service.impl;
 
+import com.github.sujankumarmitra.libraryservice.v1.config.DefaultPagingProperties;
+import com.github.sujankumarmitra.libraryservice.v1.config.PagingProperties;
+import com.github.sujankumarmitra.libraryservice.v1.dao.BookSearchDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.EBookDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.LeaseRequestDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.PhysicalBookDao;
@@ -42,7 +45,10 @@ class DefaultBookServiceTest {
     @Mock
     private LeaseRequestDao leaseRequestDao;
     @Mock
+    private BookSearchDao bookSearchDao;
+    @Mock
     private EBookPermissionService eBookPermissionService;
+    private final PagingProperties pagingProperties = new DefaultPagingProperties();
 
     @BeforeEach
     void setUp() {
@@ -51,7 +57,9 @@ class DefaultBookServiceTest {
                 physicalBookDao,
                 eBookDao,
                 leaseRequestDao,
-                eBookPermissionService);
+                bookSearchDao,
+                eBookPermissionService,
+                pagingProperties);
     }
 
     @Test

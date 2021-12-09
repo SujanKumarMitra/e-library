@@ -75,10 +75,10 @@ public class PackageController {
             )
     )
     @GetMapping("/search")
-    public Flux<JacksonGetPackageResponse> getPackagesByNameStartingWith(@RequestParam(value = "name_starting_with") String nameStartingWith,
+    public Flux<JacksonGetPackageResponse> getPackagesByNameStartingWith(@RequestParam(value = "name_prefix") String namePrefix,
                                                                          @RequestParam(value = "page_no", defaultValue = "0") int pageNo) {
         return packageService
-                .getPackagesByName(nameStartingWith, pageNo)
+                .getPackagesByName(namePrefix, pageNo)
                 .map(JacksonGetPackageResponse::new);
     }
 
