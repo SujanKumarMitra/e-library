@@ -12,14 +12,14 @@ public abstract class Notification {
 
     public abstract String getPayload();
 
-    public abstract Long getTimestamp();
+    public abstract Long getCreatedAt();
 
     @Override
     public String toString() {
         return "Notification{" +
                 "consumerId='" + getConsumerId() + '\'' +
                 ", payload='" + getPayload() + '\'' +
-                ", timestamp=" + getTimestamp() +
+                ", timestamp=" + getCreatedAt() +
                 '}';
     }
 
@@ -30,7 +30,7 @@ public abstract class Notification {
         Notification that = (Notification) o;
         return Objects.equals(getConsumerId(), that.getConsumerId()) &&
                 Objects.equals(getPayload(), that.getPayload()) &&
-                Objects.equals(getTimestamp(), that.getTimestamp());
+                Objects.equals(getCreatedAt(), that.getCreatedAt());
     }
 
     @Override
@@ -38,7 +38,7 @@ public abstract class Notification {
         return Objects.hash(
                 getConsumerId(),
                 getPayload(),
-                getTimestamp());
+                getCreatedAt());
     }
 
 }

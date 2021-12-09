@@ -221,7 +221,7 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
         DefaultNotification notification = new DefaultNotification();
 
         notification.setConsumerId(request.getUserId());
-        notification.setTimestamp(System.currentTimeMillis());
+        notification.setCreatedAt(System.currentTimeMillis());
         notification.setPayload(createPayload(status, request.getId()));
 
         return sendNotification(notification);

@@ -1,6 +1,9 @@
 app:
   paging:
     defaultPageSize: 10
+  kafka:
+    bootstrapServers: "localhost:9092"
+    notificationsTopicName: "new_notifications"
 logging:
   level:
     com.github.sujankumarmitra.libraryservice: "DEBUG"

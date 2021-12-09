@@ -13,6 +13,15 @@ import lombok.Setter;
 public class DefaultNotification extends Notification {
     private String consumerId;
     private String payload;
-    private Long timestamp;
+    private Long createdAt;
 
+    @Override
+    public boolean equals(Object o) {
+        return super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
 }
