@@ -29,6 +29,15 @@ public class DefaultPackageService implements PackageService {
     }
 
     @Override
+    public Flux<Package> getPackages(int pageNo) {
+        int pageSize = pagingProperties.getDefaultPageSize();
+        int skip = pageNo * pageSize;
+
+        return packageDao
+                .getPackages(skip, pageSize);
+    }
+
+    @Override
     public Flux<Package> getPackagesByName(String packageName, int pageNo) {
 
         int pageSize = pagingProperties.getDefaultPageSize();

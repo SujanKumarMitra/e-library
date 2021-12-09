@@ -37,6 +37,7 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
     public static final String INSERT_STATEMENT = "INSERT INTO packages(name) values($1) RETURNING id";
     public static final String SELECT_BY_ID_STATEMENT = "SELECT id,name FROM packages WHERE id=$1";
     public static final String SELECT_BY_NAME_STATEMENT = "SELECT id,name FROM packages WHERE name LIKE $1 LIMIT $3 OFFSET $2";
+    public static final String SELECT_ALL_STATEMENT = "SELECT id,name FROM packages LIMIT $2 OFFSET $1";
     public static final String UPDATE_STATEMENT = "UPDATE packages SET name=$1 WHERE id=$2";
     public static final String DELETE_STATEMENT = "DELETE FROM packages WHERE id=$1";
 
@@ -49,39 +50,58 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
 
     @Override
     @Transactional
-    public Mono<String> createPackage(Package aPackage) {
-        return Mono.defer(() -> {
-            if (aPackage == null) {
-                log.debug("given parameter is null");
-                return Mono.error(new NullPointerException("package can't be null"));
-            }
-            R2dbcPackage r2dbcPackage = new R2dbcPackage(aPackage);
-            return this.databaseClient
-                    .sql(INSERT_STATEMENT)
-                    .bind("$1", r2dbcPackage.getName())
-                    .map(row -> row.get("id", UUID.class))
-                    .one()
-                    .doOnSuccess(id -> log.debug("created package {}", id))
-                    .doOnSuccess(id -> setPackageIds(id, r2dbcPackage))
-                    .flatMap(id ->
-                            packageItemDao
-                                    .createItems(r2dbcPackage.getItems())
-                                    .then()
-                                    .thenReturn(id))
-                    .flatMap(id ->
-                            packageTagDao
-                                    .createTags(r2dbcPackage.getTags())
-                                    .then()
-                                    .thenReturn(id))
-                    .map(Object::toString);
-        });
+    public Mono<String> createPackage(@NonNull Package aPackage) {
+        R2dbcPackage r2dbcPackage = new R2dbcPackage(aPackage);
+        return this.databaseClient
+                .sql(INSERT_STATEMENT)
+                .bind("$1", r2dbcPackage.getName())
+                .map(row -> row.get("id", UUID.class))
+                .one()
+                .doOnSuccess(id -> log.debug("created package {}", id))
+                .doOnSuccess(id -> setPackageIds(id, r2dbcPackage))
+                .flatMap(id ->
+                        packageItemDao
+                                .createItems(r2dbcPackage.getItems())
+                                .then()
+                                .thenReturn(id))
+                .flatMap(id ->
+                        packageTagDao
+                                .createTags(r2dbcPackage.getTags())
+                                .then()
+                                .thenReturn(id))
+                .map(Object::toString);
     }
 
     @Override
-    public Flux<Package> getPackagesByNameStartsWith(String packageName, int skip, int limit) {
+    @Transactional(readOnly = true)
+    public Flux<Package> getPackages(int skip, int limit) {
+        return databaseClient
+                .sql(SELECT_ALL_STATEMENT)
+                .bind("$1", skip)
+                .bind("$2", limit)
+                .map(this::mapToR2dbcPackage)
+                .all()
+                .flatMapSequential(aPackage -> packageItemDao
+                        .getItemsByPackageId(aPackage.getId())
+                        .cast(R2dbcPackageItem.class)
+                        .collect(Collectors.toCollection(HashSet::new))
+                        .doOnNext(aPackage::setItems)
+                        .thenReturn(aPackage)
+                        .map(Package::getId)
+                        .flatMapMany(packageTagDao::getTagsByPackageId)
+                        .cast(R2dbcPackageTag.class)
+                        .collect(Collectors.toCollection(HashSet::new))
+                        .doOnNext(aPackage::setTags)
+                        .thenReturn(aPackage))
+                .cast(Package.class);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Flux<Package> getPackagesByNameStartsWith(@NonNull String prefix, int skip, int limit) {
         return databaseClient
                 .sql(SELECT_BY_NAME_STATEMENT)
-                .bind("$1", packageName + "%")
+                .bind("$1", prefix + "%")
                 .bind("$2", skip)
                 .bind("$3", limit)
                 .map(this::mapToR2dbcPackage)
@@ -111,12 +131,8 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
 
     @Override
     @Transactional(readOnly = true)
-    public Mono<Package> getPackage(String packageId) {
+    public Mono<Package> getPackage(@NonNull String packageId) {
         return Mono.defer(() -> {
-            if (packageId == null) {
-                log.debug("given parameter packageId is null");
-                return Mono.error(new NullPointerException("packageId can't be null"));
-            }
             UUID id;
             try {
                 id = UUID.fromString(packageId);
@@ -166,13 +182,8 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
 
     @Override
     @Transactional
-    public Mono<Void> updatePackage(Package aPackage) {
+    public Mono<Void> updatePackage(@NonNull Package aPackage) {
         return Mono.defer(() -> {
-            if (aPackage == null) {
-                log.debug("given package is null");
-                return Mono.error(new NullPointerException("package can't be null"));
-            }
-
             String id = aPackage.getId();
 
             if (id == null) {
@@ -239,12 +250,8 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
 
     @Override
     @Transactional
-    public Mono<Void> deletePackage(String packageId) {
+    public Mono<Void> deletePackage(@NonNull String packageId) {
         return Mono.defer(() -> {
-            if (packageId == null) {
-                log.debug("given packageId in param is null");
-                return Mono.error(new NullPointerException("packageId can't be null"));
-            }
             UUID uuid;
             try {
                 uuid = UUID.fromString(packageId);

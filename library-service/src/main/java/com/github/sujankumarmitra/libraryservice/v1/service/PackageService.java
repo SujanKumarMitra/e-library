@@ -12,7 +12,9 @@ public interface PackageService {
 
     Mono<String> createPackage(Package aPackage);
 
-    <P extends Package> Flux<P> getPackagesByName(String packageName, int pageNo);
+    Flux<Package> getPackages(int pageNo);
+
+    Flux<Package> getPackagesByName(String packageName, int pageNo);
 
     Mono<Void> updatePackage(Package aPackage);
 

@@ -12,7 +12,9 @@ public interface PackageDao {
 
     Mono<String> createPackage(Package aPackage);
 
-    Flux<Package> getPackagesByNameStartsWith(String packageName, int skip, int limit);
+    Flux<Package> getPackages(int skip, int limit);
+
+    Flux<Package> getPackagesByNameStartsWith(String prefix, int skip, int limit);
 
     Mono<Package> getPackage(String packageId);
 

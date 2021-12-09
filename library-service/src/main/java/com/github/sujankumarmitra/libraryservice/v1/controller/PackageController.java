@@ -55,8 +55,10 @@ public class PackageController {
             )
     )
     @GetMapping
-    public Flux<JacksonGetPackageResponse> getPackages(@RequestParam(value = "page_no", defaultValue = "0") long pageNo) {
-        return Flux.empty();
+    public Flux<JacksonGetPackageResponse> getPackages(@RequestParam(value = "page_no", defaultValue = "0") int pageNo) {
+        return packageService
+                .getPackages(pageNo)
+                .map(JacksonGetPackageResponse::new);
     }
 
 
