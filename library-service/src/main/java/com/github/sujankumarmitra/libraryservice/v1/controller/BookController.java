@@ -50,20 +50,18 @@ public class BookController {
     @Operation(
             summary = "Fetch all books",
             description = "Librarians/Teachers/Students will invoke this API." +
-                    "<br> Please refer to the response schema to see how book type is determined",
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            content = @Content(
-                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    array = @ArraySchema(
-                                            schema = @Schema(
-                                                    oneOf = {GetPhysicalBookResponseSchema.class, GetEBookResponseSchema.class}
-                                            )
-                                    )
+                    "<br> Please refer to the response schema to see how book type is determined"
+    )
+    @ApiResponse(
+            responseCode = "200",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    array = @ArraySchema(
+                            schema = @Schema(
+                                    oneOf = {GetPhysicalBookResponseSchema.class, GetEBookResponseSchema.class}
                             )
                     )
-            }
+            )
     )
     @GetMapping
     public Flux<Book> getBooks(@RequestParam(value = "page_no", defaultValue = "0") long pageNo) {
@@ -74,18 +72,16 @@ public class BookController {
     @Operation(
             summary = "Fetch a book by Id",
             description = "Librarians/Teachers/Students will invoke this API." +
-                    "<br> Please refer to the response schema to see how book type is determined",
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            content = @Content(
-                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(
-                                            oneOf = {GetPhysicalBookResponseSchema.class, GetEBookResponseSchema.class}
-                                    )
-                            )
+                    "<br> Please refer to the response schema to see how book type is determined"
+    )
+    @ApiResponse(
+            responseCode = "200",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(
+                            oneOf = {GetPhysicalBookResponseSchema.class, GetEBookResponseSchema.class}
                     )
-            }
+            )
     )
     @ApiNotFoundResponse
     @GetMapping("/{bookId}")
@@ -145,12 +141,12 @@ public class BookController {
     @Operation(
             summary = "Create a book",
             description = "Librarians will invoke this API." +
-                    "<br> Please refer to the request schema for separate book type",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    content = @Content(
-                            schema = @Schema(
-                                    oneOf = {CreatePhysicalBookRequestSchema.class, CreateEBookRequestSchema.class}
-                            )
+                    "<br> Please refer to the request schema for separate book type"
+    )
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            content = @Content(
+                    schema = @Schema(
+                            oneOf = {CreatePhysicalBookRequestSchema.class, CreateEBookRequestSchema.class}
                     )
             )
     )
@@ -190,7 +186,6 @@ public class BookController {
                     )
             )
     )
-    @ApiResponse(responseCode = "202")
     @ApiAcceptedResponse
     @ApiBadRequestResponse
     @PatchMapping(path = "/{bookId}", consumes = {"application/merge-patch+json", "application/json"})

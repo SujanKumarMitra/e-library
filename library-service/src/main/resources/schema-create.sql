@@ -1,5 +1,10 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+CREATE TABLE IF NOT EXISTS librarians (
+    id text,
+    CONSTRAINT pk_librarians PRIMARY KEY(id)
+);
+
 CREATE TABLE IF NOT EXISTS books(
 	id uuid DEFAULT uuid_generate_v4(),
 	title text,

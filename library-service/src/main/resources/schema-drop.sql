@@ -10,4 +10,5 @@ DROP TABLE IF EXISTS rejected_lease_requests;
 DROP TABLE IF EXISTS lease_requests;
 DROP TABLE IF EXISTS authors;
 DROP TABLE IF EXISTS books;
+DROP TABLE IF EXISTS librarians;
 DROP EXTENSION IF EXISTS "uuid-ossp";
