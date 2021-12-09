@@ -10,18 +10,24 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.time.Duration;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static com.github.sujankumarmitra.libraryservice.v1.dao.impl.BookDaoTestUtils.insertDummyBook;
 import static com.github.sujankumarmitra.libraryservice.v1.dao.impl.LeaseRequestDaoTestUtils.insertLeaseRequest;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.r2dbc.connection.init.ScriptUtils.executeSqlScript;
 
 /**
  * @author skmitra
@@ -43,28 +49,7 @@ class R2dbcPostgresqlLeaseRecordDaoTest extends AbstractDataR2dbcPostgreSQLConta
     void tearDown() {
         entityTemplate
                 .getDatabaseClient()
-                .sql("DELETE FROM accepted_lease_requests")
-                .fetch()
-                .rowsUpdated()
-                .block();
-
-        entityTemplate
-                .getDatabaseClient()
-                .sql("DELETE FROM lease_requests")
-                .fetch()
-                .rowsUpdated()
-                .block();
-
-        entityTemplate
-                .getDatabaseClient()
-                .sql("DELETE FROM physical_books")
-                .fetch()
-                .rowsUpdated()
-                .block();
-
-        entityTemplate
-                .getDatabaseClient()
-                .sql("DELETE FROM books")
+                .sql("TRUNCATE TABLE books CASCADE")
                 .fetch()
                 .rowsUpdated()
                 .block();
@@ -167,7 +152,7 @@ class R2dbcPostgresqlLeaseRecordDaoTest extends AbstractDataR2dbcPostgreSQLConta
                 .map(R2dbcBook::getUuid)
                 .flatMap(id -> insertLeaseRequest(entityTemplate.getDatabaseClient(), id))
                 .map(R2dbcLeaseRequest::getUuid)
-                .doOnNext(id -> leaseRecord.setLeaseRequestId(id))
+                .doOnNext(leaseRecord::setLeaseRequestId)
                 .then(Mono.defer(() -> entityTemplate
                         .getDatabaseClient()
                         .sql(R2dbcPostgresqlLeaseRecordDao.INSERT_STATEMENT)
@@ -223,7 +208,7 @@ class R2dbcPostgresqlLeaseRecordDaoTest extends AbstractDataR2dbcPostgreSQLConta
                 .map(R2dbcBook::getUuid)
                 .flatMap(id -> insertLeaseRequest(entityTemplate.getDatabaseClient(), id))
                 .map(R2dbcLeaseRequest::getUuid)
-                .doOnNext(id -> leaseRecord.setLeaseRequestId(id))
+                .doOnNext(leaseRecord::setLeaseRequestId)
                 .then(Mono.defer(() -> entityTemplate
                         .getDatabaseClient()
                         .sql(R2dbcPostgresqlLeaseRecordDao.INSERT_STATEMENT)
@@ -272,16 +257,58 @@ class R2dbcPostgresqlLeaseRecordDaoTest extends AbstractDataR2dbcPostgreSQLConta
 
     @Test
     void givenSetOfActiveLeaseRecords_getActiveLeaseRecords_shouldGetActiveLeaseRecords() {
-//        TODO
+        Resource dataScript = new ClassPathResource("stale_ebook_leases.sql");
+        entityTemplate
+                .getDatabaseClient()
+                .inConnection(conn -> executeSqlScript(conn, dataScript))
+                .thenMany(leaseRecordDao.getActiveLeaseRecords(0, 20))
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectNextCount(4)
+                .expectComplete()
+                .verify();
     }
 
     @Test
     void givenSetOfActiveLeaseRecords_getActiveLeaseRecordsByUserId_shouldGetActiveLeaseRecords() {
-//        TODO
+        Resource dataScript = new ClassPathResource("stale_ebook_leases.sql");
+        entityTemplate
+                .getDatabaseClient()
+                .inConnection(conn -> executeSqlScript(conn, dataScript))
+                .thenMany(leaseRecordDao.getActiveLeaseRecordsByUserId("qbloxland4", 0, 20))
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectNextCount(1)
+                .expectComplete()
+                .verify();
     }
 
     @Test
     void givenSetOfStaleEBookLeaseRecords_getgetStaleEBookLeaseRecordIds_shouldGetgetStaleEBookLeaseRecordIds() {
-//        TODO
+
+        Resource staleEBookLeaseSqlScript = new ClassPathResource("stale_ebook_leases.sql");
+
+        Set<UUID> expected = Set.of(
+                UUID.fromString("61c22813-7faa-4fb4-9aee-2ce132520d9e"),
+                UUID.fromString("b9d8ed6b-8bb4-43cd-a3f9-7fed8b8b1d8f"));
+
+        entityTemplate
+                .getDatabaseClient()
+                .inConnection(conn -> executeSqlScript(conn, staleEBookLeaseSqlScript))
+                .thenMany(leaseRecordDao.getStaleEBookLeaseRecordIds())
+                .map(UUID::fromString)
+                .collect(Collectors.toCollection(HashSet::new))
+                .cast(Set.class)
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .consumeNextWith(actualIds -> {
+                    log.info("Expected {}", expected);
+                    log.info("Actual {}", actualIds);
+
+                    assertThat(actualIds).isEqualTo(expected);
+                })
+                .expectComplete()
+                .verify();
+
     }
 }

@@ -77,6 +77,12 @@ public class DefaultBookService implements BookService {
                 .flatMap(this::handleLeaseAcceptForBook);
     }
 
+    @Override
+    public Mono<Void> handleLeaseRelinquish(@NotNull LeaseRecord leaseRecord) {
+//        TODO increment physical book copies
+        return Mono.error(new RuntimeException("implement me"));
+    }
+
     private Mono<Void> handleLeaseAcceptForBook(Tuple3<LeaseRequest, AcceptedLease, Book> tuple3) {
         LeaseRequest leaseRequest = tuple3.getT1();
         AcceptedLease acceptedLease = tuple3.getT2();

@@ -1,9 +1,6 @@
 package com.github.sujankumarmitra.libraryservice.v1.service;
 
-import com.github.sujankumarmitra.libraryservice.v1.model.AcceptedLease;
-import com.github.sujankumarmitra.libraryservice.v1.model.Book;
-import com.github.sujankumarmitra.libraryservice.v1.model.EBook;
-import com.github.sujankumarmitra.libraryservice.v1.model.PhysicalBook;
+import com.github.sujankumarmitra.libraryservice.v1.model.*;
 import reactor.core.publisher.Mono;
 
 /**
@@ -25,4 +22,6 @@ public interface BookService {
     Mono<Void> deleteBook(String bookId);
 
     Mono<Void> handleLeaseAccept(AcceptedLease request);
+
+    Mono<Void> handleLeaseRelinquish(LeaseRecord leaseRecord);
 }

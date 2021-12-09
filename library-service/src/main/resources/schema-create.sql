@@ -115,7 +115,7 @@ CREATE TABLE IF NOT EXISTS lease_requests (
 	id uuid DEFAULT uuid_generate_v4(),
 	book_id uuid,
 	user_id text,
-	timestamp bigint DEFAULT extract(epoch from now()),
+	timestamp bigint DEFAULT extract(epoch from now()) *1000,
 	status text DEFAULT 'PENDING',
 	CONSTRAINT pk_lease_requests PRIMARY KEY(id),
  	CONSTRAINT fk_lease_requests_books FOREIGN KEY(book_id) REFERENCES books(id),
@@ -130,7 +130,7 @@ CREATE TABLE IF NOT EXISTS lease_requests (
 
 CREATE TABLE IF NOT EXISTS accepted_lease_requests(
 	lease_request_id uuid,
-	start_time bigint DEFAULT extract(epoch from now()),
+	start_time bigint DEFAULT extract(epoch from now()) * 1000,
 	duration bigint,
 	relinquished boolean DEFAULT FALSE,
 	CONSTRAINT pk_accepted_lease_requests PRIMARY KEY(lease_request_id),
