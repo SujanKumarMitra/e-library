@@ -5,13 +5,12 @@ import com.github.sujankumarmitra.libraryservice.v1.config.DefaultPagingProperti
 import com.github.sujankumarmitra.libraryservice.v1.config.PagingProperties;
 import com.github.sujankumarmitra.libraryservice.v1.dao.LeaseRecordDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.LeaseRequestDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.LibrarianDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.RejectedLeaseDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcLeaseRequest;
-import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcMoney;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcPhysicalBook;
 import com.github.sujankumarmitra.libraryservice.v1.exception.InsufficientCopiesAvailableException;
 import com.github.sujankumarmitra.libraryservice.v1.exception.LeaseRequestAlreadyHandledException;
-import com.github.sujankumarmitra.libraryservice.v1.model.LeaseRequest;
 import com.github.sujankumarmitra.libraryservice.v1.model.impl.DefaultAcceptedLease;
 import com.github.sujankumarmitra.libraryservice.v1.service.BookService;
 import com.github.sujankumarmitra.libraryservice.v1.service.NotificationService;
@@ -49,6 +48,8 @@ class DefaultLeaseRequestServiceTest {
     private BookService bookService;
     @Mock
     private NotificationService notificationService;
+    @Mock
+    private LibrarianDao librarianDao;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final PagingProperties pagingProperties = new DefaultPagingProperties();
 
@@ -59,6 +60,7 @@ class DefaultLeaseRequestServiceTest {
                 leaseRequestDao,
                 leaseRecordDao,
                 rejectedLeaseDao,
+                librarianDao,
                 bookService,
                 notificationService,
                 objectMapper,

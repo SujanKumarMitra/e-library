@@ -53,10 +53,10 @@ class KafkaNotificationServiceTest {
     @Autowired
     private KafkaProperties kafkaProperties;
     @Autowired
-    private KafkaSender kafkaSender;
+    private KafkaSender<String,String> kafkaSender;
     private KafkaConsumer<String, String> kafkaConsumer;
     private KafkaNotificationService notificationService;
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     static {
         DockerImageName confluentKafka = parse("confluentinc/cp-server:6.2.0")
@@ -71,7 +71,7 @@ class KafkaNotificationServiceTest {
     }
 
     @BeforeEach
-    void setUp() throws ExecutionException, InterruptedException {
+    void setUp()  {
         createNotificationTopic();
         createKafkaConsumer();
         this.notificationService = new KafkaNotificationService(kafkaSender, kafkaProperties, objectMapper);
@@ -110,7 +110,7 @@ class KafkaNotificationServiceTest {
 
     }
 
-    private void createNotificationTopic() throws InterruptedException, ExecutionException {
+    private void createNotificationTopic() {
         Properties adminProps = new Properties();
         adminProps.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());
 
@@ -119,10 +119,14 @@ class KafkaNotificationServiceTest {
         NewTopic notificationTopic = new NewTopic(
                 kafkaProperties.getNotificationsTopicName(),empty(), empty());
 
-        adminClient.createTopics(Set.of(notificationTopic))
-                .all()
-                .whenComplete((v, th) -> log.info("AdminClient created topics"))
-                .get();
+        try {
+            adminClient.createTopics(Set.of(notificationTopic))
+                    .all()
+                    .whenComplete((v, th) -> log.info("AdminClient created topics"))
+                    .get();
+        } catch (InterruptedException | ExecutionException e) {
+            log.warn("Error ", e);
+        }
     }
 
     @Test

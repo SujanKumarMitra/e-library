@@ -3,6 +3,7 @@ package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 import com.github.sujankumarmitra.libraryservice.v1.dao.LibrarianDao;
 import com.github.sujankumarmitra.libraryservice.v1.exception.LibrarianAlreadyExistsException;
 import com.github.sujankumarmitra.libraryservice.v1.model.Librarian;
+import com.github.sujankumarmitra.libraryservice.v1.model.impl.DefaultLibrarian;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +11,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
@@ -22,6 +24,7 @@ import reactor.core.publisher.Mono;
 public class R2dbcPostgresqlLibrarianDao implements LibrarianDao {
     public static final String PRIMARY_KEY_CONSTRAINT_NAME = "pk_librarians";
     public static final String INSERT_STATEMENT = "INSERT INTO librarians(id) VALUES ($1)";
+    public static final String SELECT_STATEMENT = "SELECT id FROM librarians";
     @NonNull
     private final R2dbcEntityTemplate entityTemplate;
 
@@ -36,6 +39,17 @@ public class R2dbcPostgresqlLibrarianDao implements LibrarianDao {
                 .rowsUpdated()
                 .then()
                 .onErrorMap(DataIntegrityViolationException.class, err -> translateErrors(err, librarian));
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Flux<Librarian> getLibrarians() {
+        return entityTemplate
+                .getDatabaseClient()
+                .sql(SELECT_STATEMENT)
+                .map(row -> new DefaultLibrarian(row.get("id", String.class)))
+                .all()
+                .cast(Librarian.class);
     }
 
     private Throwable translateErrors(DataIntegrityViolationException ex, Librarian librarian) {

@@ -1,5 +1,6 @@
 package com.github.sujankumarmitra.libraryservice.v1.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.sujankumarmitra.libraryservice.v1.config.PagingProperties;
 import com.github.sujankumarmitra.libraryservice.v1.dao.LeaseRecordDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.LeaseRequestDao;
@@ -12,6 +13,7 @@ import com.github.sujankumarmitra.libraryservice.v1.exception.BookNotFoundExcept
 import com.github.sujankumarmitra.libraryservice.v1.exception.LeaseRequestNotFoundException;
 import com.github.sujankumarmitra.libraryservice.v1.model.Money;
 import com.github.sujankumarmitra.libraryservice.v1.model.impl.DefaultMoney;
+import com.github.sujankumarmitra.libraryservice.v1.service.NotificationService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,14 +50,18 @@ class DefaultActiveLeaseServiceTest {
     private LeaseRequestDao leaseRequestDao;
     @Mock
     private PhysicalBookDao physicalBookDao;
+    @Mock
+    private NotificationService notificationService;
 
     @BeforeEach
     void setUp() {
         activeLeaseService = new DefaultActiveLeaseService(
-                pagingProperties,
                 leaseRecordDao,
                 leaseRequestDao,
-                physicalBookDao);
+                physicalBookDao,
+                pagingProperties,
+                notificationService,
+                new ObjectMapper());
     }
 
     @Test

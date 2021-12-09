@@ -1,17 +1,23 @@
 package com.github.sujankumarmitra.libraryservice.v1.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.sujankumarmitra.libraryservice.v1.config.PagingProperties;
 import com.github.sujankumarmitra.libraryservice.v1.dao.LeaseRecordDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.LeaseRequestDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.PhysicalBookDao;
 import com.github.sujankumarmitra.libraryservice.v1.exception.BookNotFoundException;
+import com.github.sujankumarmitra.libraryservice.v1.exception.InternalError;
 import com.github.sujankumarmitra.libraryservice.v1.exception.LeaseRequestAlreadyHandledException;
 import com.github.sujankumarmitra.libraryservice.v1.exception.LeaseRequestNotFoundException;
 import com.github.sujankumarmitra.libraryservice.v1.model.*;
 import com.github.sujankumarmitra.libraryservice.v1.model.impl.DefaultMoney;
+import com.github.sujankumarmitra.libraryservice.v1.model.impl.DefaultNotification;
 import com.github.sujankumarmitra.libraryservice.v1.service.ActiveLeaseService;
+import com.github.sujankumarmitra.libraryservice.v1.service.NotificationService;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
@@ -21,6 +27,8 @@ import reactor.util.function.Tuples;
 
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.github.sujankumarmitra.libraryservice.v1.model.LeaseStatus.ACCEPTED;
 import static com.github.sujankumarmitra.libraryservice.v1.model.LeaseStatus.EXPIRED;
@@ -31,16 +39,22 @@ import static java.math.BigDecimal.ZERO;
  * @since Dec 08/12/21, 2021
  */
 @Service
+@Slf4j
 @AllArgsConstructor
 public class DefaultActiveLeaseService implements ActiveLeaseService {
-    @NonNull
-    private final PagingProperties pagingProperties;
     @NonNull
     private final LeaseRecordDao leaseRecordDao;
     @NonNull
     private final LeaseRequestDao leaseRequestDao;
     @NonNull
     private final PhysicalBookDao physicalBookDao;
+    @NonNull
+    private final PagingProperties pagingProperties;
+    @NonNull
+    private final NotificationService notificationService;
+    @NonNull
+    private final ObjectMapper objectMapper;
+
 
     @Override
     public Flux<LeaseRecord> getAllActiveLeases(int pageNo) {
@@ -121,10 +135,10 @@ public class DefaultActiveLeaseService implements ActiveLeaseService {
     @Override
     @Transactional
     public Mono<Void> relinquishActiveLease(String leaseRequestId) {
-//        TODO send notification to students about lease relinquishment
         return leaseRecordDao
                 .markAsRelinquished(leaseRequestId)
-                .then(leaseRequestDao.setLeaseStatus(leaseRequestId, EXPIRED));
+                .then(leaseRequestDao.setLeaseStatus(leaseRequestId, EXPIRED))
+                .then(Mono.fromRunnable(() -> sendNotification(leaseRequestId)));
     }
 
     @Override
@@ -134,5 +148,38 @@ public class DefaultActiveLeaseService implements ActiveLeaseService {
                 .getStaleEBookLeaseRecordIds()
                 .flatMap(this::relinquishActiveLease)
                 .then();
+    }
+
+    void sendNotification(String leaseRequestId) {
+        leaseRequestDao
+                .getLeaseRequest(leaseRequestId)
+                .map(leaseRequest -> {
+                    DefaultNotification notification = new DefaultNotification();
+
+                    notification.setConsumerId(leaseRequest.getUserId());
+                    notification.setCreatedAt(System.currentTimeMillis());
+                    notification.setPayload(createPayload(leaseRequest));
+
+                    return notification;
+                })
+                .flatMap(notificationService::sendNotification)
+                .subscribe(s -> {
+                        },
+                        err -> log.info("Error in sending notification ", err),
+                        () -> log.info("Sent notification for lease expiry"));
+    }
+
+    private String createPayload(LeaseRequest request) {
+        Map<String, String> payload = new HashMap<>();
+
+        payload.put("event", "LEASE_EXPIRED");
+        payload.put("leaseRequestId", request.getId());
+
+        try {
+            return objectMapper.writeValueAsString(payload);
+        } catch (JsonProcessingException e) {
+            log.warn("Error in serializing notification payload", e);
+            throw new InternalError("failed to serialize json payload");
+        }
     }
 }
