@@ -14,7 +14,6 @@ import org.springframework.context.annotation.Configuration;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import static io.swagger.v3.oas.annotations.enums.SecuritySchemeIn.COOKIE;
 import static io.swagger.v3.oas.annotations.enums.SecuritySchemeIn.QUERY;
 import static io.swagger.v3.oas.annotations.enums.SecuritySchemeType.APIKEY;
 import static io.swagger.v3.oas.annotations.enums.SecuritySchemeType.HTTP;
@@ -38,7 +37,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
                 version = "1.0"
         ),
         security = {
-                @SecurityRequirement(name = "cookie"),
                 @SecurityRequirement(name = "access_token"),
                 @SecurityRequirement(name = "Bearer")
         }
@@ -53,10 +51,9 @@ public class OpenApiConfiguration {
     )
     @SecurityScheme(
             name = "Bearer",
-            paramName = "Authorization",
             scheme = "bearer",
             type = HTTP,
-            bearerFormat = "Bearer "
+            bearerFormat = "JWT"
 
     )
     @Target({METHOD, TYPE})
