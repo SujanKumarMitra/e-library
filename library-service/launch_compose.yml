@@ -1,0 +1,65 @@
+version: '3'
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: "library_service"
+      POSTGRES_USER: "library_service"
+      POSTGRES_DB: "library_service_db"
+  pgadmin:
+    image: "dpage/pgadmin4"
+    container_name: "pgadmin"
+    depends_on:
+      - db
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "pgadmin_user@email.com"
+      PGADMIN_DEFAULT_PASSWORD: "pgadmin_password"
+    ports:
+#      host:container
+#      open http://localhost:5433 to access pgadmin and the postgres db
+      - "5433:80"
+  zoo1:
+    image: zookeeper
+    hostname: zoo1
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_PORT: 2181
+  kafka1:
+    image: confluentinc/cp-kafka
+    hostname: kafka1
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://kafka1:19092,LISTENER_DOCKER_EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_DOCKER_INTERNAL:PLAINTEXT,LISTENER_DOCKER_EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_DOCKER_INTERNAL
+      KAFKA_ZOOKEEPER_CONNECT: "zoo1:2181"
+      KAFKA_BROKER_ID: 1
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_JMX_PORT: 9999
+      KAFKA_JMX_HOSTNAME: ${DOCKER_HOST_IP:-127.0.0.1}
+    depends_on:
+      - zoo1
+  app:
+    image: library-service:1.0.0
+    depends_on:
+      - kafka1
+      - db
+    ports:
+#      host:container
+#      open http://localhost:8080/swagger-ui.html
+      - "8080:8080"
+    environment:
+      DEFAULT_PAGE_SIZE: "10"
+      KAFKA_BOOTSTRAP_SERVERS: "kafka1"
+      NOTIFICATIONS_TOPIC: "new_notifications"
+      CREATE_ASSET_PERMISSIONS_TOPIC: "create_asset_permissions"
+#     url for JWT authorization service,
+#     set to host ip to enable communication of non containerized services
+      AUTH_BASEURL: "http://172.17.0.1:8000"
+      DB_URL: "r2dbc:postgresql://db/library_service_db"
+      DB_USERNAME: "library_service"
+      DB_PASSWORD: "library_service"
+      SQL_INIT_MODE: "ALWAYS"
+

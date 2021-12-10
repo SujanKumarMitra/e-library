@@ -1,0 +1,22 @@
+app:
+  paging:
+    defaultPageSize: "${DEFAULT_PAGE_SIZE}"
+  kafka:
+    bootstrapServers: "${KAFKA_BOOTSTRAP_SERVERS}"
+    notificationsTopicName: "${NOTIFICATIONS_TOPIC}"
+    createAssetPermissionsTopicName: "${CREATE_ASSET_PERMISSIONS_TOPIC}"
+  auth:
+    baseUrl: "${AUTH_BASEURL}"
+spring:
+  devtools:
+    livereload:
+      enabled: false
+  r2dbc:
+    url: "${DB_URL}"
+    username: "${DB_USERNAME}"
+    password: "${DB_PASSWORD}"
+  sql:
+    init:
+      mode: "${SQL_INIT_MODE}"
+      schemaLocations:
+        - "classpath:schema-create.sql"

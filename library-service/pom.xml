@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.github.sujankumarmitra</groupId>
     <artifactId>library-service</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>library-service</name>
     <description>Service for CRUD operations on Books</description>
     <properties>
