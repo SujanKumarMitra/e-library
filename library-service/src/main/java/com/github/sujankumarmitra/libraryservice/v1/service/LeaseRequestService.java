@@ -15,7 +15,7 @@ public interface LeaseRequestService {
 
     Flux<LeaseRequest> getPendingLeaseRequests(String userId, int pageNo);
 
-    Mono<Void> deleteLeaseRequest(String leaseRequestId);
+    Mono<Void> cancelLeaseRequest(String leaseRequestId);
 
     Mono<String> createLeaseRequest(LeaseRequest request);
 

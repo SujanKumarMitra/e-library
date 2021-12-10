@@ -1,9 +1,9 @@
 package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcAuthor;
-import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBook;
 import com.github.sujankumarmitra.libraryservice.v1.exception.BookNotFoundException;
 import com.github.sujankumarmitra.libraryservice.v1.model.Author;
+import com.github.sujankumarmitra.libraryservice.v1.util.BookDaoTestUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,6 +16,7 @@ import reactor.test.StepVerifier;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.github.sujankumarmitra.libraryservice.v1.util.DaoTestUtils.truncateAllTables;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -36,16 +37,7 @@ class R2dbcPostgresqlAuthorDaoTest extends AbstractDataR2dbcPostgreSQLContainerD
 
     @AfterEach
     void tearDown() {
-        entityTemplate
-                .delete(R2dbcAuthor.class)
-                .from("authors")
-                .all()
-                .block();
-
-        entityTemplate
-                .delete(R2dbcBook.class)
-                .from("books")
-                .all()
+        truncateAllTables(entityTemplate.getDatabaseClient())
                 .block();
     }
 

@@ -19,7 +19,7 @@ public interface LeaseRequestDao {
 
     Mono<String> createLeaseRequest(LeaseRequest request);
 
-    Mono<Void> deleteLeaseRequest(String leaseRequestId);
+    Mono<Void> deletePendingLeaseRequest(String leaseRequestId);
 
     Mono<Void> setLeaseStatus(String leaseRequestId, LeaseStatus status);
 }

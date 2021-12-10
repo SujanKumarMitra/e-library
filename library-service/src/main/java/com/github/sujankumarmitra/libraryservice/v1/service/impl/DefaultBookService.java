@@ -1,10 +1,7 @@
 package com.github.sujankumarmitra.libraryservice.v1.service.impl;
 
 import com.github.sujankumarmitra.libraryservice.v1.config.PagingProperties;
-import com.github.sujankumarmitra.libraryservice.v1.dao.BookSearchDao;
-import com.github.sujankumarmitra.libraryservice.v1.dao.EBookDao;
-import com.github.sujankumarmitra.libraryservice.v1.dao.LeaseRequestDao;
-import com.github.sujankumarmitra.libraryservice.v1.dao.PhysicalBookDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.*;
 import com.github.sujankumarmitra.libraryservice.v1.exception.InsufficientCopiesAvailableException;
 import com.github.sujankumarmitra.libraryservice.v1.model.*;
 import com.github.sujankumarmitra.libraryservice.v1.model.impl.DefaultEBookPermission;
@@ -77,6 +74,7 @@ public class DefaultBookService implements BookService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Mono<Book> getBook(String bookId) {
         return physicalBookDao
                 .getBook(bookId)
@@ -95,6 +93,7 @@ public class DefaultBookService implements BookService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Mono<Void> deleteBook(String bookId) {
         return physicalBookDao
                 .deleteBook(bookId)
@@ -102,6 +101,7 @@ public class DefaultBookService implements BookService {
     }
 
     @Override
+    @Transactional
     public Mono<Void> onLeaseAccept(@NonNull AcceptedLease acceptedLease) {
         return leaseRequestDao
                 .getLeaseRequest(acceptedLease.getLeaseRequestId())
@@ -111,6 +111,7 @@ public class DefaultBookService implements BookService {
     }
 
     @Override
+    @Transactional
     public Mono<Void> onLeaseRelinquish(@NonNull LeaseRequest leaseRequest) {
         return getBook(leaseRequest.getBookId())
                 .flatMap(this::handleLeaseRelinquishForBook);

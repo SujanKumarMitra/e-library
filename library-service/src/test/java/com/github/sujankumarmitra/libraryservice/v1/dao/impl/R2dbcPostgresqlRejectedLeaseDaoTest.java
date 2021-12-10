@@ -4,6 +4,8 @@ import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcLeaseRe
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcRejectedLease;
 import com.github.sujankumarmitra.libraryservice.v1.exception.LeaseRequestNotFoundException;
 import com.github.sujankumarmitra.libraryservice.v1.model.RejectedLease;
+import com.github.sujankumarmitra.libraryservice.v1.util.BookDaoTestUtils;
+import com.github.sujankumarmitra.libraryservice.v1.util.LeaseRequestDaoTestUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +17,7 @@ import reactor.test.StepVerifier;
 
 import java.util.UUID;
 
+import static com.github.sujankumarmitra.libraryservice.v1.util.DaoTestUtils.truncateAllTables;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -35,26 +38,7 @@ class R2dbcPostgresqlRejectedLeaseDaoTest extends AbstractDataR2dbcPostgreSQLCon
 
     @AfterEach
     void tearDown() {
-
-        entityTemplate
-                .getDatabaseClient()
-                .sql("DELETE FROM rejected_lease_requests")
-                .fetch()
-                .rowsUpdated()
-                .block();
-
-        entityTemplate
-                .getDatabaseClient()
-                .sql("DELETE FROM lease_requests")
-                .fetch()
-                .rowsUpdated()
-                .block();
-
-        entityTemplate
-                .getDatabaseClient()
-                .sql("DELETE FROM books")
-                .fetch()
-                .rowsUpdated()
+        truncateAllTables(entityTemplate.getDatabaseClient())
                 .block();
     }
 

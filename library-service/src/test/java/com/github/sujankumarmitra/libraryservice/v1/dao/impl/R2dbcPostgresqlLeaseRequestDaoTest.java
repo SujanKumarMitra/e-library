@@ -5,6 +5,7 @@ import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcLeaseRe
 import com.github.sujankumarmitra.libraryservice.v1.exception.BookNotFoundException;
 import com.github.sujankumarmitra.libraryservice.v1.model.LeaseRequest;
 import com.github.sujankumarmitra.libraryservice.v1.model.LeaseStatus;
+import com.github.sujankumarmitra.libraryservice.v1.util.BookDaoTestUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,8 +19,8 @@ import reactor.test.StepVerifier;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.github.sujankumarmitra.libraryservice.v1.model.LeaseStatus.EXPIRED;
-import static com.github.sujankumarmitra.libraryservice.v1.model.LeaseStatus.PENDING;
+import static com.github.sujankumarmitra.libraryservice.v1.util.DaoTestUtils.truncateAllTables;
+import static com.github.sujankumarmitra.libraryservice.v1.model.LeaseStatus.*;
 import static java.util.Collections.shuffle;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -41,16 +42,7 @@ class R2dbcPostgresqlLeaseRequestDaoTest extends AbstractDataR2dbcPostgreSQLCont
 
     @AfterEach
     void tearDown() {
-        entityTemplate
-                .delete(R2dbcLeaseRequest.class)
-                .all()
-                .block();
-
-        entityTemplate
-                .getDatabaseClient()
-                .sql("DELETE FROM books")
-                .fetch()
-                .rowsUpdated()
+        truncateAllTables(entityTemplate.getDatabaseClient())
                 .block();
     }
 
@@ -312,7 +304,7 @@ class R2dbcPostgresqlLeaseRequestDaoTest extends AbstractDataR2dbcPostgreSQLCont
     }
 
     @Test
-    void givenValidLeaseRequestId_whenDelete_shouldDelete() {
+    void givenValidPendingLeaseRequestId_whenDelete_shouldDelete() {
         R2dbcLeaseRequest leaseRequest = new R2dbcLeaseRequest();
 
         leaseRequest.setStatus(PENDING);
@@ -325,7 +317,7 @@ class R2dbcPostgresqlLeaseRequestDaoTest extends AbstractDataR2dbcPostgreSQLCont
                 .doOnNext(leaseRequest::setBookId)
                 .then(entityTemplate.insert(leaseRequest))
                 .map(R2dbcLeaseRequest::getId)
-                .flatMap(leaseRequestDao::deleteLeaseRequest)
+                .flatMap(leaseRequestDao::deletePendingLeaseRequest)
                 .then(entityTemplate
                         .select(R2dbcLeaseRequest.class)
                         .count())
@@ -337,9 +329,34 @@ class R2dbcPostgresqlLeaseRequestDaoTest extends AbstractDataR2dbcPostgreSQLCont
     }
 
     @Test
+    void givenValidLeaseRequestNotInPendingState_whenDelete_shouldNotDelete() {
+        R2dbcLeaseRequest leaseRequest = new R2dbcLeaseRequest();
+
+        leaseRequest.setStatus(REJECTED);
+        leaseRequest.setTimestamp(System.currentTimeMillis());
+        leaseRequest.setUserId("user_id");
+
+        BookDaoTestUtils
+                .insertDummyBook(entityTemplate.getDatabaseClient())
+                .map(R2dbcBook::getUuid)
+                .doOnNext(leaseRequest::setBookId)
+                .then(entityTemplate.insert(leaseRequest))
+                .map(R2dbcLeaseRequest::getId)
+                .flatMap(leaseRequestDao::deletePendingLeaseRequest)
+                .then(entityTemplate
+                        .select(R2dbcLeaseRequest.class)
+                        .count())
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectNext(1L)
+                .expectComplete()
+                .verify();
+    }
+
+    @Test
     void givenNonExistingLeaseRequestId_whenDelete_shouldEmitComplete() {
         leaseRequestDao
-                .deleteLeaseRequest(UUID.randomUUID().toString())
+                .deletePendingLeaseRequest(UUID.randomUUID().toString())
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .expectComplete()
@@ -349,7 +366,7 @@ class R2dbcPostgresqlLeaseRequestDaoTest extends AbstractDataR2dbcPostgreSQLCont
     @Test
     void givenMalformedLeaseRequestUuid_whenDelete_shouldEmitComplete() {
         leaseRequestDao
-                .deleteLeaseRequest("malformed")
+                .deletePendingLeaseRequest("malformed")
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .expectComplete()

@@ -110,12 +110,12 @@ public class R2dbcPostgresqlLeaseRequestDao implements LeaseRequestDao {
         log.debug("DB integrity error", ex);
         String message = ex.getMessage();
 
-        if(message == null) {
+        if (message == null) {
             log.debug("DataIntegrityViolationException.getMessage() returned null, exception translation not possible, falling back to original exception");
             return ex;
         }
 
-        if(message.contains(BOOKS_FOREIGN_KEY_CONSTRAINT_NAME)) {
+        if (message.contains(BOOKS_FOREIGN_KEY_CONSTRAINT_NAME)) {
             return new BookNotFoundException(leaseRequest.getBookId());
         }
 
@@ -125,7 +125,7 @@ public class R2dbcPostgresqlLeaseRequestDao implements LeaseRequestDao {
 
     @Override
     @Transactional
-    public Mono<Void> deleteLeaseRequest(@NonNull String leaseRequestId) {
+    public Mono<Void> deletePendingLeaseRequest(@NonNull String leaseRequestId) {
         return Mono.defer(() -> {
             UUID uuid;
             try {
@@ -137,7 +137,8 @@ public class R2dbcPostgresqlLeaseRequestDao implements LeaseRequestDao {
 
             return entityTemplate
                     .delete(R2dbcLeaseRequest.class)
-                    .matching(query(where("id").is(uuid)))
+                    .matching(query(where("id").is(uuid)
+                            .and(where(STATUS_COLUMN_NAME).is(PENDING.toString()))))
                     .all()
                     .doOnNext(deleteCount -> {
                         if (deleteCount > 0) log.debug("deleted lease request with id {} ", leaseRequestId);

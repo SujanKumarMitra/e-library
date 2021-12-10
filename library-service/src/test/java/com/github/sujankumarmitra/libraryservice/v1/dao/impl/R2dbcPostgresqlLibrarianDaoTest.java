@@ -15,6 +15,8 @@ import reactor.test.StepVerifier;
 
 import java.util.UUID;
 
+import static com.github.sujankumarmitra.libraryservice.v1.util.DaoTestUtils.truncateAllTables;
+
 /**
  * @author skmitra
  * @since Dec 09/12/21, 2021
@@ -33,11 +35,7 @@ class R2dbcPostgresqlLibrarianDaoTest extends AbstractDataR2dbcPostgreSQLContain
 
     @AfterEach
     void tearDown() {
-        entityTemplate
-                .getDatabaseClient()
-                .sql("DELETE FROM librarians")
-                .fetch()
-                .rowsUpdated()
+        truncateAllTables(entityTemplate.getDatabaseClient())
                 .block();
     }
 

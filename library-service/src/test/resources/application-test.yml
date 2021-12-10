@@ -1,0 +1,19 @@
+app:
+  paging:
+    defaultPageSize: 10
+  kafka:
+    notificationsTopicName: "new_notifications"
+  auth:
+    baseUrl: "http://localhost:8000"
+logging:
+  level:
+    com.github.sujankumarmitra.libraryservice: "DEBUG"
+    io.r2dbc.postgresql.QUERY: "DEBUG"
+    io.r2dbc.postgresql.PARAM: "DEBUG"
+spring:
+  r2dbc:
+  sql:
+    init:
+      mode: "ALWAYS"
+      schemaLocations:
+        - "classpath:schema-create.sql"

@@ -170,15 +170,15 @@ public class LeaseRequestController {
     }
 
     @Operation(
-            summary = "Deletes a lease request",
+            summary = "Cancel a pending lease request",
             description = "Students will invoke this API to cancel a lease request.")
     @ApiAcceptedResponse
     @RoleStudent
     @DeleteMapping("/{leaseRequestId}")
-    public Mono<ResponseEntity<Void>> deleteLeaseRequest(@PathVariable String leaseRequestId) {
+    public Mono<ResponseEntity<Void>> cancelLeaseRequest(@PathVariable String leaseRequestId) {
 
         return leaseRequestService
-                .deleteLeaseRequest(leaseRequestId)
+                .cancelLeaseRequest(leaseRequestId)
                 .then(Mono.fromSupplier(accepted()::build));
     }
 

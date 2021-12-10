@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -24,9 +25,11 @@ import reactor.test.StepVerifier;
 import java.util.Set;
 import java.util.UUID;
 
+import static com.github.sujankumarmitra.libraryservice.v1.util.DaoTestUtils.truncateAllTables;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anySet;
+import static org.springframework.r2dbc.connection.init.ScriptUtils.executeSqlScript;
 
 /**
  * @author skmitra
@@ -74,10 +77,7 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
 
     @AfterEach
     void tearDown() {
-        entityTemplate.getDatabaseClient()
-                .sql("DELETE FROM books")
-                .fetch()
-                .rowsUpdated()
+        truncateAllTables(entityTemplate.getDatabaseClient())
                 .block();
     }
 
@@ -422,6 +422,52 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .verifyComplete();
+    }
+
+    @Test
+    void givenValidBookId_whenDelete_shouldDeleteBookAndItsDependentEntities() {
+        UUID validBookId = UUID.fromString("d4c608c4-7ac6-48b9-b90d-9952e798578b");
+
+        entityTemplate
+                .getDatabaseClient()
+                .inConnection(conn -> executeSqlScript(conn, new ClassPathResource("sample_data.sql")))
+                .then(bookDao.deleteBook(validBookId.toString()))
+                .then(entityTemplate
+                        .getDatabaseClient()
+                        .sql("SELECT COUNT(*) FROM books WHERE id=$1")
+                        .bind("$1", validBookId)
+                        .map(row -> row.get(0, Integer.class))
+                        .one())
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectNext(0)
+                .expectComplete()
+                .verify();
+
+        entityTemplate
+                .getDatabaseClient()
+                .sql("SELECT COUNT(*) from authors WHERE book_id=$1")
+                .bind("$1", validBookId)
+                .map(row -> row.get(0, Integer.class))
+                .one()
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectNext(0)
+                .expectComplete()
+                .verify();
+
+        entityTemplate
+                .getDatabaseClient()
+                .sql("SELECT COUNT(*) from book_tags WHERE book_id=$1")
+                .bind("$1", validBookId)
+                .map(row -> row.get(0, Integer.class))
+                .one()
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectNext(0)
+                .expectComplete()
+                .verify();
+
     }
 
     private R2dbcBook getBook() {

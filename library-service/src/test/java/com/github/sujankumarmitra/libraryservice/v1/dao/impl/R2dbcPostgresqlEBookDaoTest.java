@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import static com.github.sujankumarmitra.libraryservice.v1.util.DaoTestUtils.truncateAllTables;
 import static com.github.sujankumarmitra.libraryservice.v1.model.EBookFormat.PDF;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -63,27 +64,12 @@ class R2dbcPostgresqlEBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDe
         );
 
         Mockito.doReturn(Mono.empty())
-                .when(mockBookDao).deleteBook(any());
-
-        Mockito.doReturn(Mono.empty())
                 .when(mockSegmentDao).deleteSegmentsByBookId(any());
     }
 
     @AfterEach
     void tearDown() {
-        entityTemplate
-                .getDatabaseClient()
-                .sql("DELETE FROM ebooks")
-                .fetch()
-                .rowsUpdated()
-                .block();
-
-
-        entityTemplate
-                .getDatabaseClient()
-                .sql("DELETE FROM books")
-                .fetch()
-                .rowsUpdated()
+        truncateAllTables(entityTemplate.getDatabaseClient())
                 .block();
     }
 
@@ -112,10 +98,19 @@ class R2dbcPostgresqlEBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDe
     }
 
 
-
     @Test
     void givenValidEBookId_whenDelete_shouldDelete() {
         R2dbcEBook book = createBook();
+
+        Mockito.doAnswer(invocation -> entityTemplate
+                        .getDatabaseClient()
+                        .sql("DELETE FROM books WHERE id=$1")
+                        .bind("$1", UUID.fromString(invocation.getArgument(0, String.class)))
+                        .fetch()
+                        .rowsUpdated()
+                        .then())
+                .when(mockBookDao).deleteBook(any());
+
 
         entityTemplate
                 .getDatabaseClient()
@@ -234,6 +229,10 @@ class R2dbcPostgresqlEBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDe
 
     @Test
     void givenNonExistingBookId_whenDelete_shouldEmitEmpty() {
+
+        Mockito.doReturn(Mono.empty())
+                .when(mockBookDao)
+                .deleteBook(any());
 
         eBookDao.deleteBook(UUID.randomUUID().toString())
                 .as(StepVerifier::create)

@@ -259,23 +259,16 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
                 log.debug("{} not a valid uuid, return Mono.empty()", packageId);
                 return Mono.empty();
             }
-            return packageItemDao
-                    .deleteItemsByPackageId(packageId)
-                    .thenReturn(packageId)
-                    .flatMap(packageTagDao::deleteTagsByPackageId)
-                    .then(this.databaseClient
-                            .sql(DELETE_STATEMENT)
-                            .bind("$1", uuid)
-                            .fetch()
-                            .rowsUpdated()
-                            .doOnSuccess(deleteCount -> {
-                                if (deleteCount > 0)
-                                    log.debug("deleted package with id {}", packageId);
-                                else
-                                    log.debug("package not found with id {}", packageId);
-
-                            })
-                            .then());
+            return this.databaseClient
+                    .sql(DELETE_STATEMENT)
+                    .bind("$1", uuid)
+                    .fetch()
+                    .rowsUpdated()
+                    .doOnSuccess(deleteCount -> {
+                        if (deleteCount > 0) log.debug("deleted package with id {}", packageId);
+                        else log.debug("package not found with id {}", packageId);
+                    })
+                    .then();
         });
     }
 }

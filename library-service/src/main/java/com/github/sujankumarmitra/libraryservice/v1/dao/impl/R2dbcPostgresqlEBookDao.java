@@ -192,23 +192,14 @@ public class R2dbcPostgresqlEBookDao implements EBookDao {
     @Transactional
     public Mono<Void> deleteBook(String bookId) {
         return Mono.defer(() -> {
-            UUID uuid;
             try {
-                uuid = UUID.fromString(bookId);
+                UUID.fromString(bookId);
             } catch (IllegalArgumentException ex) {
                 log.debug("{} is not a valid uuid, return empty Mono", bookId);
                 return Mono.empty();
             }
 
-            return segmentDao
-                    .deleteSegmentsByBookId(bookId)
-                    .then(this.databaseClient
-                            .sql(DELETE_STATEMENT)
-                            .bind("$1", uuid)
-                            .fetch()
-                            .rowsUpdated()
-                            .then())
-                    .then(bookDao.deleteBook(bookId));
+            return bookDao.deleteBook(bookId);
         });
     }
 }
