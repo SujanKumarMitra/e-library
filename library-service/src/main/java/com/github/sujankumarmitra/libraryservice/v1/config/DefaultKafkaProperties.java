@@ -16,6 +16,8 @@ import javax.validation.constraints.NotEmpty;
 public class DefaultKafkaProperties extends KafkaProperties {
     @NotEmpty
     private String bootstrapServers;
-    @NotEmpty
+//    @NotEmpty
     private String notificationsTopicName;
+//    @NotEmpty
+    private String createAssetPermissionsTopicName;
 }

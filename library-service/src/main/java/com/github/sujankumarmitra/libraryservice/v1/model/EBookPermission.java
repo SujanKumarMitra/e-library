@@ -8,9 +8,9 @@ public abstract class EBookPermission {
 
     public abstract String getUserId();
 
-    public abstract Long getStartTime();
+    public abstract Long getStartTimeInEpochMilliseconds();
 
-    public abstract Long getEndTime();
+    public abstract Long getDurationInMilliseconds();
 
     @Override
     public boolean equals(Object o) {
@@ -21,15 +21,15 @@ public abstract class EBookPermission {
 
         return Objects.equals(getBookId(), that.getBookId()) &&
                 Objects.equals(getUserId(), that.getUserId()) &&
-                Objects.equals(getStartTime(), that.getStartTime()) &&
-                Objects.equals(getEndTime(), that.getEndTime());
+                Objects.equals(getStartTimeInEpochMilliseconds(), that.getStartTimeInEpochMilliseconds()) &&
+                Objects.equals(getDurationInMilliseconds(), that.getDurationInMilliseconds());
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(getBookId(),
                 getUserId(),
-                getStartTime(),
-                getEndTime());
+                getStartTimeInEpochMilliseconds(),
+                getDurationInMilliseconds());
     }
 }

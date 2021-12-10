@@ -3,6 +3,7 @@ app:
     defaultPageSize: 10
   kafka:
     notificationsTopicName: "new_notifications"
+    createAssetPermissionsTopicName: "asset_permissions"
   auth:
     baseUrl: "http://localhost:8000"
 logging:

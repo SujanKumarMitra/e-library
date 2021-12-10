@@ -9,4 +9,6 @@ public abstract class KafkaProperties {
     public abstract String getBootstrapServers();
 
     public abstract String getNotificationsTopicName();
+
+    public abstract String getCreateAssetPermissionsTopicName();
 }

@@ -147,8 +147,8 @@ public class DefaultBookService implements BookService {
 
             permission.setBookId(bookId);
             permission.setUserId(leaseRequest.getUserId());
-            permission.setStartTime(acceptedLease.getStartTimeInEpochMilliseconds());
-            permission.setEndTime(acceptedLease.getDurationInMilliseconds());
+            permission.setStartTimeInEpochMilliseconds(acceptedLease.getStartTimeInEpochMilliseconds());
+            permission.setDurationInMilliseconds(acceptedLease.getDurationInMilliseconds());
 
             return eBookPermissionService
                     .assignPermission(permission);

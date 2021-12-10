@@ -6,6 +6,9 @@ app:
     notificationsTopicName: "new_notifications"
   auth:
     baseUrl: "http://localhost:8000"
+  remoteServices:
+    asset-service:
+      baseUrl: "http://localhost:8081"
 logging:
   level:
     com.github.sujankumarmitra.libraryservice: "DEBUG"

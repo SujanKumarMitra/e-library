@@ -77,6 +77,25 @@ public class R2dbcPostgresqlEBookSegmentDao implements EBookSegmentDao {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
+    @Transactional(readOnly = true)
+    public Flux<R2dbcEBookSegment> getSegmentsByBookId(String ebookId) {
+        return Flux.defer(() -> {
+            UUID uuid;
+            try {
+                uuid = fromString(ebookId);
+            } catch (Exception e) {
+                log.debug("{} is not a valid uuid, returning empty Flux", ebookId);
+                return Flux.empty();
+            }
+            return entityTemplate
+                    .select(R2dbcEBookSegment.class)
+                    .matching(query(where(BOOK_ID_COLUMN_NAME).is(uuid)))
+                    .all();
+        });
+    }
+
+    @Override
     @Transactional
     public Mono<String> createSegment(@NonNull EBookSegment ebookSegment) {
         return Mono.defer(() -> {
@@ -107,7 +126,7 @@ public class R2dbcPostgresqlEBookSegmentDao implements EBookSegmentDao {
             return new BookNotFoundException(ebookSegment.getBookId());
         }
 
-        if(message.contains(UNIQUE_SEGMENT_INDEX_CONSTRAINT_NAME)) {
+        if (message.contains(UNIQUE_SEGMENT_INDEX_CONSTRAINT_NAME)) {
             return new DuplicateEBookSegmentIndexException(ebookSegment.getBookId(), ebookSegment.getIndex());
         }
 

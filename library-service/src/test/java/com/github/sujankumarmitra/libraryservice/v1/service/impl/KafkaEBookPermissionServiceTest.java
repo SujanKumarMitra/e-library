@@ -1,28 +1,29 @@
 package com.github.sujankumarmitra.libraryservice.v1.service.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.sujankumarmitra.libraryservice.v1.config.KafkaConfiguration;
 import com.github.sujankumarmitra.libraryservice.v1.config.KafkaProperties;
 import com.github.sujankumarmitra.libraryservice.v1.config.KafkaTestConfiguration;
-import com.github.sujankumarmitra.libraryservice.v1.model.impl.DefaultNotification;
+import com.github.sujankumarmitra.libraryservice.v1.dao.EBookSegmentDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcEBookSegment;
+import com.github.sujankumarmitra.libraryservice.v1.model.impl.DefaultEBookPermission;
+import com.github.sujankumarmitra.libraryservice.v1.service.EBookPermissionService;
 import com.github.sujankumarmitra.libraryservice.v1.util.KafkaTestUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.admin.AdminClient;
-import org.apache.kafka.clients.admin.AdminClientConfig;
-import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -31,68 +32,74 @@ import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+import reactor.core.publisher.Flux;
 import reactor.kafka.sender.KafkaSender;
 import reactor.test.StepVerifier;
 
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 
 import static com.github.sujankumarmitra.libraryservice.v1.util.KafkaTestUtils.createTopics;
-import static com.github.sujankumarmitra.libraryservice.v1.util.KafkaTestUtils.deleteTopics;
-import static java.util.Optional.empty;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.testcontainers.utility.DockerImageName.parse;
 
 /**
  * @author skmitra
- * @since Dec 07/12/21, 2021
+ * @since Dec 10/12/21, 2021
  */
-@Slf4j
 @SpringBootTest
 @ActiveProfiles("test")
-@Testcontainers
 @ContextConfiguration(classes = KafkaTestConfiguration.class)
-class KafkaNotificationServiceTest {
+@Testcontainers
+@Slf4j
+class KafkaEBookPermissionServiceTest {
 
     @Container
     private static final KafkaContainer KAFKA_CONTAINER;
+    @MockBean
+    private EBookSegmentDao segmentDao;
+    @Autowired
+    private KafkaSender<String, String> kafkaSender;
     @Autowired
     private KafkaProperties kafkaProperties;
     @Autowired
-    private KafkaSender<String,String> kafkaSender;
-    @Autowired
     private AdminClient adminClient;
+    private EBookPermissionService permissionService;
     private KafkaConsumer<String, String> kafkaConsumer;
-    private KafkaNotificationService notificationService;
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
-    static {
-        DockerImageName confluentKafka = parse("confluentinc/cp-server:6.2.0")
-                .asCompatibleSubstituteFor("confluentinc/cp-kafka");
-        KAFKA_CONTAINER = new KafkaContainer(confluentKafka);
-    }
-
-    @DynamicPropertySource
-    static void registerKafkaProperties(DynamicPropertyRegistry registry) {
-        registry.add("app.kafka.bootstrapServers", KAFKA_CONTAINER::getBootstrapServers);
-    }
 
     @BeforeEach
-    void setUp()  {
+    void setUp() {
         createTopics(kafkaProperties, adminClient);
         createKafkaConsumer();
 
-        notificationService = new KafkaNotificationService(kafkaSender, kafkaProperties, objectMapper);
+        permissionService = new KafkaEBookPermissionService(
+                kafkaSender,
+                kafkaProperties,
+                new ObjectMapper(),
+                segmentDao
+        );
     }
 
     @AfterEach
     void tearDown() {
-        deleteTopics(kafkaProperties, adminClient);
+        KafkaTestUtils.deleteTopics(kafkaProperties, adminClient);
 
-        kafkaSender.close();
         kafkaConsumer.close();
+        kafkaSender.close();
     }
+
+    static {
+        DockerImageName cpKafka = DockerImageName
+                .parse("confluentinc/cp-server:6.2.0")
+                .asCompatibleSubstituteFor("confluentinc/cp-kafka");
+
+        KAFKA_CONTAINER = new KafkaContainer(cpKafka);
+    }
+
+    @DynamicPropertySource
+    static void registerProps(DynamicPropertyRegistry registry) {
+        registry.add("app.kafka.bootstrapServers", KAFKA_CONTAINER::getBootstrapServers);
+    }
+
 
     private void createKafkaConsumer() {
 
@@ -105,11 +112,10 @@ class KafkaNotificationServiceTest {
 
         this.kafkaConsumer = new KafkaConsumer<>(consumerProps);
 
-        kafkaConsumer.subscribe(List.of(kafkaProperties.getNotificationsTopicName()),
+        kafkaConsumer.subscribe(List.of(kafkaProperties.getCreateAssetPermissionsTopicName()),
                 new ConsumerRebalanceListener() {
                     @Override
                     public void onPartitionsRevoked(Collection<TopicPartition> partitions) {
-
                     }
 
                     @Override
@@ -122,38 +128,43 @@ class KafkaNotificationServiceTest {
     }
 
     @Test
-    void testAllComponentsAutowired() {
-        assertThat(kafkaSender).isNotNull();
-        assertThat(kafkaProperties).isNotNull();
-    }
+    void givenValidEBookPermission_whenAssignPermission_shouldAssignPermission() {
 
+        UUID validEBookId = UUID.randomUUID();
+        List<R2dbcEBookSegment> segments = new ArrayList<>();
 
-    @Test
-    void givenValidNotification_whenSend_shouldSend() throws JsonProcessingException {
-        DefaultNotification expectedNotification = new DefaultNotification();
+        for (int i = 0; i < 10; i++) {
+            R2dbcEBookSegment segment = new R2dbcEBookSegment();
 
-        expectedNotification.setConsumerId("consumer_id");
-        expectedNotification.setCreatedAt(System.currentTimeMillis());
-        expectedNotification.setPayload("{ \"foo\": \"bar\" }");
+            segment.setId(UUID.randomUUID());
+            segment.setBookId(validEBookId);
+            segment.setIndex(i);
+            segment.setAssetId(UUID.randomUUID().toString());
 
-        notificationService
-                .sendNotification(expectedNotification)
+            segments.add(segment);
+        }
+
+        Mockito.doReturn(Flux.fromIterable(segments))
+                .when(segmentDao).getSegmentsByBookId(validEBookId.toString());
+
+        DefaultEBookPermission permission = new DefaultEBookPermission();
+
+        permission.setBookId(validEBookId.toString());
+        permission.setUserId("user_id");
+        permission.setStartTimeInEpochMilliseconds(System.currentTimeMillis());
+        permission.setDurationInMilliseconds(Duration.ofDays(180).toMillis());
+
+        permissionService
+                .assignPermission(permission)
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .expectComplete()
                 .verify();
 
+        ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofSeconds(10));
+        int count = records.count();
 
-        String recordValue = null;
-        for(ConsumerRecord<String, String> consumerRecord: kafkaConsumer.poll(Duration.ofSeconds(10))) {
-            recordValue = consumerRecord.value();
-            kafkaConsumer.commitSync();
-            break;
-        }
+        assertThat(count).isEqualTo(segments.size());
 
-        assertThat(recordValue).isNotNull();
-
-        DefaultNotification actualNotification = objectMapper.readValue(recordValue, DefaultNotification.class);
-        assertThat(actualNotification).isEqualTo(expectedNotification);
     }
 }

@@ -9,6 +9,8 @@ import reactor.core.publisher.Mono;
  * @since Dec 10/12/21, 2021
  */
 public interface EBookSegmentDao {
+    <E extends EBookSegment> Flux<E> getSegmentsByBookId(String ebookId);
+
     <E extends EBookSegment> Flux<E> getSegmentsByBookId(String ebookId, int skip, int limit);
 
     <E extends EBookSegment> Mono<E> getSegmentByBookIdAndIndex(String ebookId, int index);

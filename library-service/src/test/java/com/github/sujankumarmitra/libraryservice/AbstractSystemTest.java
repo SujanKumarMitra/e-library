@@ -3,9 +3,9 @@ package com.github.sujankumarmitra.libraryservice;
 import com.github.sujankumarmitra.libraryservice.v1.config.KafkaProperties;
 import com.github.sujankumarmitra.libraryservice.v1.config.KafkaTestConfiguration;
 import com.github.sujankumarmitra.libraryservice.v1.util.DaoTestUtils;
+import com.github.sujankumarmitra.libraryservice.v1.util.KafkaTestUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
-import org.apache.kafka.clients.admin.NewTopic;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,12 +21,6 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
-
-import java.util.Arrays;
-import java.util.concurrent.ExecutionException;
-
-import static java.util.Arrays.asList;
-import static java.util.Optional.empty;
 
 /**
  * @author skmitra
@@ -44,8 +38,6 @@ public abstract class AbstractSystemTest {
     protected static final PostgreSQLContainer<?> POSTGRESQL_CONTAINER;
     @Container
     protected static final KafkaContainer KAFKA_CONTAINER;
-
-    public static final String NOTIFICATIONS_TOPIC_NAME = "new_notifications";
 
     @Autowired
     protected ConnectionAccessor connectionAccessor;
@@ -68,22 +60,11 @@ public abstract class AbstractSystemTest {
         registry.add("spring.r2dbc.password", POSTGRESQL_CONTAINER::getPassword);
 
         registry.add("app.kafka.bootstrapServers", KAFKA_CONTAINER::getBootstrapServers);
-        registry.add("app.kafka.notificationsTopicName", () -> NOTIFICATIONS_TOPIC_NAME);
     }
 
     @BeforeEach
     void createKafkaTopics() {
-        try {
-            adminClient
-                    .createTopics(asList(new NewTopic(
-                            kafkaProperties.getNotificationsTopicName(),
-                            empty(),
-                            empty())))
-                    .all()
-                    .get();
-        } catch (InterruptedException | ExecutionException e) {
-            log.warn("Error while creating kafka topics", e);
-        }
+        KafkaTestUtils.createTopics(kafkaProperties, adminClient);
     }
 
     @AfterEach
@@ -93,7 +74,7 @@ public abstract class AbstractSystemTest {
 
     @AfterEach
     void deleteKafkaTopics() {
-        adminClient.deleteTopics(Arrays.asList(kafkaProperties.getNotificationsTopicName()));
+        KafkaTestUtils.deleteTopics(kafkaProperties, adminClient);
     }
 
 }

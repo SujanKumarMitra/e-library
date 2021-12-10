@@ -13,6 +13,6 @@ import lombok.Setter;
 public class DefaultEBookPermission extends EBookPermission {
     private String bookId;
     private String userId;
-    private Long startTime;
-    private Long endTime;
+    private Long startTimeInEpochMilliseconds;
+    private Long durationInMilliseconds;
 }
