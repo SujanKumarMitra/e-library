@@ -1,21 +1,21 @@
 package com.github.sujankumarmitra.libraryservice.v1.config;
 
 import lombok.Data;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 
 /**
  * @author skmitra
- * @since Sep 27/09/21, 2021
+ * @since Dec 10/12/21, 2021
  */
 @Data
 @Validated
-@ConfigurationProperties("app.auth")
-public class DefaultAuthenticationProperties extends AuthenticationProperties {
+@ConfigurationProperties("spring.r2dbc")
+public class DefaultDatabaseProperties extends DatabaseProperties {
     @NotEmpty
-    private String baseUrl;
+    private String url;
+    private String username;
+    private String password;
 }
