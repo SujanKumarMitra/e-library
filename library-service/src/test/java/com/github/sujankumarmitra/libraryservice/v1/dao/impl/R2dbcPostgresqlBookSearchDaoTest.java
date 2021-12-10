@@ -9,6 +9,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import reactor.test.StepVerifier;
 
+import static com.github.sujankumarmitra.libraryservice.v1.util.DaoTestUtils.truncateAllTables;
 import static org.springframework.r2dbc.connection.init.ScriptUtils.executeSqlScript;
 
 /**
@@ -33,11 +34,7 @@ class R2dbcPostgresqlBookSearchDaoTest extends AbstractDataR2dbcPostgreSQLContai
 
     @AfterEach
     void tearDown() {
-        entityTemplate
-                .getDatabaseClient()
-                .sql("TRUNCATE TABLE books CASCADE")
-                .fetch()
-                .rowsUpdated()
+        truncateAllTables(entityTemplate.getDatabaseClient())
                 .block();
     }
 

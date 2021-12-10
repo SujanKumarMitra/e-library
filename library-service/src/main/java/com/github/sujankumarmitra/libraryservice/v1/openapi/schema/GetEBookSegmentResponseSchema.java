@@ -11,7 +11,7 @@ import javax.validation.constraints.NotNull;
  * @since Dec 02/12/21, 2021
  */
 @Schema(description = "Payload representing a segment of an ebook")
-public class GetEBookSegmentResponse extends EBookSegment {
+public class GetEBookSegmentResponseSchema extends EBookSegment {
     @Override
     @Schema(description = "id of segment")
     @NotEmpty
@@ -29,8 +29,8 @@ public class GetEBookSegmentResponse extends EBookSegment {
     @Override
     @NotNull
     @Schema(description = "logical index of a segment, like array indices")
-    public Long getIndex() {
-        return 0L;
+    public Integer getIndex() {
+        return 0;
     }
 
     @Override

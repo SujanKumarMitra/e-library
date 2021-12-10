@@ -6,6 +6,8 @@ import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcPackage
 import com.github.sujankumarmitra.libraryservice.v1.exception.BookNotFoundException;
 import com.github.sujankumarmitra.libraryservice.v1.exception.PackageNotFoundException;
 import com.github.sujankumarmitra.libraryservice.v1.model.PackageItem;
+import com.github.sujankumarmitra.libraryservice.v1.util.BookDaoTestUtils;
+import com.github.sujankumarmitra.libraryservice.v1.util.PackageDaoTestUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,6 +20,7 @@ import reactor.util.function.Tuples;
 
 import java.util.*;
 
+import static com.github.sujankumarmitra.libraryservice.v1.util.DaoTestUtils.truncateAllTables;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -39,22 +42,7 @@ class R2DbcPostgresqlPackageItemDaoTest extends AbstractDataR2dbcPostgreSQLConta
 
     @AfterEach
     void tearDown() {
-        entityTemplate
-                .delete(R2dbcPostgresqlPackageItemDao.class)
-                .from("package_items")
-                .all()
-                .block();
-
-        entityTemplate
-                .delete(R2dbcPackage.class)
-                .from("packages")
-                .all()
-                .block();
-
-        entityTemplate
-                .delete(R2dbcBook.class)
-                .from("books")
-                .all()
+        truncateAllTables(entityTemplate.getDatabaseClient())
                 .block();
     }
 

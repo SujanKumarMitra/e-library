@@ -255,21 +255,17 @@ public class R2dbcPostgresqlBookDao implements BookDao<Book> {
                 return Mono.empty();
             }
 
-            return Mono.just(bookId)
-                    .flatMap(authorDao::deleteAuthorsByBookId)
-                    .thenReturn(bookId)
-                    .flatMap(bookTagDao::deleteTagsByBookId)
-                    .then(this.databaseClient
-                            .sql(DELETE_STATEMENT)
-                            .bind("$1", uuid)
-                            .fetch()
-                            .rowsUpdated()
-                            .doOnNext(updateCount -> {
-                                if (updateCount == 1)
-                                    log.debug("Deleted book of id {}", bookId);
-                                else
-                                    log.debug("No book with id {} present in DB", bookId);
-                            })).then();
+            return this.databaseClient
+                    .sql(DELETE_STATEMENT)
+                    .bind("$1", uuid)
+                    .fetch()
+                    .rowsUpdated()
+                    .doOnNext(updateCount -> {
+                        if (updateCount == 1)
+                            log.debug("Deleted book of id {}", bookId);
+                        else
+                            log.debug("No book with id {} present in DB", bookId);
+                    }).then();
         });
     }
 

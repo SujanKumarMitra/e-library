@@ -75,9 +75,15 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
     }
 
     @Override
-    public Mono<Void> deleteLeaseRequest(@NonNull String leaseRequestId) {
+    public Mono<Void> cancelLeaseRequest(@NonNull String leaseRequestId) {
         return getValidLeaseRequest(leaseRequestId)
-                .then(leaseRequestDao.deleteLeaseRequest(leaseRequestId));
+                .then(leaseRequestDao.deletePendingLeaseRequest(leaseRequestId))
+                .onErrorResume(this::isIgnorableError, err -> Mono.empty());
+    }
+
+    private boolean isIgnorableError(Throwable th) {
+        return th instanceof LeaseRequestNotFoundException ||
+                th instanceof LeaseRequestAlreadyHandledException;
     }
 
     @Override

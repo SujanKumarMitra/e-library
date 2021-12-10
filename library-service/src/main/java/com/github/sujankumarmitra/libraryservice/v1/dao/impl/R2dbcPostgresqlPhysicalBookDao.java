@@ -251,19 +251,13 @@ public class R2dbcPostgresqlPhysicalBookDao implements PhysicalBookDao {
     @Transactional
     public Mono<Void> deleteBook(String bookId) {
         return Mono.defer(() -> {
-            UUID uuid;
             try {
-                uuid = UUID.fromString(bookId);
+                UUID.fromString(bookId);
             } catch (IllegalArgumentException ex) {
                 log.debug("{} is not a valid uuid, return empty Mono", bookId);
                 return Mono.empty();
             }
-            return this.databaseClient
-                    .sql(DELETE_STATEMENT)
-                    .bind("$1", uuid)
-                    .fetch()
-                    .rowsUpdated()
-                    .then(bookDao.deleteBook(bookId));
+            return bookDao.deleteBook(bookId);
         });
     }
 

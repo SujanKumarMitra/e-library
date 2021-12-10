@@ -1,29 +1,40 @@
 package com.github.sujankumarmitra.libraryservice.v1.controller;
 
-import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiNotFoundResponse;
-import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiSecurityResponse;
-import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiSecurityScheme;
-import com.github.sujankumarmitra.libraryservice.v1.model.EBookSegment;
-import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.GetEBookSegmentResponse;
+import com.github.sujankumarmitra.libraryservice.v1.controller.dto.ErrorResponse;
+import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonGetEBookSegmentResponse;
+import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonValidCreateEBookSegmentRequest;
+import com.github.sujankumarmitra.libraryservice.v1.exception.ApiOperationException;
+import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.CreateEBookSegmentRequestSchema;
+import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.GetEBookSegmentResponseSchema;
+import com.github.sujankumarmitra.libraryservice.v1.security.SecurityAnnotations.RoleStudent;
+import com.github.sujankumarmitra.libraryservice.v1.service.EBookSegmentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import javax.validation.Valid;
+import java.net.URI;
+
+import static com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.*;
+import static com.github.sujankumarmitra.libraryservice.v1.security.SecurityAnnotations.RoleLibrarian;
+import static org.springframework.http.HttpStatus.CONFLICT;
 
 /**
  * @author skmitra
  * @since Dec 02/12/21, 2021
  */
 @RestController
+@AllArgsConstructor
 @RequestMapping("/api/v1/books/{bookId}/segments")
 @Tag(
         name = "EBookSegmentController",
@@ -32,6 +43,9 @@ import reactor.core.publisher.Mono;
 @ApiSecurityScheme
 @ApiSecurityResponse
 public class EBookSegmentController {
+
+    @NonNull
+    private final EBookSegmentService ebookSegmentService;
 
     @Operation(
             summary = "Fetch all segments of an ebook",
@@ -43,12 +57,15 @@ public class EBookSegmentController {
             content = @Content(
                     mediaType = MediaType.APPLICATION_JSON_VALUE,
                     array = @ArraySchema(
-                            schema = @Schema(implementation = GetEBookSegmentResponse.class)
+                            schema = @Schema(implementation = GetEBookSegmentResponseSchema.class)
                     )
             )
     )
-    public Flux<EBookSegment> getAllSegments(@PathVariable String bookId) {
-        return Flux.empty();
+    @RoleStudent
+    public Flux<JacksonGetEBookSegmentResponse> getAllSegments(@PathVariable String bookId, @RequestParam(value = "page_no", defaultValue = "0") int pageNo) {
+        return ebookSegmentService
+                .getSegmentsByEBookId(bookId, pageNo)
+                .map(JacksonGetEBookSegmentResponse::new);
     }
 
     @Operation(
@@ -60,12 +77,54 @@ public class EBookSegmentController {
             responseCode = "200",
             content = @Content(
                     mediaType = MediaType.APPLICATION_JSON_VALUE,
-                    schema = @Schema(implementation = GetEBookSegmentResponse.class))
+                    schema = @Schema(implementation = GetEBookSegmentResponseSchema.class))
     )
     @ApiNotFoundResponse
-    public Mono<EBookSegment> getSegmentByIndex(@PathVariable String bookId,
-                                                @PathVariable long segmentIndex) {
-        return Mono.empty();
+    @RoleStudent
+    public Mono<ResponseEntity<JacksonGetEBookSegmentResponse>> getSegmentByIndex(@PathVariable String bookId,
+                                                                                  @PathVariable int segmentIndex) {
+        return ebookSegmentService
+                .getSegmentByBookIdAndIndex(bookId, segmentIndex)
+                .map(JacksonGetEBookSegmentResponse::new)
+                .map(ResponseEntity::ok)
+                .switchIfEmpty(Mono.fromSupplier(() -> ResponseEntity.notFound().build()));
+    }
+
+    @Operation(
+            summary = "Add a segment of an ebook",
+            description = "Librarians will invoke this API"
+    )
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            content = @Content(schema = @Schema(implementation = CreateEBookSegmentRequestSchema.class))
+    )
+    @PostMapping
+    @ApiCreatedResponse
+    @ApiBadRequestResponse
+    @ApiConflictResponse
+    @RoleLibrarian
+    public Mono<ResponseEntity<Object>> createSegment(@PathVariable String bookId, @RequestBody @Valid JacksonValidCreateEBookSegmentRequest request) {
+
+        request.setBookId(bookId);
+
+        return ebookSegmentService
+                .createSegment(request)
+                .map(id -> ResponseEntity.created(URI.create(id)).build())
+                .onErrorResume(ApiOperationException.class,
+                        err -> Mono.fromSupplier(() -> ResponseEntity.status(CONFLICT).body(new ErrorResponse(err.getErrors()))));
+    }
+
+
+    @Operation(
+            summary = "Delete all segments of an ebook",
+            description = "Librarians will invoke this API"
+    )
+    @DeleteMapping
+    @ApiAcceptedResponse
+    @RoleLibrarian
+    public Mono<ResponseEntity<Void>> deleteSegments(@PathVariable String bookId) {
+        return ebookSegmentService
+                .deleteSegmentsByBookId(bookId)
+                .then(Mono.fromSupplier(() -> ResponseEntity.accepted().build()));
     }
 
 }

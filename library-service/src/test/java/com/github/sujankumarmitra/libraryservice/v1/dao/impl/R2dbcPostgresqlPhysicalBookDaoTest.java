@@ -31,6 +31,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
+import static com.github.sujankumarmitra.libraryservice.v1.util.DaoTestUtils.truncateAllTables;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 
@@ -62,25 +63,11 @@ class R2dbcPostgresqlPhysicalBookDaoTest extends AbstractDataR2dbcPostgreSQLCont
                 mockBookTagDao
         );
 
-        Mockito.doReturn(Mono.empty())
-                .when(mockBookDao).deleteBook(any());
     }
 
     @AfterEach
     void tearDown() {
-        entityTemplate
-                .getDatabaseClient()
-                .sql("DELETE FROM physical_books")
-                .fetch()
-                .rowsUpdated()
-                .block();
-
-
-        entityTemplate
-                .getDatabaseClient()
-                .sql("DELETE FROM books")
-                .fetch()
-                .rowsUpdated()
+        truncateAllTables(entityTemplate.getDatabaseClient())
                 .block();
     }
 
@@ -158,6 +145,15 @@ class R2dbcPostgresqlPhysicalBookDaoTest extends AbstractDataR2dbcPostgreSQLCont
     @Test
     void givenValidPhysicalBookId_whenDelete_shouldDelete() {
         R2dbcPhysicalBook book = createBook();
+
+        Mockito.doAnswer(invocation -> entityTemplate
+                        .getDatabaseClient()
+                        .sql("DELETE FROM books WHERE id=$1")
+                        .bind("$1", UUID.fromString(invocation.getArgument(0, String.class)))
+                        .fetch()
+                        .rowsUpdated()
+                        .then())
+                .when(mockBookDao).deleteBook(any());
 
         entityTemplate
                 .getDatabaseClient()
@@ -345,6 +341,9 @@ class R2dbcPostgresqlPhysicalBookDaoTest extends AbstractDataR2dbcPostgreSQLCont
     @Test
     void givenNonExistingBookId_whenDelete_shouldEmitEmpty() {
 
+        Mockito.doReturn(Mono.empty())
+                .when(mockBookDao).deleteBook(any());
+
         physicalBookDao.deleteBook(UUID.randomUUID().toString())
                 .as(StepVerifier::create)
                 .expectSubscription()
@@ -353,6 +352,10 @@ class R2dbcPostgresqlPhysicalBookDaoTest extends AbstractDataR2dbcPostgreSQLCont
 
     @Test
     void givenMalformedBookId_whenDelete_shouldEmitEmpty() {
+
+        Mockito.doReturn(Mono.empty())
+                .when(mockBookDao).deleteBook(any());
+
         physicalBookDao.deleteBook("malformed")
                 .as(StepVerifier::create)
                 .expectSubscription()

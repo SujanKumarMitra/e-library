@@ -3,10 +3,10 @@ package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 import com.github.sujankumarmitra.libraryservice.v1.dao.PackageItemDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.PackageTagDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcPackage;
-import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcPackageItem;
 import com.github.sujankumarmitra.libraryservice.v1.model.Package;
 import com.github.sujankumarmitra.libraryservice.v1.model.PackageItem;
 import com.github.sujankumarmitra.libraryservice.v1.model.PackageTag;
+import com.github.sujankumarmitra.libraryservice.v1.util.PackageDaoTestUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -23,8 +24,10 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
 
+import static com.github.sujankumarmitra.libraryservice.v1.util.DaoTestUtils.truncateAllTables;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.springframework.r2dbc.connection.init.ScriptUtils.executeSqlScript;
 
 /**
  * @author skmitra
@@ -51,16 +54,7 @@ class R2dbcPostgresqlPackageDaoTest extends AbstractDataR2dbcPostgreSQLContainer
 
     @AfterEach
     void tearDown() {
-        entityTemplate
-                .delete(R2dbcPackageItem.class)
-                .from("package_items")
-                .all()
-                .block();
-
-        entityTemplate
-                .delete(R2dbcPackage.class)
-                .from("packages")
-                .all()
+        truncateAllTables(entityTemplate.getDatabaseClient())
                 .block();
     }
 
@@ -257,13 +251,6 @@ class R2dbcPostgresqlPackageDaoTest extends AbstractDataR2dbcPostgreSQLContainer
 
     @Test
     void givenNonExistingPackage_whenDelete_shouldEmitComplete() {
-        Mockito.doReturn(Mono.empty())
-                .when(mockPackageItemDao)
-                .deleteItemsByPackageId(any());
-
-        Mockito.doReturn(Mono.empty())
-                .when(mockPackageTagDao)
-                .deleteTagsByPackageId(any());
 
         packageDao.deletePackage(UUID.randomUUID().toString())
                 .as(StepVerifier::create)
@@ -274,19 +261,58 @@ class R2dbcPostgresqlPackageDaoTest extends AbstractDataR2dbcPostgreSQLContainer
 
     @Test
     void givenMalformedPackageId_whenDelete_shouldEmitComplete() {
-        Mockito.doReturn(Mono.empty())
-                .when(mockPackageItemDao)
-                .deleteItemsByPackageId(any());
-
-        Mockito.doReturn(Mono.empty())
-                .when(mockPackageTagDao)
-                .deleteTagsByPackageId(any());
-
         packageDao.deletePackage("malformed_uuid")
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .expectNextCount(0L)
                 .verifyComplete();
+    }
+
+    @Test
+    void givenValidPackageId_whenDelete_shouldDeletePackageAndItsDependentEntities() {
+
+        UUID validPackageId = UUID.fromString("d913745e-9328-49ca-94fa-2ca7118ae1d2");
+
+        entityTemplate
+                .getDatabaseClient()
+                .inConnection(conn -> executeSqlScript(conn, new ClassPathResource("sample_data.sql")))
+                .then(packageDao.deletePackage(validPackageId.toString()))
+                .then(entityTemplate
+                        .getDatabaseClient()
+                        .sql("SELECT COUNT(*) FROM packages WHERE id=$1")
+                        .bind("$1", validPackageId)
+                        .map(row -> row.get(0, Integer.class))
+                        .one())
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectNext(0)
+                .expectComplete()
+                .verify();
+
+        entityTemplate
+                .getDatabaseClient()
+                .sql("SELECT COUNT(*) FROM package_items WHERE package_id=$1")
+                .bind("$1", validPackageId)
+                .map(row -> row.get(0, Integer.class))
+                .one()
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectNext(0)
+                .expectComplete()
+                .verify();
+
+
+        entityTemplate
+                .getDatabaseClient()
+                .sql("SELECT COUNT(*) FROM package_tags WHERE package_id=$1")
+                .bind("$1", validPackageId)
+                .map(row -> row.get(0, Integer.class))
+                .one()
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectNext(0)
+                .expectComplete()
+                .verify();
     }
 
 }

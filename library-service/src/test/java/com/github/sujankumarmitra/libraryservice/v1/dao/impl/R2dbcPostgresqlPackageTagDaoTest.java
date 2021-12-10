@@ -1,10 +1,10 @@
 package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 
-import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcPackage;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcPackageTag;
 import com.github.sujankumarmitra.libraryservice.v1.exception.DuplicateTagKeyException;
 import com.github.sujankumarmitra.libraryservice.v1.exception.PackageNotFoundException;
 import com.github.sujankumarmitra.libraryservice.v1.model.PackageTag;
+import com.github.sujankumarmitra.libraryservice.v1.util.PackageDaoTestUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,6 +17,7 @@ import reactor.test.StepVerifier;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.github.sujankumarmitra.libraryservice.v1.util.DaoTestUtils.truncateAllTables;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -37,16 +38,7 @@ class R2dbcPostgresqlPackageTagDaoTest extends AbstractDataR2dbcPostgreSQLContai
 
     @AfterEach
     void tearDown() {
-        entityTemplate
-                .delete(R2dbcPackageTag.class)
-                .from("package_tags")
-                .all()
-                .block();
-
-        entityTemplate
-                .delete(R2dbcPackage.class)
-                .from("books")
-                .all()
+        truncateAllTables(entityTemplate.getDatabaseClient())
                 .block();
     }
 

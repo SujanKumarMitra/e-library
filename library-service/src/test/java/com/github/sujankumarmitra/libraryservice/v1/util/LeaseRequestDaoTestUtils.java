@@ -1,4 +1,4 @@
-package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
+package com.github.sujankumarmitra.libraryservice.v1.util;
 
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcLeaseRequest;
 import org.springframework.r2dbc.core.ConnectionAccessor;
@@ -13,7 +13,7 @@ import static com.github.sujankumarmitra.libraryservice.v1.model.LeaseStatus.PEN
  * @author skmitra
  * @since Dec 06/12/21, 2021
  */
-class LeaseRequestDaoTestUtils {
+public class LeaseRequestDaoTestUtils {
 
     public static Mono<R2dbcLeaseRequest> insertLeaseRequest(ConnectionAccessor connAccessor, UUID bookId) {
         R2dbcLeaseRequest leaseRequest = new R2dbcLeaseRequest();

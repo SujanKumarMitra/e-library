@@ -22,8 +22,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.github.sujankumarmitra.libraryservice.v1.dao.impl.BookDaoTestUtils.insertDummyBook;
-import static com.github.sujankumarmitra.libraryservice.v1.dao.impl.LeaseRequestDaoTestUtils.insertLeaseRequest;
+import static com.github.sujankumarmitra.libraryservice.v1.util.BookDaoTestUtils.insertDummyBook;
+import static com.github.sujankumarmitra.libraryservice.v1.util.DaoTestUtils.truncateAllTables;
+import static com.github.sujankumarmitra.libraryservice.v1.util.LeaseRequestDaoTestUtils.insertLeaseRequest;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -47,11 +48,7 @@ class R2dbcPostgresqlLeaseRecordDaoTest extends AbstractDataR2dbcPostgreSQLConta
 
     @AfterEach
     void tearDown() {
-        entityTemplate
-                .getDatabaseClient()
-                .sql("TRUNCATE TABLE books CASCADE")
-                .fetch()
-                .rowsUpdated()
+        truncateAllTables(entityTemplate.getDatabaseClient())
                 .block();
     }
 
