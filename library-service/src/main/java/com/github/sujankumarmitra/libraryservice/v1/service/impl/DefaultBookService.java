@@ -1,7 +1,10 @@
 package com.github.sujankumarmitra.libraryservice.v1.service.impl;
 
 import com.github.sujankumarmitra.libraryservice.v1.config.PagingProperties;
-import com.github.sujankumarmitra.libraryservice.v1.dao.*;
+import com.github.sujankumarmitra.libraryservice.v1.dao.BookSearchDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.EBookDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.LeaseRequestDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.PhysicalBookDao;
 import com.github.sujankumarmitra.libraryservice.v1.exception.InsufficientCopiesAvailableException;
 import com.github.sujankumarmitra.libraryservice.v1.model.*;
 import com.github.sujankumarmitra.libraryservice.v1.model.impl.DefaultEBookPermission;
@@ -150,8 +153,14 @@ public class DefaultBookService implements BookService {
             permission.setStartTimeInEpochMilliseconds(acceptedLease.getStartTimeInEpochMilliseconds());
             permission.setDurationInMilliseconds(acceptedLease.getDurationInMilliseconds());
 
-            return eBookPermissionService
-                    .assignPermission(permission);
+//          @formatter:off
+            return Mono.fromRunnable(() -> eBookPermissionService
+                    .assignPermission(permission).subscribe(s -> {},
+                            err -> log.warn("Error in assigning permissions {}", err.getMessage()),
+                            () -> log.info("Assigned ebook permission with bookId {} to userId {}",
+                                    permission.getBookId(),
+                                    permission.getUserId())));
+//          @formatter:on
         } else {
             // this should not happen
             log.warn("failed to determine book type {}", book);
