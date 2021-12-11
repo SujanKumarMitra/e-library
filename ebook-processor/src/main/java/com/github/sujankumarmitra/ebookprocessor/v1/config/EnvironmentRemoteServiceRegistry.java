@@ -12,13 +12,14 @@ import java.util.Map;
  * @author skmitra
  * @since Dec 11/12/21, 2021
  */
+@Validated
 @ConfigurationProperties("app")
 public class EnvironmentRemoteServiceRegistry extends RemoteServiceRegistry {
 
     private final Map<String, RemoteService> serviceMap;
 
     @ConstructorBinding
-    public EnvironmentRemoteServiceRegistry(@Validated List<DefaultRemoteService> remoteServices) {
+    public EnvironmentRemoteServiceRegistry(List<DefaultRemoteService> remoteServices) {
         serviceMap = new HashMap<>();
         remoteServices.forEach(service -> serviceMap.put(service.getId(), service));
     }

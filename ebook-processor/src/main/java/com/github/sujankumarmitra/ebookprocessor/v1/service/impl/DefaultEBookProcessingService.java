@@ -1,5 +1,6 @@
 package com.github.sujankumarmitra.ebookprocessor.v1.service.impl;
 
+import com.github.sujankumarmitra.ebookprocessor.v1.config.EBookProcessorProperties;
 import com.github.sujankumarmitra.ebookprocessor.v1.exception.EBookFormatNotSupportedException;
 import com.github.sujankumarmitra.ebookprocessor.v1.exception.EBookNotFoundException;
 import com.github.sujankumarmitra.ebookprocessor.v1.model.*;
@@ -8,9 +9,10 @@ import com.github.sujankumarmitra.ebookprocessor.v1.service.EBookProcessingServi
 import com.github.sujankumarmitra.ebookprocessor.v1.service.EBookProcessingStatusService;
 import com.github.sujankumarmitra.ebookprocessor.v1.service.EBookProcessor;
 import com.github.sujankumarmitra.ebookprocessor.v1.service.EBookService;
-import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -32,16 +34,17 @@ import static com.github.sujankumarmitra.ebookprocessor.v1.model.ProcessingState
  */
 @Service
 @Slf4j
-@AllArgsConstructor
-public class DefaultEBookProcessingService implements EBookProcessingService {
+@RequiredArgsConstructor
+public class DefaultEBookProcessingService implements EBookProcessingService, InitializingBean {
     @NonNull
     private final EBookProcessingStatusService statusService;
     @NonNull
     private final EBookProcessor processor;
     @NonNull
     private final EBookService eBookService;
-
-    private static final Scheduler PROCESSOR_SCHEDULER = Schedulers.newParallel("EBookProcessor", 10);
+    @NonNull
+    private final EBookProcessorProperties properties;
+    private Scheduler processorScheduler;
 
     @Override
     public Mono<String> submitProcess(EBookProcessRequest processRequest) {
@@ -54,7 +57,7 @@ public class DefaultEBookProcessingService implements EBookProcessingService {
                 .flatMap(this::setStatusToPending)
                 .map(tuple2 -> createProcessDetails(tuple2, processRequest))
                 .doOnNext(details -> Mono.fromRunnable(() -> processor.process(details))
-                        .subscribeOn(PROCESSOR_SCHEDULER)
+                        .subscribeOn(processorScheduler)
                         .subscribe())
                 .map(EbookProcessDetails::getProcessId);
     }
@@ -106,5 +109,11 @@ public class DefaultEBookProcessingService implements EBookProcessingService {
         } else {
             sink.next(eBook);
         }
+    }
+
+    @Override
+    public void afterPropertiesSet() {
+        int threadCapacity = properties.getThreadPoolCapacity();
+        processorScheduler = Schedulers.newParallel("EBookProcessor", threadCapacity);
     }
 }

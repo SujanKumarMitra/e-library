@@ -5,8 +5,10 @@ spring:
     url: "redis://localhost:6379"
     password: ""
 app:
+  ebookProcessor:
+    threadPoolCapacity: 20
   redis:
-    password: ""
+    password: "${spring.redis.password}"
     defaultKeyExpirationInMilliseconds: 3600000
   remoteServices:
     - id: "library-service"
