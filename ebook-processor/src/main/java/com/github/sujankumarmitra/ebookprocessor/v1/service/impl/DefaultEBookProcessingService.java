@@ -3,13 +3,16 @@ package com.github.sujankumarmitra.ebookprocessor.v1.service.impl;
 import com.github.sujankumarmitra.ebookprocessor.v1.config.EBookProcessorProperties;
 import com.github.sujankumarmitra.ebookprocessor.v1.exception.EBookFormatNotSupportedException;
 import com.github.sujankumarmitra.ebookprocessor.v1.exception.EBookNotFoundException;
-import com.github.sujankumarmitra.ebookprocessor.v1.model.*;
+import com.github.sujankumarmitra.ebookprocessor.v1.model.EBook;
+import com.github.sujankumarmitra.ebookprocessor.v1.model.EBookFormat;
+import com.github.sujankumarmitra.ebookprocessor.v1.model.EBookProcessRequest;
+import com.github.sujankumarmitra.ebookprocessor.v1.model.EbookProcessDetails;
 import com.github.sujankumarmitra.ebookprocessor.v1.model.impl.DefaultEBookProcessingStatus;
 import com.github.sujankumarmitra.ebookprocessor.v1.model.impl.DefaultEbookProcessDetails;
 import com.github.sujankumarmitra.ebookprocessor.v1.service.EBookProcessingService;
 import com.github.sujankumarmitra.ebookprocessor.v1.service.EBookProcessingStatusService;
 import com.github.sujankumarmitra.ebookprocessor.v1.service.EBookProcessor;
-import com.github.sujankumarmitra.ebookprocessor.v1.service.EBookService;
+import com.github.sujankumarmitra.ebookprocessor.v1.service.LibraryServiceClient;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +45,7 @@ public class DefaultEBookProcessingService implements EBookProcessingService, In
     @NonNull
     private final EBookProcessor processor;
     @NonNull
-    private final EBookService eBookService;
+    private final LibraryServiceClient libraryServiceClient;
     @NonNull
     private final EBookProcessorProperties properties;
     private Scheduler processorScheduler;
@@ -50,7 +53,7 @@ public class DefaultEBookProcessingService implements EBookProcessingService, In
     @Override
     public Mono<String> submitProcess(EBookProcessRequest processRequest) {
         String eBookId = processRequest.getEBookId();
-        return eBookService
+        return libraryServiceClient
                 .getEBook(eBookId)
                 .switchIfEmpty(Mono.error(() -> new EBookNotFoundException(eBookId)))
                 .handle(this::emitErrorIfFormatNotSupported)
@@ -115,6 +118,6 @@ public class DefaultEBookProcessingService implements EBookProcessingService, In
     @Override
     public void afterPropertiesSet() {
         int threadCapacity = properties.getThreadPoolCapacity();
-        processorScheduler = Schedulers.newParallel("EBookProcessor", threadCapacity);
+        processorScheduler = Schedulers.newBoundedElastic(threadCapacity, Integer.MAX_VALUE, "EBookProcessor");
     }
 }

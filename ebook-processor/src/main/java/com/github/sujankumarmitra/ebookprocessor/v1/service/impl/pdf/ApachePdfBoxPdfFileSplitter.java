@@ -1,4 +1,4 @@
-package com.github.sujankumarmitra.ebookprocessor.v1.service.impl;
+package com.github.sujankumarmitra.ebookprocessor.v1.service.impl.pdf;
 
 import com.github.sujankumarmitra.ebookprocessor.v1.config.EBookProcessorProperties;
 import lombok.AllArgsConstructor;
@@ -13,8 +13,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
-
-import static java.nio.file.Files.createTempFile;
 
 /**
  * @author skmitra
@@ -37,15 +35,15 @@ public class ApachePdfBoxPdfFileSplitter implements PdfFileSplitter {
 
         Iterator<PDPage> pageIterator = document.getPages().iterator();
         while (pageIterator.hasNext()) {
-            PDDocument pdfSplit = new PDDocument();
-            int splitSize = maxSplitSize;
-            while (pageIterator.hasNext() && splitSize > 0) {
-                pdfSplit.addPage(pageIterator.next());
-                splitSize--;
+            try (PDDocument pdfSplit = new PDDocument()) {
+                int splitSize = maxSplitSize;
+                while (pageIterator.hasNext() && splitSize > 0) {
+                    pdfSplit.addPage(pageIterator.next());
+                    splitSize--;
+                }
+                Path basePath = Files.createTempFile(splitBasePath, "", "");
+                pdfSplit.save(basePath.toFile());
             }
-            Path basePath = createTempFile(splitBasePath, "", "");
-            pdfSplit.save(basePath.toFile());
-            pdfSplit.close();  // TODO test closing effect
         }
 
         document.close();

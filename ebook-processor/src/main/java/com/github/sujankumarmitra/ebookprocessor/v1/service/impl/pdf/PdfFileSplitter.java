@@ -1,4 +1,4 @@
-package com.github.sujankumarmitra.ebookprocessor.v1.service.impl;
+package com.github.sujankumarmitra.ebookprocessor.v1.service.impl.pdf;
 
 import java.io.IOException;
 import java.nio.file.Path;

@@ -1,4 +1,4 @@
-package com.github.sujankumarmitra.ebookprocessor.v1.service.impl;
+package com.github.sujankumarmitra.ebookprocessor.v1.service.impl.pdf;
 
 import com.github.sujankumarmitra.ebookprocessor.v1.model.*;
 import com.github.sujankumarmitra.ebookprocessor.v1.model.impl.DefaultEBookProcessingStatus;
@@ -49,33 +49,15 @@ public class PdfEBookProcessor implements EBookProcessor {
 
     @Override
     public void process(EbookProcessDetails processDetails) {
-/*
-        String processId = processDetails.getProcessId();
-        setStatusAsProcessing(processId);
-        List<Path> pdfSegmentPaths;
-        try {
-            pdfSegmentPaths = pdfFileSplitter.splitPdfFile(processDetails.getBookLocation());
-        } catch (IOException e) {
-            log.warn("Error while splitting pdfFile to segments", e);
-            setStatusAsFailed(processId, e);
-            return;
-        }
-
-        deleteFile(processDetails.getBookLocation());
-//          @formatter:off
-        this.saveSegmentInAssetService(pdfSegmentPaths) // save segments in asset service
-                .as(it -> saveAssetIdsInLibraryService(it, processDetails)) // save assetIds in library service
-                .contextWrite(withAuthentication(processDetails.getAuthToken()))
-                .subscribe(it -> {}, err -> {}, () -> {}); // trigger execution
-//          @formatter:on
-*/
-
         String processId = processDetails.getProcessId();
         Path bookPath = processDetails.getBookPath();
         String bookId = processDetails.getBookId();
         AuthenticationToken authToken = processDetails.getAuthToken();
 
         Mono.fromRunnable(() -> setStatusAsProcessing(processId))
+                .then(libraryServiceClient
+                        .deleteEBookSegments(bookId)
+                        .doOnSuccess(s -> log.info("deleted existing ebook segments of bookId {} in library", bookId)))
                 .thenMany(createPdfSplitFlux(bookPath))
                 .concatMap(segmentPath -> assetServiceClient
                         .saveAsset(segmentPath)
@@ -83,7 +65,6 @@ public class PdfEBookProcessor implements EBookProcessor {
                         .doOnError(err -> log.warn("Failed to create asset in asset-service", err))
                         .doOnTerminate(() -> deleteFile(segmentPath)))
                 .doOnComplete(() -> log.info("Created assets for pdf segments"))
-                .doOnDiscard(Path.class, path -> deleteFile(path))
                 .index()
                 .map(tuple2 -> new DefaultEBookSegment(bookId, tuple2.getT1().intValue(), tuple2.getT2()))
                 .cast(EBookSegment.class)
@@ -99,12 +80,11 @@ public class PdfEBookProcessor implements EBookProcessor {
     }
 
     private void deleteSavedAsset(EBookSegment segment) {
-//        TODO
-        log.info("deleting saved segment bcoz of error!!!");
+        // Delete saved asset as pipeline broke
     }
 
     private Flux<Path> createPdfSplitFlux(Path bookPath) {
-        return Flux.create((sink) -> {
+        return Flux.create(sink -> {
             Path splitBasePath;
             try {
                 splitBasePath = pdfFileSplitter.splitPdfFile(bookPath);
@@ -114,7 +94,14 @@ public class PdfEBookProcessor implements EBookProcessor {
                 return;
             }
 
-            sink.onDispose(() -> deleteFile(splitBasePath));
+            sink.onDispose(() -> {
+                try {
+                    Files.walk(splitBasePath, 1).forEach(this::deleteFile);
+                } catch (IOException e) {
+                    log.warn("Error while deleting Path entries", e);
+                    // can be ignored
+                }
+            });
 
             Stream<Path> pathStream;
             try {
@@ -131,31 +118,6 @@ public class PdfEBookProcessor implements EBookProcessor {
         });
     }
 
-    /*
-    protected Flux<String> saveAssetIdsInLibraryService(Flux<String> assetIdFlux, EbookProcessDetails processDetails) {
-        String processId = processDetails.getProcessId();
-        String bookId = processDetails.getBook().getId();
-
-        return assetIdFlux
-                .index()
-                .map(tuple2 -> new DefaultEBookSegment(bookId, tuple2.getT1().intValue(), tuple2.getT2()))
-                .concatMap(libraryServiceClient::saveEBookSegment)
-                .doOnNext(segmentId -> log.info("Created EBookSegment in library with id {}", segmentId))
-                .doOnError(err -> this.onSaveEBookSegmentError(processId, err))
-                .doOnComplete(() -> this.onSaveEBookSegmentComplete(processId));
-    }
-
-    protected Flux<String> saveSegmentInAssetService(List<Path> pdfSegmentPaths) {
-        return Flux
-                .fromIterable(pdfSegmentPaths)
-                .concatMap(segmentPath -> assetServiceClient
-                        .saveAsset(segmentPath)
-                        .doOnNext(assetId -> log.info("Created asset for segment {} with id {}", segmentPath, assetId))
-                        .doOnError(err -> log.warn("Failed to create asset in asset-service", err))
-                        .doOnTerminate(() -> deleteFile(segmentPath)))
-                .doOnComplete(() -> log.info("Created assets for pdf segments"));
-    }
-    */
     private void onSaveEBookSegmentError(String processId, Throwable err) {
         log.warn("Failed to save ebook segment in library service", err);
         setStatusAsFailed(processId, err);

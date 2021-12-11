@@ -16,11 +16,11 @@ import java.util.UUID;
  * @since Dec 11/12/21, 2021
  */
 @Service
-public class DefaultAssetServiceClient implements AssetServiceClient {
+public class RemoteServiceAssetServiceClient implements AssetServiceClient {
     @NonNull
     private final WebClient client;
 
-    public DefaultAssetServiceClient(WebClient.Builder builder, RemoteServiceRegistry serviceRegistry) {
+    public RemoteServiceAssetServiceClient(WebClient.Builder builder, RemoteServiceRegistry serviceRegistry) {
         this.client = builder
                 .baseUrl(serviceRegistry.getService("asset-service").getBaseUrl())
                 .filter(new AuthenticationTokenExchangeFilterFunction())

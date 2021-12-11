@@ -1,5 +1,6 @@
 package com.github.sujankumarmitra.ebookprocessor.v1.service;
 
+import com.github.sujankumarmitra.ebookprocessor.v1.model.EBook;
 import com.github.sujankumarmitra.ebookprocessor.v1.model.EBookSegment;
 import reactor.core.publisher.Mono;
 
@@ -9,5 +10,10 @@ import reactor.core.publisher.Mono;
  */
 public interface LibraryServiceClient {
 
+
+    Mono<EBook> getEBook(String bookId);
+
     Mono<String> saveEBookSegment(EBookSegment segment);
+
+    Mono<Void> deleteEBookSegments(String bookId);
 }
