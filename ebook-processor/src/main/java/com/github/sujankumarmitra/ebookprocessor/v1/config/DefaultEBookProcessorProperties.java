@@ -16,4 +16,5 @@ import javax.validation.constraints.Positive;
 public class DefaultEBookProcessorProperties extends EBookProcessorProperties {
     @Positive
     private int threadPoolCapacity;
+    private int maxSegmentSize;
 }

@@ -7,6 +7,7 @@ spring:
 app:
   ebookProcessor:
     threadPoolCapacity: 20
+    maxSegmentSize: 10
   redis:
     password: "${spring.redis.password}"
     defaultKeyExpirationInMilliseconds: 3600000

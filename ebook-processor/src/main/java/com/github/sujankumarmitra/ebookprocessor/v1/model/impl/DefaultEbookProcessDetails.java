@@ -1,5 +1,7 @@
-package com.github.sujankumarmitra.ebookprocessor.v1.model;
+package com.github.sujankumarmitra.ebookprocessor.v1.model.impl;
 
+import com.github.sujankumarmitra.ebookprocessor.v1.model.EBook;
+import com.github.sujankumarmitra.ebookprocessor.v1.model.EbookProcessDetails;
 import com.github.sujankumarmitra.ebookprocessor.v1.security.AuthenticationToken;
 import lombok.Getter;
 import lombok.Setter;

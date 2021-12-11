@@ -7,4 +7,6 @@ package com.github.sujankumarmitra.ebookprocessor.v1.config;
 public abstract class EBookProcessorProperties {
 
     public abstract int getThreadPoolCapacity();
+
+    public abstract int getMaxSegmentSize();
 }

@@ -13,6 +13,8 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class DefaultEBookProcessingStatus extends EBookProcessingStatus {
     private String processId;
     private ProcessingState state;

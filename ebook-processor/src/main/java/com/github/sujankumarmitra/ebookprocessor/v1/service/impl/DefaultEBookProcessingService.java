@@ -5,6 +5,7 @@ import com.github.sujankumarmitra.ebookprocessor.v1.exception.EBookFormatNotSupp
 import com.github.sujankumarmitra.ebookprocessor.v1.exception.EBookNotFoundException;
 import com.github.sujankumarmitra.ebookprocessor.v1.model.*;
 import com.github.sujankumarmitra.ebookprocessor.v1.model.impl.DefaultEBookProcessingStatus;
+import com.github.sujankumarmitra.ebookprocessor.v1.model.impl.DefaultEbookProcessDetails;
 import com.github.sujankumarmitra.ebookprocessor.v1.service.EBookProcessingService;
 import com.github.sujankumarmitra.ebookprocessor.v1.service.EBookProcessingStatusService;
 import com.github.sujankumarmitra.ebookprocessor.v1.service.EBookProcessor;
