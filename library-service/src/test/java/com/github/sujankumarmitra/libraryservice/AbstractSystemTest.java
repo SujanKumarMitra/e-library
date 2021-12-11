@@ -49,7 +49,7 @@ public abstract class AbstractSystemTest {
     static {
         POSTGRESQL_CONTAINER = new PostgreSQLContainer<>("postgres");
         KAFKA_CONTAINER = new KafkaContainer(
-                DockerImageName.parse("confluentinc/cp-server:6.2.0")
+                DockerImageName.parse("confluentinc/cp-server")
                         .asCompatibleSubstituteFor("confluentinc/cp-kafka"));
     }
 

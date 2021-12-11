@@ -68,7 +68,7 @@ class KafkaNotificationServiceTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     static {
-        DockerImageName confluentKafka = parse("confluentinc/cp-server:6.2.0")
+        DockerImageName confluentKafka = parse("confluentinc/cp-server")
                 .asCompatibleSubstituteFor("confluentinc/cp-kafka");
         KAFKA_CONTAINER = new KafkaContainer(confluentKafka);
     }

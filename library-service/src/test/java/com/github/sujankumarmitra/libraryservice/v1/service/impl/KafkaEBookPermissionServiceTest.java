@@ -89,7 +89,7 @@ class KafkaEBookPermissionServiceTest {
 
     static {
         DockerImageName cpKafka = DockerImageName
-                .parse("confluentinc/cp-server:6.2.0")
+                .parse("confluentinc/cp-server")
                 .asCompatibleSubstituteFor("confluentinc/cp-kafka");
 
         KAFKA_CONTAINER = new KafkaContainer(cpKafka);
