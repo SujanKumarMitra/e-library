@@ -42,7 +42,7 @@ public abstract class EBookSegment {
         return "EBookSegment{" +
                 "id='" + getId() + '\'' +
                 ", bookId='" + getBookId() + '\'' +
-                ", index=" + getId() +
+                ", index=" + getIndex() +
                 ", assetId='" + getAssetId() + '\'' +
                 '}';
     }
