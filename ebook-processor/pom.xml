@@ -17,6 +17,7 @@
 		<java.version>11</java.version>
 		<openapi.version>1.5.12</openapi.version>
 		<testcontainers.version>1.16.0</testcontainers.version>
+		<wiremock.version>2.32.0</wiremock.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -38,6 +39,17 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.github.tomakehurst</groupId>
+			<artifactId>wiremock-jre8</artifactId>
+			<version>${wiremock.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.auth0</groupId>
+			<artifactId>java-jwt</artifactId>
+			<version>3.18.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
