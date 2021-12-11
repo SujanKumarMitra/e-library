@@ -1,0 +1,17 @@
+server:
+  port: 8081
+spring:
+  redis:
+    url: "redis://localhost:6379"
+    password: ""
+app:
+  redis:
+    password: ""
+    defaultKeyExpirationInMilliseconds: 3600000
+  remoteServices:
+    - id: "library-service"
+      baseUrl: "http://localhost:8080"
+    - id: "asset-service"
+      baseUrl: "http://localhost:8082"
+  auth:
+    baseUrl: "http://localhost:8000"

@@ -1,5 +1,6 @@
 package com.github.sujankumarmitra.ebookprocessor.v1.exception;
 
+import com.github.sujankumarmitra.ebookprocessor.v1.model.EBookFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
@@ -13,12 +14,11 @@ import java.util.List;
  */
 @Getter
 @AllArgsConstructor
-public final class RedisStoreException extends ApiOperationException {
+public class EBookFormatNotSupportedException extends ApiOperationException {
     @NonNull
     private final Collection<ErrorDetails> errors;
 
-    public RedisStoreException(String message) {
-        this(List.of(new DefaultErrorDetails(message)));
-
+    public EBookFormatNotSupportedException(EBookFormat format) {
+        this(List.of(new DefaultErrorDetails("EBookFormat '" + format + "' is not supported")));
     }
 }

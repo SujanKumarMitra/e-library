@@ -4,7 +4,7 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Positive;
 
 /**
  * @author skmitra
@@ -12,10 +12,10 @@ import javax.validation.constraints.NotEmpty;
  */
 @Data
 @Validated
-@ConfigurationProperties
-public class DefaultRemoteService extends RemoteService {
-    @NotEmpty
-    private String id;
-    @NotEmpty
-    private String baseUrl;
+@ConfigurationProperties("app.redis")
+public class DefaultRedisProperties extends RedisProperties {
+
+    private String password;
+    @Positive
+    private Long defaultKeyExpirationInMilliseconds;
 }

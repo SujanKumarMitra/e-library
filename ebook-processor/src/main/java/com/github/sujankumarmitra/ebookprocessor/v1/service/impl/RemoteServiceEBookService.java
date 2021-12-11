@@ -1,6 +1,7 @@
 package com.github.sujankumarmitra.ebookprocessor.v1.service.impl;
 
 import com.github.sujankumarmitra.ebookprocessor.v1.config.RemoteServiceRegistry;
+import com.github.sujankumarmitra.ebookprocessor.v1.exception.EBookNotFoundException;
 import com.github.sujankumarmitra.ebookprocessor.v1.model.EBook;
 import com.github.sujankumarmitra.ebookprocessor.v1.model.EBookFormat;
 import com.github.sujankumarmitra.ebookprocessor.v1.security.AuthenticationTokenExchangeFilterFunction;
@@ -9,11 +10,13 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import static org.springframework.http.HttpHeaders.ACCEPT;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 /**
@@ -41,8 +44,10 @@ public class RemoteServiceEBookService implements EBookService {
         return client.get()
                 .uri("/api/v1/books/{bookId}", ebookId)
                 .retrieve()
+                .onStatus(status -> status == NOT_FOUND, res-> Mono.error(() -> new EBookNotFoundException(ebookId)))
                 .bodyToMono(GetEBookResponse.class)
                 .filter(GetEBookResponse::isValidEBook)
+                .switchIfEmpty(Mono.error(() -> new EBookNotFoundException(ebookId)))
                 .cast(EBook.class);
     }
 

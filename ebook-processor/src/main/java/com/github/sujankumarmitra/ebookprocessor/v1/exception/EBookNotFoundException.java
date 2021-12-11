@@ -2,7 +2,6 @@ package com.github.sujankumarmitra.ebookprocessor.v1.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NonNull;
 
 import java.util.Collection;
 import java.util.List;
@@ -13,12 +12,10 @@ import java.util.List;
  */
 @Getter
 @AllArgsConstructor
-public final class RedisStoreException extends ApiOperationException {
-    @NonNull
+public class EBookNotFoundException extends ApiOperationException {
     private final Collection<ErrorDetails> errors;
 
-    public RedisStoreException(String message) {
-        this(List.of(new DefaultErrorDetails(message)));
-
+    public EBookNotFoundException(String eBookId) {
+        this(List.of(new DefaultErrorDetails("ebook with id '" + eBookId + "' not found")));
     }
 }
