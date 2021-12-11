@@ -1,0 +1,21 @@
+version: '3'
+services:
+  redis:
+    image: "redis"
+  app:
+    image: ebook-processor:1.0.0
+    depends_on:
+      - redis
+    ports:
+#      host:container
+#      open http://localhost:8080/swagger-ui.html
+      - "8081:8080"
+    environment:
+      REDIS_URL: "redis://redis:6379"
+      REDIS_PASSWORD: ""
+
+#     set to host ip to enable communication of non containerized services
+      LIBRARY_SERVICE_BASEURL: "http://172.17.0.1:8080"
+      ASSET_SERVICE_BASEURL: "http://172.17.0.1:8082"
+      AUTH_BASEURL: "http://172.17.0.1:8000"
+
