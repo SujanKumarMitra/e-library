@@ -13,28 +13,9 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * @since Dec 09/12/21, 2021
  */
 public final class SecurityAnnotations {
-
-    @Target({METHOD})
-    @Retention(RUNTIME)
-    @PreAuthorize("hasAnyAuthority('ROLE_STUDENT', 'ROLE_TEACHER', 'ROLE_LIBRARIAN', 'ROLE_ADMIN')")
-    public @interface RoleStudent {
-    }
-
-    @Target({METHOD})
-    @Retention(RUNTIME)
-    @PreAuthorize("hasAnyAuthority('ROLE_TEACHER', 'ROLE_LIBRARIAN', 'ROLE_ADMIN')")
-    public @interface RoleTeacher {
-    }
-
     @Target({METHOD})
     @Retention(RUNTIME)
     @PreAuthorize("hasAnyAuthority('ROLE_LIBRARIAN', 'ROLE_ADMIN')")
     public @interface RoleLibrarian {
-    }
-
-    @Target({METHOD})
-    @Retention(RUNTIME)
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
-    public @interface RoleAdmin {
     }
 }

@@ -143,7 +143,7 @@ public class OpenApiConfiguration {
             responseCode = "201",
             headers = @Header(
                     name = "Location",
-                    description = "identifier of the created entity",
+                    description = "identifier of the created process",
                     schema = @Schema(
                             example = "7d553b6b-c6e4-42a7-bc8d-7cda07909b2f"
                     )

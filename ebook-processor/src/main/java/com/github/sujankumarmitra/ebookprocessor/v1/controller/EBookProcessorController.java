@@ -26,6 +26,7 @@ import reactor.core.publisher.Mono;
 import java.net.URI;
 
 import static com.github.sujankumarmitra.ebookprocessor.v1.config.OpenApiConfiguration.*;
+import static com.github.sujankumarmitra.ebookprocessor.v1.security.SecurityAnnotations.RoleLibrarian;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
 
@@ -50,7 +51,9 @@ public class EBookProcessorController {
 
     @Operation(
             summary = "Process a ebook",
-            description = "Submit an ebook upload and it will process the ebook and upload it to asset service"
+            description = "Submit an ebook upload and it will process the ebook " +
+                    "and upload it to <a href=\"https://github.com/SujanKumarMitra/e-library/tree/main/asset-service\">asset-service</a>." +
+                    "<br> Librarians can invoke this API."
     )
     @RequestBody(
             description = "a stream of bytes",
@@ -67,6 +70,7 @@ public class EBookProcessorController {
     )
     @ApiCreatedResponse
     @ApiConflictResponse
+    @RoleLibrarian
     @PutMapping("/{ebookId}")
     public Mono<ResponseEntity<Object>> processEbook(@PathVariable String ebookId,
                                                      ServerHttpRequest request,
@@ -86,13 +90,15 @@ public class EBookProcessorController {
 
     @Operation(
             summary = "Get processing status of an ebook",
-            description = "Returns the current state of an ebook processing"
+            description = "Returns the current status of an ebook processing." +
+                    "<br> Librarians can invoke this API."
     )
     @ApiResponse(
             responseCode = "200",
             content = @Content(schema = @Schema(implementation = GetProcessingStatusResponseSchema.class))
     )
     @GetMapping("/{processId}")
+    @RoleLibrarian
     @ApiNotFoundResponse
     public Mono<ResponseEntity<EBookProcessingStatus>> getProcessingStatus(@PathVariable String processId) {
         return processingStatusService
