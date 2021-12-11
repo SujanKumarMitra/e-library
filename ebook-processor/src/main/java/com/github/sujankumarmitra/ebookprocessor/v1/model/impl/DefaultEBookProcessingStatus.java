@@ -1,5 +1,7 @@
-package com.github.sujankumarmitra.ebookprocessor.v1.model;
+package com.github.sujankumarmitra.ebookprocessor.v1.model.impl;
 
+import com.github.sujankumarmitra.ebookprocessor.v1.model.EBookProcessingStatus;
+import com.github.sujankumarmitra.ebookprocessor.v1.model.ProcessingState;
 import lombok.Getter;
 import lombok.Setter;
 

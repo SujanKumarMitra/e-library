@@ -3,7 +3,7 @@ package com.github.sujankumarmitra.ebookprocessor.v1.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.sujankumarmitra.ebookprocessor.v1.config.RedisProperties;
-import com.github.sujankumarmitra.ebookprocessor.v1.model.DefaultEBookProcessingStatus;
+import com.github.sujankumarmitra.ebookprocessor.v1.model.impl.DefaultEBookProcessingStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

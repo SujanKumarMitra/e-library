@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.sujankumarmitra.ebookprocessor.v1.config.RedisProperties;
 import com.github.sujankumarmitra.ebookprocessor.v1.exception.RedisStoreException;
-import com.github.sujankumarmitra.ebookprocessor.v1.model.DefaultEBookProcessingStatus;
+import com.github.sujankumarmitra.ebookprocessor.v1.model.impl.DefaultEBookProcessingStatus;
 import com.github.sujankumarmitra.ebookprocessor.v1.model.EBookProcessingStatus;
 import com.github.sujankumarmitra.ebookprocessor.v1.service.EBookProcessingStatusService;
 import lombok.AllArgsConstructor;

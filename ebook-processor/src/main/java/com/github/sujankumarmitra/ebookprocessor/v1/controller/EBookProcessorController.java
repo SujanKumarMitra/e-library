@@ -11,12 +11,11 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
-
-import java.lang.annotation.Native;
 
 import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
 
@@ -32,7 +31,7 @@ import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
         description = "Controller for processing ebooks"
 )
 public class EBookProcessorController {
-    @Native
+    @NonNull
     private final EBookProcessingStatusService processingStatusService;
 
     @Operation(
