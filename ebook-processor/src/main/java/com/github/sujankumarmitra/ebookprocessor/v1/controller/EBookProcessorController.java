@@ -1,6 +1,7 @@
 package com.github.sujankumarmitra.ebookprocessor.v1.controller;
 
-import com.github.sujankumarmitra.ebookprocessor.v1.config.OpenApiConfiguration;
+import com.github.sujankumarmitra.ebookprocessor.v1.controller.dto.ErrorResponse;
+import com.github.sujankumarmitra.ebookprocessor.v1.exception.EBookNotFoundException;
 import com.github.sujankumarmitra.ebookprocessor.v1.model.DefaultEBookProcessRequest;
 import com.github.sujankumarmitra.ebookprocessor.v1.model.EBookProcessRequest;
 import com.github.sujankumarmitra.ebookprocessor.v1.model.EBookProcessingStatus;
@@ -9,7 +10,6 @@ import com.github.sujankumarmitra.ebookprocessor.v1.security.AuthenticationToken
 import com.github.sujankumarmitra.ebookprocessor.v1.service.EBookProcessingService;
 import com.github.sujankumarmitra.ebookprocessor.v1.service.EBookProcessingStatusService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -26,6 +26,7 @@ import reactor.core.publisher.Mono;
 import java.net.URI;
 
 import static com.github.sujankumarmitra.ebookprocessor.v1.config.OpenApiConfiguration.*;
+import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
 
 /**
@@ -65,7 +66,10 @@ public class EBookProcessorController {
 
         return processingService
                 .submitProcess(processRequest)
-                .map(id -> ResponseEntity.created(URI.create(id)).build());
+                .map(id -> ResponseEntity.created(URI.create(id)).build())
+                .onErrorResume(EBookNotFoundException.class,
+                        err -> Mono.fromSupplier(() ->
+                                ResponseEntity.status(CONFLICT).body(new ErrorResponse(err.getErrors()))));
     }
 
     @Operation(
