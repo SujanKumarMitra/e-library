@@ -1,6 +1,8 @@
 package com.github.sujankumarmitra.ebookprocessor.v1.controller;
 
+import com.github.sujankumarmitra.ebookprocessor.v1.model.EBookProcessingStatus;
 import com.github.sujankumarmitra.ebookprocessor.v1.openapi.schema.GetProcessingStatusResponseSchema;
+import com.github.sujankumarmitra.ebookprocessor.v1.service.EBookProcessingStatusService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -8,8 +10,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
+
+import java.lang.annotation.Native;
 
 import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
 
@@ -19,12 +26,14 @@ import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
  */
 @RestController
 @RequestMapping("/api/v1/process")
+@AllArgsConstructor
 @Tag(
         name = "EBookProcessorController",
         description = "Controller for processing ebooks"
 )
 public class EBookProcessorController {
-
+    @Native
+    private final EBookProcessingStatusService processingStatusService;
 
     @Operation(
             summary = "Process a ebook",
@@ -59,8 +68,11 @@ public class EBookProcessorController {
             content = @Content(schema = @Schema(implementation = GetProcessingStatusResponseSchema.class))
     )
     @GetMapping("/{processId}")
-    public void getProcessingStatus() {
-
+    public Mono<ResponseEntity<EBookProcessingStatus>> getProcessingStatus(@PathVariable String processId) {
+        return processingStatusService
+                .getStatus(processId)
+                .map(ResponseEntity::ok)
+                .switchIfEmpty(Mono.fromSupplier(() -> ResponseEntity.notFound().build()));
     }
 
 }
