@@ -1,5 +1,8 @@
 server:
   port: 8081
+logging:
+  level:
+    com.github.sujankumarmitra.ebookprocessor: "DEBUG"
 spring:
   redis:
     url: "redis://localhost:6379"

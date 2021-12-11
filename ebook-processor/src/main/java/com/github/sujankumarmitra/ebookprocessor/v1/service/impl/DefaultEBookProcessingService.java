@@ -58,7 +58,7 @@ public class DefaultEBookProcessingService implements EBookProcessingService, In
                 .flatMap(this::setStatusToPending)
                 .map(tuple2 -> createProcessDetails(tuple2, processRequest))
                 .doOnNext(details -> Mono.fromRunnable(() -> processor.process(details))
-                        .subscribeOn(processorScheduler)
+                        .publishOn(processorScheduler)
                         .subscribe())
                 .map(EbookProcessDetails::getProcessId);
     }
@@ -67,8 +67,8 @@ public class DefaultEBookProcessingService implements EBookProcessingService, In
         DefaultEbookProcessDetails processDetails = new DefaultEbookProcessDetails();
 
         processDetails.setProcessId(tuple2.getT2().getFileName().toString());
-        processDetails.setBook(tuple2.getT1());
-        processDetails.setBookLocation(tuple2.getT2());
+        processDetails.setBookId(tuple2.getT1().getId());
+        processDetails.setBookPath(tuple2.getT2());
         processDetails.setAuthToken(request.getToken());
 
         return processDetails;

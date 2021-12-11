@@ -1,6 +1,5 @@
 package com.github.sujankumarmitra.ebookprocessor.v1.model.impl;
 
-import com.github.sujankumarmitra.ebookprocessor.v1.model.EBook;
 import com.github.sujankumarmitra.ebookprocessor.v1.model.EbookProcessDetails;
 import com.github.sujankumarmitra.ebookprocessor.v1.security.AuthenticationToken;
 import lombok.Getter;
@@ -16,8 +15,8 @@ import java.nio.file.Path;
 @Setter
 public class DefaultEbookProcessDetails extends EbookProcessDetails {
     private String processId;
-    private EBook book;
-    private Path bookLocation;
+    private String bookId;
+    private Path bookPath;
     private AuthenticationToken authToken;
 
 }
