@@ -1,5 +1,8 @@
 server:
   port: 8081
+logging:
+  level:
+    com.github.sujankumarmitra.ebookprocessor: "DEBUG"
 spring:
   redis:
     url: "redis://localhost:6379"
@@ -7,6 +10,7 @@ spring:
 app:
   ebookProcessor:
     threadPoolCapacity: 20
+    maxSegmentSize: 10
   redis:
     password: "${spring.redis.password}"
     defaultKeyExpirationInMilliseconds: 3600000

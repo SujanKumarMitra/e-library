@@ -2,9 +2,9 @@ package com.github.sujankumarmitra.ebookprocessor.v1.controller;
 
 import com.github.sujankumarmitra.ebookprocessor.v1.controller.dto.ErrorResponse;
 import com.github.sujankumarmitra.ebookprocessor.v1.exception.EBookNotFoundException;
-import com.github.sujankumarmitra.ebookprocessor.v1.model.DefaultEBookProcessRequest;
 import com.github.sujankumarmitra.ebookprocessor.v1.model.EBookProcessRequest;
 import com.github.sujankumarmitra.ebookprocessor.v1.model.EBookProcessingStatus;
+import com.github.sujankumarmitra.ebookprocessor.v1.model.impl.DefaultEBookProcessRequest;
 import com.github.sujankumarmitra.ebookprocessor.v1.openapi.schema.GetProcessingStatusResponseSchema;
 import com.github.sujankumarmitra.ebookprocessor.v1.security.AuthenticationToken;
 import com.github.sujankumarmitra.ebookprocessor.v1.service.EBookProcessingService;
@@ -50,8 +50,20 @@ public class EBookProcessorController {
 
     @Operation(
             summary = "Process a ebook",
-            description = "Submit an ebook upload and it will process the ebook and upload it to asset service",
-            requestBody = @RequestBody(content = @Content(mediaType = APPLICATION_OCTET_STREAM_VALUE))
+            description = "Submit an ebook upload and it will process the ebook and upload it to asset service"
+    )
+    @RequestBody(
+            description = "a stream of bytes",
+            content = {@Content(
+                    mediaType = APPLICATION_OCTET_STREAM_VALUE,
+                    schema = @Schema(
+                            description = "a stream of bytes",
+                            implementation = byte[].class,
+                            format = "binary"
+                    )
+            )
+
+            }
     )
     @ApiCreatedResponse
     @ApiConflictResponse
