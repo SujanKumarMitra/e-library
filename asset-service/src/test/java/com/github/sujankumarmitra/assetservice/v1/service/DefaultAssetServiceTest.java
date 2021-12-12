@@ -23,15 +23,18 @@ import static org.mockito.ArgumentMatchers.any;
  * @author skmitra
  * @since Sep 26/09/21, 2021
  */
+
 class DefaultAssetServiceTest {
 
     protected DefaultAssetService serviceUnderTest;
     private AssetDao assetDao;
+    private AssetStorageService assetStorageService;
 
     @BeforeEach
     void setUp() {
         assetDao = Mockito.mock(AssetDao.class);
-        serviceUnderTest = new DefaultAssetService(assetDao);
+        assetStorageService = Mockito.mock(AssetStorageService.class);
+        serviceUnderTest = new DefaultAssetService(assetDao, assetStorageService);
     }
 
     @Test
@@ -54,6 +57,9 @@ class DefaultAssetServiceTest {
     void deleteAsset() {
         Mockito.doReturn(Mono.empty())
                 .when(assetDao).delete(any());
+
+        Mockito.doReturn(Mono.empty())
+                .when(assetStorageService).purgeAsset(any());
 
         Mono<Void> voidMono = serviceUnderTest.deleteAsset("someId");
 

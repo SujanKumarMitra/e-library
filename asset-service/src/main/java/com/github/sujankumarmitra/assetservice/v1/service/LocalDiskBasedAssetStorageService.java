@@ -1,6 +1,7 @@
 package com.github.sujankumarmitra.assetservice.v1.service;
 
 import com.github.sujankumarmitra.assetservice.v1.config.AssetStorageProperties;
+import com.github.sujankumarmitra.assetservice.v1.dao.AssetDao;
 import com.github.sujankumarmitra.assetservice.v1.exception.AssetNeverStoredException;
 import com.github.sujankumarmitra.assetservice.v1.exception.AssetNotFoundException;
 import com.github.sujankumarmitra.assetservice.v1.model.Asset;
@@ -34,7 +35,7 @@ import static java.nio.file.StandardOpenOption.*;
 public class LocalDiskBasedAssetStorageService implements AssetStorageService {
 
     @NonNull
-    private final AssetService assetService;
+    private final AssetDao assetDao;
     @NonNull
     private final AssetStorageProperties storageConfiguration;
 
@@ -44,7 +45,7 @@ public class LocalDiskBasedAssetStorageService implements AssetStorageService {
         String baseDir = storageConfiguration.getBaseDir();
         Path writePath = Path.of(baseDir, assetId);
 
-        return assetService.getAsset(assetId)
+        return assetDao.findOne(assetId)
                 .switchIfEmpty(Mono.error(new AssetNotFoundException(assetId)))
                 .flatMap(asset -> writeToDisk(writePath, dataBuffers));
     }
@@ -52,8 +53,8 @@ public class LocalDiskBasedAssetStorageService implements AssetStorageService {
     @Override
     public Mono<StoredAsset> retrieveAsset(String assetId) {
 
-        return assetService
-                .getAsset(assetId)
+        return assetDao
+                .findOne(assetId)
                 .switchIfEmpty(Mono.error(() -> new AssetNotFoundException(assetId)))
                 .map(asset -> Tuples.of(asset, fetchFromDisk(asset)))
                 .map(tuple2 -> new DefaultStoredAsset(tuple2.getT1(), tuple2.getT2()));

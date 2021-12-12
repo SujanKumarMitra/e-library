@@ -1,6 +1,7 @@
 package com.github.sujankumarmitra.assetservice.v1.service;
 
 import com.github.sujankumarmitra.assetservice.v1.config.AssetStorageProperties;
+import com.github.sujankumarmitra.assetservice.v1.dao.AssetDao;
 import com.github.sujankumarmitra.assetservice.v1.exception.AssetNotFoundException;
 import com.github.sujankumarmitra.assetservice.v1.model.DefaultAsset;
 import com.github.sujankumarmitra.assetservice.v1.model.StoredAsset;
@@ -42,7 +43,7 @@ class LocalDiskBasedAssetStorageServiceTest {
     private static final String INVALID_ASSET_ID = "INVALID_ASSET_ID";
     protected LocalDiskBasedAssetStorageService serviceUnderTest;
     private AssetStorageProperties mockStorageConfig;
-    private AssetService mockAssetService;
+    private AssetDao mockAssetDao;
 
     private StringBuilder bufferContentToStringBuilder(StringBuilder sb, DataBuffer buf) {
         while (buf.readableByteCount() > 0) {
@@ -64,14 +65,14 @@ class LocalDiskBasedAssetStorageServiceTest {
         mockStorageConfig();
         mockAssetService();
 
-        serviceUnderTest = new LocalDiskBasedAssetStorageService(mockAssetService, mockStorageConfig);
+        serviceUnderTest = new LocalDiskBasedAssetStorageService(mockAssetDao, mockStorageConfig);
     }
 
     private void mockAssetService() {
-        mockAssetService = Mockito.mock(AssetService.class);
+        mockAssetDao = Mockito.mock(AssetDao.class);
         Mockito.doReturn(just(new DefaultAsset(VALID_ASSET_ID, "hello.txt", "owner", PUBLIC)))
-                .when(mockAssetService)
-                .getAsset(VALID_ASSET_ID);
+                .when(mockAssetDao)
+                .findOne(VALID_ASSET_ID);
     }
 
     private void mockStorageConfig() {
@@ -111,8 +112,8 @@ class LocalDiskBasedAssetStorageServiceTest {
 
     @Test
     void givenInvalidAssetId_whenStore_shouldCompleteWithError() {
-        Mockito.doReturn(Mono.error(new AssetNotFoundException(INVALID_ASSET_ID)))
-                .when(mockAssetService).getAsset(INVALID_ASSET_ID);
+        Mockito.doReturn(Mono.empty())
+                .when(mockAssetDao).findOne(INVALID_ASSET_ID);
 
         Flux<DataBuffer> dataBuffers = getSampleFileBuffer();
         Mono<Void> voidMono = serviceUnderTest.storeAsset(INVALID_ASSET_ID, dataBuffers);
@@ -149,7 +150,7 @@ class LocalDiskBasedAssetStorageServiceTest {
     @Test
     void givenInvalidAssetId_whenRetrieve_shouldEmitError() {
         Mockito.doReturn(Mono.empty())
-                .when(mockAssetService).getAsset(INVALID_ASSET_ID);
+                .when(mockAssetDao).findOne(INVALID_ASSET_ID);
 
 
         Mono<StoredAsset> storedAsset = serviceUnderTest.retrieveAsset(INVALID_ASSET_ID);
@@ -190,7 +191,7 @@ class LocalDiskBasedAssetStorageServiceTest {
     @Test
     void givenValidAssetIdButNoAssociatedFile_whenRetrieveAsset_shouldEmitError() {
         Mockito.doReturn(Mono.just(new DefaultAsset(VALID_ASSET_ID, "somename","owner", PUBLIC)))
-                .when(mockAssetService).getAsset(VALID_ASSET_ID);
+                .when(mockAssetDao).findOne(VALID_ASSET_ID);
 
         Mono<StoredAsset> storedAsset = serviceUnderTest.retrieveAsset(VALID_ASSET_ID);
 

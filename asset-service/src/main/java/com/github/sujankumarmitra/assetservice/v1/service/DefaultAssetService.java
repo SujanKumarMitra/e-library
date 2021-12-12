@@ -17,6 +17,8 @@ public class DefaultAssetService implements AssetService {
 
     @NonNull
     private final AssetDao assetDao;
+    @NonNull
+    private final AssetStorageService assetStorageService;
 
     @Override
     public Mono<Asset> createAsset(Asset asset) {
@@ -25,7 +27,9 @@ public class DefaultAssetService implements AssetService {
 
     @Override
     public Mono<Void> deleteAsset(String assetId) {
-        return assetDao.delete(assetId);
+        return assetDao
+                .delete(assetId)
+                .then(assetStorageService.purgeAsset(assetId));
     }
 
     @Override

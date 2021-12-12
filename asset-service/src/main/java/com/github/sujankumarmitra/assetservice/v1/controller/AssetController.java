@@ -3,7 +3,6 @@ package com.github.sujankumarmitra.assetservice.v1.controller;
 import com.github.sujankumarmitra.assetservice.v1.controller.dto.CreateAssetRequest;
 import com.github.sujankumarmitra.assetservice.v1.model.Asset;
 import com.github.sujankumarmitra.assetservice.v1.service.AssetService;
-import com.github.sujankumarmitra.assetservice.v1.service.AssetStorageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
@@ -39,10 +38,6 @@ public class AssetController {
 
     @NonNull
     private final AssetService assetService;
-    //    @NonNull
-//    private final AssetPermissionService assetPermissionService;
-    @NonNull
-    private final AssetStorageService assetStorageService;
 
     @PostMapping
     @Operation(
@@ -55,11 +50,10 @@ public class AssetController {
     public Mono<ResponseEntity<Void>> createAsset(Authentication authenticatedUser,
                                                   @RequestBody @Valid CreateAssetRequest request) {
 
+        request.setOwnerId(authenticatedUser.getName());
         return assetService
                 .createAsset(request)
                 .map(Asset::getId)
-//                .zipWith(just(authenticatedUser.getName()), this::getAssetPermission)
-//                .flatMap(this::grantPermissionToAssetCreator)
                 .map(assetId -> created(create(assetId)).build());
     }
 
@@ -67,7 +61,7 @@ public class AssetController {
     @Operation(
             summary = "Deletes an asset.",
             description = "Deletes an existing asset along with the binary object." +
-                    "<br>. Scopes required: WRITE_ASSET"
+                    "<br>Scopes required: WRITE_ASSET"
     )
     @ApiAcceptedResponse
     @PreAuthorize("hasAuthority('WRITE_ASSET')")
@@ -75,7 +69,6 @@ public class AssetController {
         return assetService
                 .deleteAsset(assetId)
                 .thenReturn(assetId)
-                .flatMap(assetStorageService::purgeAsset) // TODO Move this to asset service
                 .thenReturn(accepted().build());
     }
 }

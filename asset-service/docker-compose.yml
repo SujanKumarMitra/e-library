@@ -1,6 +1,6 @@
 version: "3"
 services:
-  postgres:
+  db:
     image: "postgres"
     environment:
       POSTGRES_PASSWORD: "asset_service"
@@ -8,3 +8,15 @@ services:
       POSTGRES_DB: "asset_service_db"
     ports:
       - "5432:5432"
+  pgadmin:
+    image: "dpage/pgadmin4"
+    container_name: "pgadmin"
+    depends_on:
+      - db
+    volumes:
+      - "/home/skmitra/Docker/volumes/pgadmin:/var/lib/pgadmin"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "pgadmin_user@email.com"
+      PGADMIN_DEFAULT_PASSWORD: "pgadmin_password"
+    ports:
+      - "5433:80"
