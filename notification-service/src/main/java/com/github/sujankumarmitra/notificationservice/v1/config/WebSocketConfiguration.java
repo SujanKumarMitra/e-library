@@ -38,7 +38,7 @@ public class WebSocketConfiguration {
     public OpenApiCustomiser webSocketPathCustomizer() {
         return openApi -> openApi.addTagsItem(new Tag()
                         .name("NotificationWebSocketController")
-                        .description("### Controller for receiving Notifications over WebSocket protocol")
+                        .description("Controller for receiving Notifications over WebSocket protocol")
                 ).getPaths()
                 .addPathItem("/api/v1/socket",
                         new PathItem()
@@ -65,7 +65,8 @@ public class WebSocketConfiguration {
                                                         .type("string"))
                                                 .required(true))
                                         .operationId("upgradeWebSocket")
-                                        .description("# Upgrade HTTP to WebSocket")
+                                        .summary("Upgrade HTTP to WebSocket")
+                                        .description("Scopes required: NOTIFICATION_CONSUME")
                                         .addTagsItem("NotificationWebSocketController")
                                         .responses(new ApiResponses()
                                                 .addApiResponse("101", new ApiResponse()

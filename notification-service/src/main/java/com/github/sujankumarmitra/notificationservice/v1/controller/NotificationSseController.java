@@ -1,6 +1,5 @@
 package com.github.sujankumarmitra.notificationservice.v1.controller;
 
-import com.github.sujankumarmitra.notificationservice.v1.config.OpenApiConfiguration;
 import com.github.sujankumarmitra.notificationservice.v1.model.Notification;
 import com.github.sujankumarmitra.notificationservice.v1.security.AuthenticationToken;
 import com.github.sujankumarmitra.notificationservice.v1.service.scheduler.Cancellable;
@@ -25,6 +24,8 @@ import reactor.core.publisher.Mono;
 
 import java.util.function.Consumer;
 
+import static com.github.sujankumarmitra.notificationservice.v1.config.OpenApiConfiguration.ApiSecurityResponse;
+import static com.github.sujankumarmitra.notificationservice.v1.config.OpenApiConfiguration.ApiSecurityScheme;
 import static java.lang.System.currentTimeMillis;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE;
@@ -39,10 +40,10 @@ import static org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE;
 @RequestMapping("/api/v1/sse")
 @Tag(
         name = "NotificationSseController",
-        description = "### Controller for subscribing to Server-Sent Events of Notifications"
+        description = "Controller for subscribing to Server-Sent Events of Notifications"
 )
-@OpenApiConfiguration.ApiSecurityScheme
-@OpenApiConfiguration.ApiSecurityResponse
+@ApiSecurityScheme
+@ApiSecurityResponse
 public class NotificationSseController {
 
     @NonNull
@@ -50,12 +51,15 @@ public class NotificationSseController {
     @NonNull
     private final JobScheduler jobScheduler;
 
-    private static final Consumer<? super Object> NO_OP = __ -> {
+    private static final Consumer<? super Object> NO_OP = o -> {
     };
 
 
     @GetMapping(produces = TEXT_EVENT_STREAM_VALUE)
-    @Operation(description = "# Subscribe to notification events")
+    @Operation(
+            summary = "Subscribe to notification events",
+            description = "Scopes required: NOTIFICATION_CONSUME"
+    )
     @ApiResponse(
             responseCode = "200",
             description = "Server acknowledged the request",

@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * @author skmitra
  * @since Sep 29/09/21, 2021
  */
-@Schema(name = "Notification")
+@Schema(name = "NotificationSchema")
 public class NotificationDto extends Notification {
 
     public NotificationDto(Notification delegate) {

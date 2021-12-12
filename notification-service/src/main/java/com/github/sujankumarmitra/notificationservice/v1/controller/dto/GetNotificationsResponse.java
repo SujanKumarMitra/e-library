@@ -15,6 +15,7 @@ import static java.util.stream.Collectors.toUnmodifiableList;
  * @since Sep 29/09/21, 2021
  */
 @Data
+@Schema(name = "GetNotificationsResponseSchema")
 @JsonPropertyOrder({"count", "notifications"})
 public class GetNotificationsResponse {
     @NonNull

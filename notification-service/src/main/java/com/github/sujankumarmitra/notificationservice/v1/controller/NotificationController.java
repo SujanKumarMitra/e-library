@@ -1,6 +1,5 @@
 package com.github.sujankumarmitra.notificationservice.v1.controller;
 
-import com.github.sujankumarmitra.notificationservice.v1.config.OpenApiConfiguration;
 import com.github.sujankumarmitra.notificationservice.v1.controller.dto.CreateNotificationRequest;
 import com.github.sujankumarmitra.notificationservice.v1.controller.dto.GetNotificationsResponse;
 import com.github.sujankumarmitra.notificationservice.v1.controller.dto.NotificationDto;
@@ -26,6 +25,7 @@ import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
 
+import static com.github.sujankumarmitra.notificationservice.v1.config.OpenApiConfiguration.*;
 import static java.net.URI.create;
 import static org.springframework.http.ResponseEntity.*;
 
@@ -38,10 +38,10 @@ import static org.springframework.http.ResponseEntity.*;
 @RequestMapping("/api/v1/notifications")
 @Tag(
         name = "NotificationHttpController",
-        description = "### Controller for creating and acknowledging notifications"
+        description = "Controller for creating and acknowledging notifications"
 )
-@OpenApiConfiguration.ApiSecurityScheme
-@OpenApiConfiguration.ApiSecurityResponse
+@ApiSecurityScheme
+@ApiSecurityResponse
 public class NotificationController {
 
     public static final int DEFAULT_PAGE_SIZE = 10;
@@ -51,7 +51,10 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     @PostMapping
-    @Operation(description = "# Create a notification for a consumer to consume")
+    @Operation(
+            summary = "Create a notification for a consumer to consume",
+            description = "Scopes required: NOTIFICATION_PRODUCE"
+    )
     @ApiResponse(
             responseCode = "201",
             headers = @Header(
@@ -62,7 +65,7 @@ public class NotificationController {
                     )
             )
     )
-    @OpenApiConfiguration.ApiBadRequestResponse
+    @ApiBadRequestResponse
     @PreAuthorize("hasAuthority('NOTIFICATION_PRODUCE')")
     public Mono<ResponseEntity<Void>> createNotification(@RequestBody @Valid CreateNotificationRequest request) {
         return notificationService.createNotification(request)
@@ -71,7 +74,10 @@ public class NotificationController {
 
 
     @GetMapping("/{notificationId}")
-    @Operation(description = "# Fetch a created notification")
+    @Operation(
+            summary = "Fetch a created notification",
+            description = "Scopes required: NOTIFICATION_CONSUME"
+    )
     @ApiResponse(responseCode = "200", description = "Server acknowledged the request")
     @ApiResponse(
             responseCode = "404",
@@ -89,7 +95,10 @@ public class NotificationController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('NOTIFICATION_CONSUME')")
-    @Operation(description = "# Fetch notifications for a consumer")
+    @Operation(
+            summary = "Fetch notifications for a consumer",
+            description = "Scopes required: NOTIFICATION_CONSUME"
+    )
     @ApiResponse(responseCode = "200", description = "Server acknowledged the request")
     public Mono<ResponseEntity<GetNotificationsResponse>> getNotifications(Authentication authentication, @RequestParam(required = false) String lastInsertedId) {
         Flux<Notification> flux;
@@ -104,7 +113,10 @@ public class NotificationController {
                 .map(ResponseEntity::ok);
     }
 
-    @Operation(description = "# Acknowledge a notification")
+    @Operation(
+            summary = "Acknowledge a notification",
+            description = "Scopes required: NOTIFICATION_CONSUME"
+    )
     @ApiResponse(responseCode = "200", description = "Server acknowledged the request")
     @ApiResponse(responseCode = "404", description = "Notification not found with given id")
     @PatchMapping("/{notificationId}/ack")
@@ -112,7 +124,7 @@ public class NotificationController {
     public Mono<ResponseEntity<Void>> acknowledgeNotification(Authentication authentication, @PathVariable String notificationId) {
         return notificationDao
                 .setAcknowledged(notificationId, authentication.getName())
-                .map(__ -> ok().build());
+                .thenReturn(ok().build());
     }
 
 
