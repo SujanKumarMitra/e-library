@@ -3,7 +3,6 @@ package com.github.sujankumarmitra.assetservice.v1.controller;
 import com.github.sujankumarmitra.assetservice.v1.controller.dto.ErrorResponse;
 import com.github.sujankumarmitra.assetservice.v1.exception.AssetNeverStoredException;
 import com.github.sujankumarmitra.assetservice.v1.exception.AssetNotFoundException;
-import com.github.sujankumarmitra.assetservice.v1.exception.DefaultErrorDetails;
 import com.github.sujankumarmitra.assetservice.v1.model.StoredAsset;
 import com.github.sujankumarmitra.assetservice.v1.service.AssetPermissionService;
 import com.github.sujankumarmitra.assetservice.v1.service.AssetStorageService;
@@ -27,8 +26,6 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-
 import static com.github.sujankumarmitra.assetservice.v1.config.OpenApiConfiguration.*;
 import static java.lang.String.format;
 import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
@@ -36,8 +33,7 @@ import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.PRECONDITION_REQUIRED;
 import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
-import static org.springframework.http.ResponseEntity.ok;
-import static org.springframework.http.ResponseEntity.status;
+import static org.springframework.http.ResponseEntity.*;
 
 /**
  * @author skmitra
@@ -50,7 +46,7 @@ import static org.springframework.http.ResponseEntity.status;
         name = "AssetStorageController",
         description = "Controller for storing and retrieving asset objects"
 )
-//@OpenApiConfiguration.ApiSecurityResponse
+@ApiSecurityResponse
 @ApiSecurityScheme
 public class AssetStorageController {
 
@@ -105,24 +101,20 @@ public class AssetStorageController {
             },
             content = {
                     @Content(
-                            mediaType = "application/octet-stream",
                             schema = @Schema(
                                     description = "a stream of bytes",
                                     implementation = byte[].class,
                                     format = "binary"
                             )
-                    )
+                    ),
 
             }
     )
     @ApiResponse(
             responseCode = "428",
             description = "asset is created but never stored",
-            content = @Content(
-                    schema = @Schema
-            )
+            content = @Content(schema = @Schema)
     )
-    @ApiForbiddenResponse
     @ApiNotFoundResponse
     @GetMapping("/assets/{assetId}")
     public Mono<ResponseEntity<InputStreamSource>> retrieveAsset(Authentication authenticatedUser,
@@ -138,19 +130,17 @@ public class AssetStorageController {
 
     @ExceptionHandler(AssetNeverStoredException.class)
     public Mono<ResponseEntity<ErrorResponse>> assetNeverStoredExceptionHandler(AssetNeverStoredException ex) {
-        return Mono.just(status(PRECONDITION_REQUIRED)
-                .body(new ErrorResponse(ex.getErrors())));
+        return Mono.just(status(PRECONDITION_REQUIRED).build());
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public Mono<ResponseEntity<ErrorResponse>> accessDeniedExceptionHandler(AccessDeniedException ex) {
-        return Mono.just(status(FORBIDDEN)
-                .body(new ErrorResponse(List.of(new DefaultErrorDetails(ex.getMessage())))));
+        return Mono.just(status(FORBIDDEN).build());
     }
 
     @ExceptionHandler(AssetNotFoundException.class)
     public Mono<ResponseEntity<ErrorResponse>> assetNotFoundExceptionHandler(AssetNotFoundException ex) {
-        return Mono.just(ResponseEntity.notFound().build());
+        return Mono.just(notFound().build());
     }
 
     private ResponseEntity<InputStreamSource> toResponseEntity(StoredAsset storedAsset) {

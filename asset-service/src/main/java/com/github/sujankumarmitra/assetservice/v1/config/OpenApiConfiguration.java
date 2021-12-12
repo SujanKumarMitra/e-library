@@ -66,9 +66,7 @@ public class OpenApiConfiguration {
     @ApiResponse(
             responseCode = "401",
             description = "Token missing or invalid",
-            content = @Content(
-                    schema = @Schema
-            )
+            content = @Content(schema = @Schema)
     )
     @Target({METHOD, TYPE})
     @Retention(RUNTIME)
@@ -78,9 +76,7 @@ public class OpenApiConfiguration {
     @ApiResponse(
             responseCode = "403",
             description = "Client does not have access to invoke the operation",
-            content = @Content(
-                    schema = @Schema
-            )
+            content = @Content(schema = @Schema)
 
     )
     @Target({METHOD, TYPE})
