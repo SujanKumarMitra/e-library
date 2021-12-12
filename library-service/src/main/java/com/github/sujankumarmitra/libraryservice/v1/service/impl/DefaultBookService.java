@@ -12,24 +12,32 @@ import com.github.sujankumarmitra.libraryservice.v1.service.BookService;
 import com.github.sujankumarmitra.libraryservice.v1.service.EBookPermissionService;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Scheduler;
+import reactor.core.scheduler.Schedulers;
 import reactor.util.function.Tuple3;
 import reactor.util.function.Tuples;
 
 import javax.validation.constraints.NotNull;
+
+import static reactor.core.scheduler.Schedulers.newBoundedElastic;
 
 /**
  * @author skmitra
  * @since Dec 03/12/21, 2021
  */
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
-public class DefaultBookService implements BookService {
+public class DefaultBookService implements BookService, InitializingBean {
 
     @NotNull
     private final PhysicalBookDao physicalBookDao;
@@ -43,6 +51,8 @@ public class DefaultBookService implements BookService {
     private final EBookPermissionService eBookPermissionService;
     @NotNull
     private final PagingProperties pagingProperties;
+
+    private Scheduler scheduler;
 
     @Override
     public Mono<String> createBook(PhysicalBook book) {
@@ -154,17 +164,32 @@ public class DefaultBookService implements BookService {
             permission.setDurationInMilliseconds(acceptedLease.getDurationInMilliseconds());
 
 //          @formatter:off
-            return Mono.fromRunnable(() -> eBookPermissionService
-                    .assignPermission(permission).subscribe(s -> {},
-                            err -> log.warn("Error in assigning permissions {}", err.getMessage()),
-                            () -> log.info("Assigned ebook permission with bookId {} to userId {}",
-                                    permission.getBookId(),
-                                    permission.getUserId())));
+            return ReactiveSecurityContextHolder
+                    .getContext()
+                    .map(SecurityContext::getAuthentication)
+                    .doOnNext(auth -> scheduler.schedule(() -> eBookPermissionService
+                            .assignPermission(permission)
+                            .contextWrite(ReactiveSecurityContextHolder.withAuthentication(auth))
+                            .subscribe(s -> {},
+                                    err -> log.warn("Error in assigning permissions {}", err.getMessage()),
+                                    () -> log.info("Assigned ebook permission with bookId {} to userId {}",
+                                            permission.getBookId(),
+                                            permission.getUserId()))))
+                    .then();
 //          @formatter:on
         } else {
             // this should not happen
             log.warn("failed to determine book type {}", book);
             return Mono.error(new RuntimeException("could not determine book type :" + book.getClass().getCanonicalName()));
         }
+    }
+
+    @Override
+    public void afterPropertiesSet() {
+         setScheduler(newBoundedElastic(10, Integer.MAX_VALUE, "AssetPermissionScheduler"));
+    }
+
+    public void setScheduler(Scheduler scheduler) {
+        this.scheduler = scheduler;
     }
 }
