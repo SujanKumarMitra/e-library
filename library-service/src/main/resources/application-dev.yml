@@ -3,7 +3,7 @@ app:
     defaultPageSize: 10
   kafka:
     bootstrapServers: "localhost:9092"
-    notificationsTopicName: "new_notifications"
+    notificationsTopicName: "create_notifications"
     createAssetPermissionsTopicName: "asset_permissions"
   auth:
     baseUrl: "http://localhost:8000"
