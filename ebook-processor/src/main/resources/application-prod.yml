@@ -7,8 +7,9 @@ app:
     threadPoolCapacity: 50
     maxSegmentSize: 10
   redis:
+    url: "${spring.redis.url}"
     password: "${spring.redis.password}"
-    defaultKeyExpirationInMilliseconds: 3600000
+    defaultKeyExpirationInMilliseconds: "${REDIS_KEY_EXPIRY_IN_MILLISECONDS}"
   remoteServices:
     - id: "library-service"
       baseUrl: "${LIBRARY_SERVICE_BASEURL}"

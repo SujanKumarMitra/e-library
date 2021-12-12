@@ -15,10 +15,13 @@ import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Scheduler;
+import reactor.core.scheduler.Schedulers;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import static com.github.sujankumarmitra.ebookprocessor.v1.model.EBookFormat.PDF;
@@ -41,6 +44,7 @@ public class PdfEBookProcessor implements EBookProcessor {
     private final LibraryServiceClient libraryServiceClient;
     @NonNull
     private final PdfFileSplitter pdfFileSplitter;
+    private static final Scheduler WORKER = Schedulers.newSingle("EBookProcessor");
 
     @Override
     public boolean supports(EBookFormat format) {
@@ -54,68 +58,78 @@ public class PdfEBookProcessor implements EBookProcessor {
         String bookId = processDetails.getBookId();
         AuthenticationToken authToken = processDetails.getAuthToken();
 
+        AtomicReference<Path> splitBaseDirRef = new AtomicReference<>();
+
         Mono.fromRunnable(() -> setStatusAsProcessing(processId))
-                .then(libraryServiceClient
-                        .deleteEBookSegments(bookId)
-                        .doOnSuccess(s -> log.info("deleted existing ebook segments of bookId {} in library", bookId)))
-                .thenMany(createPdfSplitFlux(bookPath))
-                .concatMap(segmentPath -> assetServiceClient
-                        .saveAsset(segmentPath)
-                        .doOnNext(assetId -> log.debug("Created asset for segment {} with id {}", segmentPath, assetId))
-                        .doOnError(err -> log.warn("Failed to create asset in asset-service", err))
-                        .doOnTerminate(() -> deleteFile(segmentPath)))
+                .then(deleteExistingEBookSegments(bookId))
+                .then(createPdfSplit(bookPath))
+                .doOnNext(splitBaseDirRef::set)
+                .flatMapMany(this::splitsToFlux)
+                .doOnTerminate(() -> deleteFile(bookPath))
+                .concatMap(this::saveAsset)
                 .doOnComplete(() -> log.info("Created assets for pdf segments"))
+                .doOnTerminate(() -> deleteFile(splitBaseDirRef.get()))
                 .index()
                 .map(tuple2 -> new DefaultEBookSegment(bookId, tuple2.getT1().intValue(), tuple2.getT2()))
                 .cast(EBookSegment.class)
-                .concatMap(segment -> libraryServiceClient
-                        .saveEBookSegment(segment)
-                        .doOnNext(segmentId -> log.debug("Created EBookSegment in library with id {}", segmentId)))
+                .concatMap(this::saveToLibrary)
                 .doOnDiscard(EBookSegment.class, this::deleteSavedAsset)
                 .doOnComplete(() -> this.onSaveEBookSegmentComplete(processId))
                 .doOnError(err -> this.onSaveEBookSegmentError(processId, err))
-                .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authToken)) //@formatter:off
+                .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authToken))
+                //@formatter:off
                 .subscribe(it -> {}, err -> {}, () -> {}); // trigger execution
         //@formatter:on
+    }
+
+    private Mono<String> saveAsset(Path segmentPath) {
+        return assetServiceClient
+                .saveAsset(segmentPath)
+                .publishOn(WORKER)
+                .doOnNext(assetId -> log.debug("Created asset for segment {} with id {}", segmentPath, assetId))
+                .doOnError(err -> log.warn("Failed to create asset in asset-service", err))
+                .doOnTerminate(() -> deleteFile(segmentPath));
+
+    }
+
+    private Mono<String> saveToLibrary(EBookSegment segment) {
+        return libraryServiceClient
+                .saveEBookSegment(segment)
+                .publishOn(WORKER)
+                .doOnNext(segmentId -> log.debug("Created EBookSegment in library with id {}", segmentId));
+    }
+
+    private Mono<Void> deleteExistingEBookSegments(String bookId) {
+        return libraryServiceClient
+                .deleteEBookSegments(bookId)
+                .publishOn(WORKER)
+                .doOnSuccess(s -> log.info("deleted existing ebook segments of bookId {} in library", bookId));
     }
 
     private void deleteSavedAsset(EBookSegment segment) {
         // Delete saved asset as pipeline broke
     }
 
-    private Flux<Path> createPdfSplitFlux(Path bookPath) {
-        return Flux.create(sink -> {
-            Path splitBasePath;
+    public Mono<Path> createPdfSplit(Path bookPath) {
+        return Mono.create(sink -> {
             try {
-                splitBasePath = pdfFileSplitter.splitPdfFile(bookPath);
+                Path splitBasePath = pdfFileSplitter.splitPdfFile(bookPath);
+                sink.success(splitBasePath);
             } catch (IOException e) {
                 log.warn("Error occurred while splitting pdf file", e);
                 sink.error(e);
-                return;
             }
-
-            sink.onDispose(() -> {
-                try {
-                    Files.walk(splitBasePath, 1).forEach(this::deleteFile);
-                } catch (IOException e) {
-                    log.warn("Error while deleting Path entries", e);
-                    // can be ignored
-                }
-            });
-
-            Stream<Path> pathStream;
-            try {
-                pathStream = Files.walk(splitBasePath, 1).skip(1);
-            } catch (IOException e) {
-                log.warn("Error occurred while walking over file path");
-                sink.error(e);
-                return;
-            }
-
-            pathStream.forEach(sink::next);
-            sink.complete();
-
         });
+    }
+
+    private Flux<Path> splitsToFlux(Path splitBasePath) {
+        try {
+            Stream<Path> pathStream = Files.walk(splitBasePath, 1).skip(1);
+            return Flux.fromStream(pathStream);
+        } catch (IOException e) {
+            log.warn("Error occurred while walking over file path");
+            return Flux.error(e);
+        }
     }
 
     private void onSaveEBookSegmentError(String processId, Throwable err) {
@@ -155,10 +169,12 @@ public class PdfEBookProcessor implements EBookProcessor {
 
         statusService
                 .saveStatus(processingStatus)
+                .publishOn(WORKER)
                 .subscribe(s -> {
                         },
                         ex -> log.warn("Error saving EBookProcessingStatus ", ex), // no need to propagate status update errors
                         () -> log.info("Changed processing status of {} to {} state", processId, state));
     }
+
 
 }

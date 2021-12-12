@@ -60,9 +60,7 @@ public class DefaultEBookProcessingService implements EBookProcessingService, In
                 .flatMap(eBook -> saveEBookToDisk(eBook, processRequest))
                 .flatMap(this::setStatusToPending)
                 .map(tuple2 -> createProcessDetails(tuple2, processRequest))
-                .doOnNext(details -> Mono.fromRunnable(() -> processor.process(details))
-                        .publishOn(processorScheduler)
-                        .subscribe())
+                .doOnNext(details -> processorScheduler.schedule(() -> processor.process(details)))
                 .map(EbookProcessDetails::getProcessId);
     }
 
@@ -118,6 +116,6 @@ public class DefaultEBookProcessingService implements EBookProcessingService, In
     @Override
     public void afterPropertiesSet() {
         int threadCapacity = properties.getThreadPoolCapacity();
-        processorScheduler = Schedulers.newBoundedElastic(threadCapacity, Integer.MAX_VALUE, "EBookProcessor");
+        processorScheduler = Schedulers.newBoundedElastic(threadCapacity, Integer.MAX_VALUE, "EBookProcessingService");
     }
 }
