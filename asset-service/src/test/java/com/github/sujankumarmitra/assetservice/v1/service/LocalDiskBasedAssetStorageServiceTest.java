@@ -2,6 +2,7 @@ package com.github.sujankumarmitra.assetservice.v1.service;
 
 import com.github.sujankumarmitra.assetservice.v1.config.AssetStorageProperties;
 import com.github.sujankumarmitra.assetservice.v1.exception.AssetNotFoundException;
+import com.github.sujankumarmitra.assetservice.v1.model.AccessLevel;
 import com.github.sujankumarmitra.assetservice.v1.model.DefaultAsset;
 import com.github.sujankumarmitra.assetservice.v1.model.StoredAsset;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Scanner;
 
+import static com.github.sujankumarmitra.assetservice.v1.model.AccessLevel.PUBLIC;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.nio.file.StandardOpenOption.READ;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -68,7 +70,7 @@ class LocalDiskBasedAssetStorageServiceTest {
 
     private void mockAssetService() {
         mockAssetService = Mockito.mock(AssetService.class);
-        Mockito.doReturn(just(new DefaultAsset(VALID_ASSET_ID, "hello.txt")))
+        Mockito.doReturn(just(new DefaultAsset(VALID_ASSET_ID, "hello.txt", "owner", PUBLIC)))
                 .when(mockAssetService)
                 .getAsset(VALID_ASSET_ID);
     }
@@ -188,7 +190,7 @@ class LocalDiskBasedAssetStorageServiceTest {
 
     @Test
     void givenValidAssetIdButNoAssociatedFile_whenRetrieveAsset_shouldEmitError() {
-        Mockito.doReturn(Mono.just(new DefaultAsset(VALID_ASSET_ID, "somename")))
+        Mockito.doReturn(Mono.just(new DefaultAsset(VALID_ASSET_ID, "somename","owner", PUBLIC)))
                 .when(mockAssetService).getAsset(VALID_ASSET_ID);
 
         Mono<StoredAsset> storedAsset = serviceUnderTest.retrieveAsset(VALID_ASSET_ID);

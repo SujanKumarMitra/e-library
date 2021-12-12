@@ -1,8 +1,7 @@
 package com.github.sujankumarmitra.assetservice.v1.dao;
 
-import com.github.javafaker.Faker;
 import com.github.sujankumarmitra.assetservice.v1.controller.dto.CreateAssetRequest;
-import com.github.sujankumarmitra.assetservice.v1.model.Asset;
+import com.github.sujankumarmitra.assetservice.v1.model.DefaultAsset;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,14 +11,19 @@ import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.util.Objects;
 import java.util.UUID;
+
+import static com.github.sujankumarmitra.assetservice.v1.model.AccessLevel.PRIVATE;
+import static com.github.sujankumarmitra.assetservice.v1.model.AccessLevel.PUBLIC;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author skmitra
  * @since Nov 16/11/21, 2021
  */
 @Slf4j
-class R2dbcPostgresqlAssetDaoTest extends AbstractDataR2dbcPostgreSQLContainerDependentTest{
+class R2dbcPostgresqlAssetDaoTest extends AbstractDataR2dbcPostgreSQLContainerDependentTest {
 
     private R2dbcPostgresqlAssetDao assetDao;
     @Autowired
@@ -43,15 +47,17 @@ class R2dbcPostgresqlAssetDaoTest extends AbstractDataR2dbcPostgreSQLContainerDe
 
     @Test
     void givenValidAssetName_whenInsert_shouldInsertAsset() {
-        String assetName = new Faker().name().name();
-        Asset asset = new CreateAssetRequest(assetName);
+        CreateAssetRequest expectedAsset = new CreateAssetRequest(null, "assetName", "owner", PUBLIC);
 
-        assetDao.insert(asset)
+        assetDao.insert(expectedAsset)
+                .doOnNext(actualAsset -> expectedAsset.setId(actualAsset.getId()))
                 .as(StepVerifier::create)
                 .expectSubscription()
-                .consumeNextWith(savedAsset -> {
-                    log.info("{}", savedAsset);
-                    log.info("Saved Asset Id" + savedAsset.getId());
+                .consumeNextWith(actual -> {
+                    log.info("Expected {}", expectedAsset);
+                    log.info("Actual {}", actual);
+
+                    assertThat(actual).isEqualTo(expectedAsset);
                 })
                 .verifyComplete();
 
@@ -61,23 +67,33 @@ class R2dbcPostgresqlAssetDaoTest extends AbstractDataR2dbcPostgreSQLContainerDe
     @Test
     void givenValidId_whenFetched_shouldFetch() {
 
-        UUID id = UUID.randomUUID();
-        String name = new Faker().name().name();
+        DefaultAsset expectedAsset = DefaultAsset
+                .builder()
+                .id("")
+                .name("name")
+                .ownerId("owner")
+                .accessLevel(PRIVATE)
+                .build();
 
         entityTemplate
                 .getDatabaseClient()
-                .sql("INSERT INTO assets VALUES ($1,$2)")
-                .bind("$1", id)
-                .bind("$2", name)
-                .fetch()
-                .all()
-                .then(assetDao.findOne(id.toString()))
+                .sql(R2dbcPostgresqlAssetDao.INSERT_STATEMENT)
+                .bind("$1", expectedAsset.getName())
+                .bind("$2", expectedAsset.getOwnerId())
+                .bind("$3", expectedAsset.getAccessLevel().toString())
+                .map(row -> row.get("id", UUID.class))
+                .one()
+                .map(Objects::toString)
+                .doOnNext(expectedAsset::setId)
+                .flatMap(assetDao::findOne)
                 .as(StepVerifier::create)
                 .expectSubscription()
-                .expectNextMatches(asset -> {
-                    log.info("{}", asset);
-                    return asset.getId().equals(id.toString()) &&
-                            asset.getName().equals(name);
+                .consumeNextWith(actual -> {
+                    log.info("Expected {}", expectedAsset);
+                    log.info("Actual {}", actual);
+
+                    assertThat(actual).isEqualTo(expectedAsset);
+
                 })
                 .verifyComplete();
     }
@@ -88,7 +104,6 @@ class R2dbcPostgresqlAssetDaoTest extends AbstractDataR2dbcPostgreSQLContainerDe
         assetDao.findOne("INVALID-ID")
                 .as(StepVerifier::create)
                 .expectSubscription()
-                .expectNextCount(0)
                 .verifyComplete();
     }
 
@@ -104,28 +119,31 @@ class R2dbcPostgresqlAssetDaoTest extends AbstractDataR2dbcPostgreSQLContainerDe
 
     @Test
     void givenValidAssetId_whenDeleted_shouldEmitComplete() {
-
-        UUID id = UUID.randomUUID();
-        String name = new Faker().name().name();
+        DefaultAsset expectedAsset = DefaultAsset
+                .builder()
+                .id("")
+                .name("name")
+                .ownerId("owner")
+                .accessLevel(PRIVATE)
+                .build();
 
         entityTemplate
                 .getDatabaseClient()
-                .sql("INSERT INTO assets VALUES ($1,$2)")
-                .bind("$1", id)
-                .bind("$2", name)
-                .fetch()
-                .rowsUpdated()
-                .flatMap(updateCount ->
-                        updateCount == 1 ?
-                                Mono.empty() :
-                                Mono.error(new RuntimeException("updateCount " + updateCount)))
-                .then(assetDao.delete(id.toString()))
-                .then(entityTemplate.getDatabaseClient()
+                .sql(R2dbcPostgresqlAssetDao.INSERT_STATEMENT)
+                .bind("$1", expectedAsset.getName())
+                .bind("$2", expectedAsset.getOwnerId())
+                .bind("$3", expectedAsset.getAccessLevel().toString())
+                .map(row -> row.get("id", UUID.class))
+                .one()
+                .map(Objects::toString)
+                .doOnNext(expectedAsset::setId)
+                .then(Mono.defer(() -> assetDao.delete(expectedAsset.getId())))
+                .then(Mono.defer(() -> entityTemplate.getDatabaseClient()
                         .sql("SELECT * from assets WHERE id=$1")
-                        .bind("$1", id)
+                        .bind("$1", UUID.fromString(expectedAsset.getId()))
                         .fetch()
                         .all()
-                        .count())
+                        .count()))
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .expectNext(0L)

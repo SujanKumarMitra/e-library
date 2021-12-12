@@ -9,10 +9,25 @@ import lombok.*;
 @Getter
 @Setter
 @AllArgsConstructor
-@ToString
+@NoArgsConstructor
+@Builder
 public class DefaultAsset extends Asset {
     @NonNull
-    private final String id;
+    private String id;
     @NonNull
-    private final String name;
+    private String name;
+    @NonNull
+    private String ownerId;
+    @NonNull
+    private AccessLevel accessLevel;
+
+    @Override
+    public boolean equals(Object o) {
+        return super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
 }

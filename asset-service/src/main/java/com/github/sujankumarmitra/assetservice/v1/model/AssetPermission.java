@@ -14,19 +14,20 @@ public abstract class AssetPermission {
 
     public abstract String getSubjectId();
 
-    public abstract long getGrantStartEpochMilliseconds();
+    public abstract Long getGrantStartEpochMilliseconds();
 
-    public abstract long getGrantDurationInMilliseconds();
+    public abstract Long getGrantDurationInMilliseconds();
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof AssetPermission)) return false;
+
         AssetPermission that = (AssetPermission) o;
-        return getGrantStartEpochMilliseconds() == that.getGrantStartEpochMilliseconds() &&
-         getGrantDurationInMilliseconds() == that.getGrantDurationInMilliseconds() && 
-         getAssetId().equals(that.getAssetId()) && 
-         getSubjectId().equals(that.getSubjectId());
+        return Objects.equals(getGrantStartEpochMilliseconds(), that.getGrantStartEpochMilliseconds()) &&
+                Objects.equals(getGrantDurationInMilliseconds(), that.getGrantDurationInMilliseconds()) &&
+                getAssetId().equals(that.getAssetId()) &&
+                getSubjectId().equals(that.getSubjectId());
     }
 
     @Override

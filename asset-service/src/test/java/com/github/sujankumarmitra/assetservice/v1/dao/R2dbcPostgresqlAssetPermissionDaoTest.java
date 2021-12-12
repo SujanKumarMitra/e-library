@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author skmitra
  * @since Nov 16/11/21, 2021
  */
-class R2dbcPostgresqlAssetPermissionDaoTest extends AbstractDataR2dbcPostgreSQLContainerDependentTest{
+class R2dbcPostgresqlAssetPermissionDaoTest extends AbstractDataR2dbcPostgreSQLContainerDependentTest {
 
     @Autowired
     private R2dbcEntityTemplate entityTemplate = null;

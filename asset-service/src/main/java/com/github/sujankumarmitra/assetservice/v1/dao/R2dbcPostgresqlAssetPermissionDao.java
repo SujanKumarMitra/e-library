@@ -12,6 +12,7 @@ import org.springframework.r2dbc.core.ConnectionAccessor;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -69,10 +70,10 @@ public class R2dbcPostgresqlAssetPermissionDao implements AssetPermissionDao {
     private AssetPermission mapToAssetPermission(Row row, RowMetadata rowMetadata) {
         return DefaultAssetPermission
                 .newBuilder()
-                .assetId(row.get("asset_id", UUID.class).toString())
-                .subjectId(row.get("subject_id", String.class))
-                .grantStartEpochMilliseconds(row.get("grant_start", Long.class))
-                .grantDurationInMilliseconds(row.get("grant_duration", Long.class))
+                .assetId(Objects.requireNonNull(row.get("asset_id", UUID.class)).toString())
+                .subjectId(Objects.requireNonNull(row.get("subject_id", String.class)))
+                .grantStartEpochMilliseconds(Objects.requireNonNull(row.get("grant_start", Long.class)))
+                .grantDurationInMilliseconds(Objects.requireNonNull(row.get("grant_duration", Long.class)))
                 .build();
     }
 }

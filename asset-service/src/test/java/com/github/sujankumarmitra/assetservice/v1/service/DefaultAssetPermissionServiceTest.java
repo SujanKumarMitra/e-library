@@ -109,7 +109,7 @@ class DefaultAssetPermissionServiceTest {
     static class AssetPermissionImpl extends AssetPermission {
         String assetId;
         String subjectId;
-        long grantStartEpochMilliseconds;
-        long grantDurationInMilliseconds;
+        Long grantStartEpochMilliseconds;
+        Long grantDurationInMilliseconds;
     }
 }

@@ -37,7 +37,7 @@ public class GrantPermissionRequest extends AssetPermission {
 
     )
     @NotNull
-    private long grantStartEpochMilliseconds;
+    private Long grantStartEpochMilliseconds;
 
     @Schema(
             title = "duration after the grant start time, post that," +
@@ -45,7 +45,7 @@ public class GrantPermissionRequest extends AssetPermission {
             description = "must be either -1 or positive"
     )
     @NotNull
-    private long grantDurationInMilliseconds;
+    private Long grantDurationInMilliseconds;
 
     @AssertTrue(message = "must be present or future")
     @JsonIgnore
