@@ -1,0 +1,2 @@
+CREATE DATABASE asset_service_db OWNER asset_service;
+CREATE DATABASE library_service_db OWNER library_service;

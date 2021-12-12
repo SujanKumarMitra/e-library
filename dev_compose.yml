@@ -1,0 +1,59 @@
+version: "3"
+services:
+  postgres:
+    image: "postgres"
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: "user"
+      POSTGRES_PASSWORD: "password"
+      POSTRES_DB: "db"
+    volumes:
+      - "./initdb/:/docker-entrypoint-initdb.d/"
+      - "./asset-service/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/scripts/asset_service_db.sql"
+      - "./library-service/src/main/resources/schema-create.sql:/docker-entrypoint-initdb.d/scripts/library_service_db.sql"
+  pgadmin:
+    image: "dpage/pgadmin4"
+    ports:
+      - "5433:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "pgadmin_user@email.com"
+      PGADMIN_DEFAULT_PASSWORD: "pgadmin_password"
+    depends_on:
+      - "postgres"
+  mongodb:
+    image: "mongo"
+    ports:
+      - "27017:27017"
+  redis:
+    image: "redis"
+    ports:
+      - "6379:6379"
+  zookeeper:
+    image: zookeeper
+    hostname: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_PORT: 2181
+  kafka:
+    image: confluentinc/cp-kafka
+    hostname: kafka
+    ports:
+      - "9092:9092"
+      - "9999:9999"
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://kafka:19092,LISTENER_DOCKER_EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_DOCKER_INTERNAL:PLAINTEXT,LISTENER_DOCKER_EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_DOCKER_INTERNAL
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_BROKER_ID: 1
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_JMX_PORT: 9999
+      KAFKA_JMX_HOSTNAME: ${DOCKER_HOST_IP:-127.0.0.1}
+    depends_on:
+    - zookeeper
