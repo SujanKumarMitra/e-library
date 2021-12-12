@@ -1,8 +1,8 @@
 package com.github.sujankumarmitra.authorizationservice.v1.controller;
 
 import com.github.sujankumarmitra.authorizationservice.v1.controller.dto.JacksonTokenIntrospectionResponse;
-import com.github.sujankumarmitra.authorizationservice.v1.openapi.schema.OpenAPITokenIntrospectionRequest;
-import com.github.sujankumarmitra.authorizationservice.v1.openapi.schema.OpenAPITokenIntrospectionResponse;
+import com.github.sujankumarmitra.authorizationservice.v1.openapi.schema.OpenApiTokenIntrospectionRequest;
+import com.github.sujankumarmitra.authorizationservice.v1.openapi.schema.OpenApiTokenIntrospectionResponse;
 import com.github.sujankumarmitra.authorizationservice.v1.model.TokenIntrospectionRequest;
 import com.github.sujankumarmitra.authorizationservice.v1.model.TokenIntrospectionResponse;
 import com.github.sujankumarmitra.authorizationservice.v1.model.impl.DefaultTokenIntrospectionRequest;
@@ -44,7 +44,7 @@ public class TokenIntrospectionController {
             requestBody = @RequestBody(
                     content = @Content(
                             mediaType = APPLICATION_FORM_URLENCODED_VALUE,
-                            schema = @Schema(implementation = OpenAPITokenIntrospectionRequest.class)
+                            schema = @Schema(implementation = OpenApiTokenIntrospectionRequest.class)
                     )
             ),
             responses = {
@@ -57,7 +57,7 @@ public class TokenIntrospectionController {
                             responseCode = "400",
                             description = "Missing token",
                             content = @Content(
-                                    schema = @Schema(implementation = OpenAPITokenIntrospectionResponse.class))
+                                    schema = @Schema(implementation = OpenApiTokenIntrospectionResponse.class))
                     )
             }
     )

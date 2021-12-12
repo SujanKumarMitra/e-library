@@ -52,7 +52,6 @@ class JacksonSerializationTest {
                 .newBuilder()
                 .active(true)
                 .scopes(List.of("scope1"))
-                .notBefore(1637154940522L)
                 .expiry(1637154940522L)
                 .subject("subject")
                 .build();

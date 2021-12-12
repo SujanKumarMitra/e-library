@@ -30,7 +30,6 @@ public class JwtTokenIntrospector implements TokenIntrospector {
 
     public static final String SUBJECT_CLAIM_KEY = "sub";
     public static final String SCOPES_CLAIM_KEY = "scopes";
-    public static final String NOT_BEFORE_CLAIM_KEY = "nbf";
     public static final String EXPIRY_CLAIM_KEY = "exp";
 
     static {
@@ -40,7 +39,6 @@ public class JwtTokenIntrospector implements TokenIntrospector {
                 .subject(empty())
                 .scopes(empty())
                 .expiry(empty())
-                .notBefore(empty())
                 .build();
     }
 
@@ -64,11 +62,10 @@ public class JwtTokenIntrospector implements TokenIntrospector {
 
             String subject = decode.getClaim(SUBJECT_CLAIM_KEY).asString();
             List<String> scopes = decode.getClaim(SCOPES_CLAIM_KEY).asList(String.class);
-            Long notBefore = decode.getClaim(NOT_BEFORE_CLAIM_KEY).asLong();
             Long expiry = decode.getClaim(EXPIRY_CLAIM_KEY).asLong();
 
             boolean hasNulls = Stream
-                    .of(subject, scopes, notBefore, expiry)
+                    .of(subject, scopes, expiry)
                     .anyMatch(Objects::isNull);
 
             if (hasNulls) {
@@ -82,7 +79,6 @@ public class JwtTokenIntrospector implements TokenIntrospector {
                     .subject(subject)
                     .scopes(scopes)
                     .expiry(expiry)
-                    .notBefore(notBefore)
                     .build();
 
             log.info("Token {}", response);

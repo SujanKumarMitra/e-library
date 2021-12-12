@@ -10,7 +10,7 @@ import java.util.Optional;
  * @since Nov 17/11/21, 2021
  */
 @Schema(name = "TokenIntrospectionRequest")
-public class OpenAPITokenIntrospectionRequest extends TokenIntrospectionRequest {
+public class OpenApiTokenIntrospectionRequest extends TokenIntrospectionRequest {
     @Override
     @Schema(required = true)
     public String getToken() {

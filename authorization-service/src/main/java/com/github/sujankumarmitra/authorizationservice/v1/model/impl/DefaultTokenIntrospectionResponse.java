@@ -29,15 +29,12 @@ public class DefaultTokenIntrospectionResponse extends TokenIntrospectionRespons
     @NonNull
     private final Optional<Long> expiry;
 
-    @NonNull
-    private final Optional<Long> notBefore;
 
-    DefaultTokenIntrospectionResponse(boolean active, @NonNull Optional<String> subject, @NonNull Optional<Collection<String>> scopes, @NonNull Optional<Long> expiry, @NonNull Optional<Long> notBefore) {
+    DefaultTokenIntrospectionResponse(boolean active, @NonNull Optional<String> subject, @NonNull Optional<Collection<String>> scopes, @NonNull Optional<Long> expiry) {
         this.active = active;
         this.subject = subject;
         this.scopes = scopes;
         this.expiry = expiry;
-        this.notBefore = notBefore;
     }
 
     public static DefaultTokenIntrospectionResponseBuilder newBuilder() {
@@ -49,7 +46,6 @@ public class DefaultTokenIntrospectionResponse extends TokenIntrospectionRespons
         private String subject;
         private Collection<String> scopes;
         private Long expiry;
-        private Long notBefore;
 
         DefaultTokenIntrospectionResponseBuilder() {
         }
@@ -89,27 +85,16 @@ public class DefaultTokenIntrospectionResponse extends TokenIntrospectionRespons
             return this;
         }
 
-        public DefaultTokenIntrospectionResponseBuilder notBefore(@NonNull Optional<Long> notBefore) {
-            this.notBefore = notBefore.orElse(null);
-            return this;
-        }
-
-        public DefaultTokenIntrospectionResponseBuilder notBefore(Long notBefore) {
-            this.notBefore = notBefore;
-            return this;
-        }
-
         public DefaultTokenIntrospectionResponse build() {
             return new DefaultTokenIntrospectionResponse(
                     active,
                     ofNullable(subject),
                     ofNullable(scopes),
-                    ofNullable(expiry),
-                    ofNullable(notBefore));
+                    ofNullable(expiry));
         }
 
         public String toString() {
-            return "DefaultTokenIntrospectionResponse.DefaultTokenIntrospectionResponseBuilder(valid=" + this.active + ", subject=" + this.subject + ", scopes=" + this.scopes + ", expiry=" + this.expiry + ", notBefore=" + this.notBefore + ")";
+            return "DefaultTokenIntrospectionResponse.DefaultTokenIntrospectionResponseBuilder(valid=" + this.active + ", subject=" + this.subject + ", scopes=" + this.scopes + ", expiry=" + this.expiry + ")";
         }
     }
 }

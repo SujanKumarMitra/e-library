@@ -45,10 +45,4 @@ public class JacksonTokenIntrospectionResponse extends TokenIntrospectionRespons
     public Optional<Long> getExpiry() {
         return response.getExpiry();
     }
-
-    @Override
-    @JsonProperty("nbf")
-    public Optional<Long> getNotBefore() {
-        return response.getNotBefore();
-    }
 }

@@ -45,7 +45,6 @@ class TokenIntrospectionIntegrationTest {
         assertThat(response.isActive()).isTrue();
         assertThat(response.getSubject()).contains("1234567890");
         assertThat(response.getExpiry()).contains(1637154940522L);
-        assertThat(response.getNotBefore()).contains(1637154540522L);
         assertThat(response.getScopes()).contains(List.of("scope1", "scope2"));
 
     }
@@ -94,7 +93,5 @@ class TokenIntrospectionIntegrationTest {
         Optional<Collection<String>> scopes;
         @JsonProperty("exp")
         Optional<Long> expiry;
-        @JsonProperty("nbf")
-        Optional<Long> notBefore;
     }
 }

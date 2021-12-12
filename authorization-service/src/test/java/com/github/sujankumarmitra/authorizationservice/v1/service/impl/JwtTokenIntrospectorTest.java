@@ -42,7 +42,6 @@ class JwtTokenIntrospectorTest {
                     assertThat(response.isActive()).isTrue();
                     assertThat(response.getSubject()).contains("subject");
                     assertThat(response.getScopes()).contains(List.of("scope1", "scope2"));
-                    assertThat(response.getNotBefore()).contains(1637154540522L);
                     assertThat(response.getExpiry()).contains(1637154940522L);
                 })
                 .verifyComplete();

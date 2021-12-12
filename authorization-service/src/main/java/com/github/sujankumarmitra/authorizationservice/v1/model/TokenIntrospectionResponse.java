@@ -17,5 +17,4 @@ public abstract class TokenIntrospectionResponse {
 
     public abstract Optional<Long> getExpiry();
 
-    public abstract Optional<Long> getNotBefore();
 }

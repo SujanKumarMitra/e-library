@@ -11,7 +11,7 @@ import java.util.Optional;
  * @since Nov 17/11/21, 2021
  */
 @Schema(name = "TokenIntrospectionResponse")
-public class OpenAPITokenIntrospectionResponse extends TokenIntrospectionResponse {
+public class OpenApiTokenIntrospectionResponse extends TokenIntrospectionResponse {
     @Override
     @Schema(required = true)
     public boolean isActive() {
@@ -33,8 +33,4 @@ public class OpenAPITokenIntrospectionResponse extends TokenIntrospectionRespons
         return Optional.empty();
     }
 
-    @Override
-    public Optional<Long> getNotBefore() {
-        return Optional.empty();
-    }
 }

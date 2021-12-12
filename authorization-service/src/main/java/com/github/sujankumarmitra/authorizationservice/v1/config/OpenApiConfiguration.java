@@ -22,5 +22,5 @@ import org.springframework.context.annotation.Configuration;
         )
 )
 @Configuration
-public class OpenAPIConfiguration {
+public class OpenApiConfiguration {
 }
