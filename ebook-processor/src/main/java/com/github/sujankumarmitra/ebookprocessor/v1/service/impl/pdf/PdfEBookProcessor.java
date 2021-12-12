@@ -1,6 +1,7 @@
 package com.github.sujankumarmitra.ebookprocessor.v1.service.impl.pdf;
 
 import com.github.sujankumarmitra.ebookprocessor.v1.model.*;
+import com.github.sujankumarmitra.ebookprocessor.v1.model.impl.DefaultAsset;
 import com.github.sujankumarmitra.ebookprocessor.v1.model.impl.DefaultEBookProcessingStatus;
 import com.github.sujankumarmitra.ebookprocessor.v1.model.impl.DefaultEBookSegment;
 import com.github.sujankumarmitra.ebookprocessor.v1.security.AuthenticationToken;
@@ -17,6 +18,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -24,6 +27,7 @@ import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
+import static com.github.sujankumarmitra.ebookprocessor.v1.model.AccessLevel.PRIVATE;
 import static com.github.sujankumarmitra.ebookprocessor.v1.model.EBookFormat.PDF;
 import static com.github.sujankumarmitra.ebookprocessor.v1.model.ProcessingState.*;
 import static java.nio.file.Files.deleteIfExists;
@@ -66,10 +70,10 @@ public class PdfEBookProcessor implements EBookProcessor {
                 .doOnNext(splitBaseDirRef::set)
                 .flatMapMany(this::splitsToFlux)
                 .doOnTerminate(() -> deleteFile(bookPath))
-                .concatMap(this::saveAsset)
+                .index()
+                .concatMap(tuple2 -> saveAsset(tuple2, bookId))
                 .doOnComplete(() -> log.info("Created assets for pdf segments"))
                 .doOnTerminate(() -> deleteFile(splitBaseDirRef.get()))
-                .index()
                 .map(tuple2 -> new DefaultEBookSegment(bookId, tuple2.getT1().intValue(), tuple2.getT2()))
                 .cast(EBookSegment.class)
                 .concatMap(this::saveToLibrary)
@@ -82,14 +86,20 @@ public class PdfEBookProcessor implements EBookProcessor {
         //@formatter:on
     }
 
-    private Mono<String> saveAsset(Path segmentPath) {
+    private Mono<Tuple2<Long, String>> saveAsset(Tuple2<Long, Path> indexedPath, String bookId) {
+        long index = indexedPath.getT1();
+        Path segmentPath = indexedPath.getT2();
+
+        Asset asset = new DefaultAsset(bookId + "_" + index, PRIVATE);
         return assetServiceClient
-                .saveAsset(segmentPath)
+                .createAsset(asset)
+                .flatMap(assetId -> assetServiceClient
+                        .storeAsset(assetId, segmentPath)
+                        .thenReturn(Tuples.of(index, assetId)))
                 .publishOn(WORKER)
-                .doOnNext(assetId -> log.debug("Created asset for segment {} with id {}", segmentPath, assetId))
+                .doOnNext(tuple2 -> log.debug("Created asset for segment {} with id {}", segmentPath, tuple2.getT2()))
                 .doOnError(err -> log.warn("Failed to create asset in asset-service", err))
                 .doOnTerminate(() -> deleteFile(segmentPath));
-
     }
 
     private Mono<String> saveToLibrary(EBookSegment segment) {
