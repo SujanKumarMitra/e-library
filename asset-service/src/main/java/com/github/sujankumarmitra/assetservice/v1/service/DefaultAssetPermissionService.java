@@ -10,6 +10,7 @@ import lombok.NonNull;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import static com.github.sujankumarmitra.assetservice.v1.model.AccessLevel.PUBLIC;
 import static java.lang.Boolean.FALSE;
 
 
@@ -37,14 +38,18 @@ public class DefaultAssetPermissionService implements AssetPermissionService {
 
         return assetDao.findOne(assetId)
                 .switchIfEmpty(Mono.error(() -> new AssetNotFoundException(assetId)))
-                .map(Asset::getOwnerId)
-                .map(ownerId -> ownerId.equals(subjectId))
+                .map(asset -> isPublicAssetOrSubjectIdIsOwner(asset, subjectId))
                 .filter(Boolean::booleanValue)
                 .switchIfEmpty(permissionDao
                         .findOne(assetId, subjectId)
                         .map(permission -> checkPermission(currentTimestamp, permission))
                         .switchIfEmpty(Mono.fromSupplier(() -> FALSE)));
 
+    }
+
+    private boolean isPublicAssetOrSubjectIdIsOwner(Asset asset, String subjectId) {
+        return asset.getAccessLevel() == PUBLIC ||
+                asset.getOwnerId().equals(subjectId);
     }
 
     private boolean checkPermission(long currentTimestamp, AssetPermission permission) {

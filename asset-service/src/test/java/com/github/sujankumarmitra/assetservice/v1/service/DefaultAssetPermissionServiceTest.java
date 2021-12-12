@@ -3,6 +3,7 @@ package com.github.sujankumarmitra.assetservice.v1.service;
 import com.github.sujankumarmitra.assetservice.v1.dao.AssetDao;
 import com.github.sujankumarmitra.assetservice.v1.dao.AssetPermissionDao;
 import com.github.sujankumarmitra.assetservice.v1.model.AssetPermission;
+import com.github.sujankumarmitra.assetservice.v1.model.DefaultAsset;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -15,6 +16,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import static com.github.sujankumarmitra.assetservice.v1.model.AccessLevel.PRIVATE;
+import static com.github.sujankumarmitra.assetservice.v1.model.AccessLevel.PUBLIC;
 import static com.github.sujankumarmitra.assetservice.v1.model.AssetPermission.INFINITE_GRANT_DURATION;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
@@ -51,6 +54,15 @@ class DefaultAssetPermissionServiceTest {
                 .when(permissionDao)
                 .findOne(VALID_ASSET_ID, VALID_SUBJECT_ID);
 
+        Mockito.doReturn(Mono.just(DefaultAsset
+                        .builder()
+                        .id(VALID_ASSET_ID)
+                        .name("name")
+                        .ownerId("not_same_with_subject_id")
+                        .accessLevel(PRIVATE)
+                        .build()))
+                .when(assetDao).findOne(VALID_ASSET_ID);
+
 
         Mono<Boolean> hasPermission = serviceUnderTest.hasPermission(VALID_ASSET_ID, VALID_SUBJECT_ID);
 
@@ -70,6 +82,14 @@ class DefaultAssetPermissionServiceTest {
                 .when(permissionDao)
                 .findOne(VALID_ASSET_ID, VALID_SUBJECT_ID);
 
+        Mockito.doReturn(Mono.just(DefaultAsset
+                        .builder()
+                        .id(VALID_ASSET_ID)
+                        .name("name")
+                        .ownerId("not_same_with_subject_id")
+                        .accessLevel(PRIVATE)
+                        .build()))
+                .when(assetDao).findOne(VALID_ASSET_ID);
 
         Mono<Boolean> hasPermission = serviceUnderTest.hasPermission(VALID_ASSET_ID, VALID_SUBJECT_ID);
 
@@ -89,6 +109,15 @@ class DefaultAssetPermissionServiceTest {
                 .when(permissionDao)
                 .findOne(VALID_ASSET_ID, VALID_SUBJECT_ID);
 
+        Mockito.doReturn(Mono.just(DefaultAsset
+                        .builder()
+                        .id(VALID_ASSET_ID)
+                        .name("name")
+                        .ownerId("not_same_with_subject_id")
+                        .accessLevel(PRIVATE)
+                        .build()))
+                .when(assetDao).findOne(VALID_ASSET_ID);
+
 
         Mono<Boolean> hasPermission = serviceUnderTest.hasPermission(VALID_ASSET_ID, VALID_SUBJECT_ID);
 
@@ -97,6 +126,53 @@ class DefaultAssetPermissionServiceTest {
                 .expectNext(FALSE)
                 .verifyComplete();
     }
+
+    @Test
+    void givenPublicAsset_whenCheckPermission_shouldEmitTrue() {
+        Mockito.doReturn(Mono.just(DefaultAsset
+                        .builder()
+                        .id(VALID_ASSET_ID)
+                        .name("name")
+                        .ownerId("not_same_with_subject_id")
+                        .accessLevel(PUBLIC)
+                        .build()))
+                .when(assetDao).findOne(VALID_ASSET_ID);
+
+        Mockito.doReturn(Mono.empty())
+                .when(permissionDao)
+                .findOne(VALID_ASSET_ID, VALID_SUBJECT_ID);
+
+        Mono<Boolean> hasPermission = serviceUnderTest.hasPermission(VALID_ASSET_ID, VALID_SUBJECT_ID);
+
+        StepVerifier
+                .create(hasPermission)
+                .expectNext(TRUE)
+                .verifyComplete();
+    }
+
+    @Test
+    void givenValidAsset_whenCheckPermissionWithSubjectIdAsOwnerId_shouldEmitTrue() {
+        Mockito.doReturn(Mono.just(DefaultAsset
+                        .builder()
+                        .id(VALID_ASSET_ID)
+                        .name("name")
+                        .ownerId(VALID_SUBJECT_ID)
+                        .accessLevel(PRIVATE)
+                        .build()))
+                .when(assetDao).findOne(VALID_ASSET_ID);
+
+        Mockito.doReturn(Mono.empty())
+                .when(permissionDao)
+                .findOne(VALID_ASSET_ID, VALID_SUBJECT_ID);
+
+        Mono<Boolean> hasPermission = serviceUnderTest.hasPermission(VALID_ASSET_ID, VALID_SUBJECT_ID);
+
+        StepVerifier
+                .create(hasPermission)
+                .expectNext(TRUE)
+                .verifyComplete();
+    }
+
 
     private long nineDays() {
         return ofDays(9).toMillis();
