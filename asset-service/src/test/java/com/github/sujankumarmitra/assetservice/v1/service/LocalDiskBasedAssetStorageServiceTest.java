@@ -2,7 +2,6 @@ package com.github.sujankumarmitra.assetservice.v1.service;
 
 import com.github.sujankumarmitra.assetservice.v1.config.AssetStorageProperties;
 import com.github.sujankumarmitra.assetservice.v1.exception.AssetNotFoundException;
-import com.github.sujankumarmitra.assetservice.v1.model.AccessLevel;
 import com.github.sujankumarmitra.assetservice.v1.model.DefaultAsset;
 import com.github.sujankumarmitra.assetservice.v1.model.StoredAsset;
 import lombok.extern.slf4j.Slf4j;
@@ -148,7 +147,7 @@ class LocalDiskBasedAssetStorageServiceTest {
 
 
     @Test
-    void givenInvalidAssetId_whenRetrieve_shouldCompleteWithoutEmit() {
+    void givenInvalidAssetId_whenRetrieve_shouldEmitError() {
         Mockito.doReturn(Mono.empty())
                 .when(mockAssetService).getAsset(INVALID_ASSET_ID);
 
@@ -156,7 +155,7 @@ class LocalDiskBasedAssetStorageServiceTest {
         Mono<StoredAsset> storedAsset = serviceUnderTest.retrieveAsset(INVALID_ASSET_ID);
 
         StepVerifier.create(storedAsset)
-                .expectComplete()
+                .expectError(AssetNotFoundException.class)
                 .verify();
     }
 

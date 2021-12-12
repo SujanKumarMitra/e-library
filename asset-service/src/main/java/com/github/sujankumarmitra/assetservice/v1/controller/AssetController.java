@@ -1,11 +1,7 @@
 package com.github.sujankumarmitra.assetservice.v1.controller;
 
-import com.github.sujankumarmitra.assetservice.v1.config.OpenApiConfiguration;
 import com.github.sujankumarmitra.assetservice.v1.controller.dto.CreateAssetRequest;
 import com.github.sujankumarmitra.assetservice.v1.model.Asset;
-import com.github.sujankumarmitra.assetservice.v1.model.AssetPermission;
-import com.github.sujankumarmitra.assetservice.v1.model.DefaultAssetPermission;
-import com.github.sujankumarmitra.assetservice.v1.service.AssetPermissionService;
 import com.github.sujankumarmitra.assetservice.v1.service.AssetService;
 import com.github.sujankumarmitra.assetservice.v1.service.AssetStorageService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,12 +19,10 @@ import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
 
-import static com.github.sujankumarmitra.assetservice.v1.model.AssetPermission.INFINITE_GRANT_DURATION;
-import static java.lang.System.currentTimeMillis;
+import static com.github.sujankumarmitra.assetservice.v1.config.OpenApiConfiguration.*;
 import static java.net.URI.create;
 import static org.springframework.http.ResponseEntity.accepted;
 import static org.springframework.http.ResponseEntity.created;
-import static reactor.core.publisher.Mono.just;
 
 
 /**
@@ -42,14 +36,14 @@ import static reactor.core.publisher.Mono.just;
         name = "AssetController",
         description = "### Controller for creating and deleting assets"
 )
-@OpenApiConfiguration.ApiSecurityResponse
-@OpenApiConfiguration.ApiSecurityScheme
+@ApiSecurityResponse
+@ApiSecurityScheme
 public class AssetController {
 
     @NonNull
     private final AssetService assetService;
-    @NonNull
-    private final AssetPermissionService assetPermissionService;
+//    @NonNull
+//    private final AssetPermissionService assetPermissionService;
     @NonNull
     private final AssetStorageService assetStorageService;
 
@@ -69,7 +63,7 @@ public class AssetController {
                     )
             }
     )
-    @OpenApiConfiguration.ApiBadRequestResponse
+    @ApiBadRequestResponse
     @PreAuthorize("hasAuthority('WRITE_ASSET')")
     public Mono<ResponseEntity<Void>> createAsset(Authentication authenticatedUser,
                                                   @RequestBody @Valid CreateAssetRequest request) {
@@ -77,8 +71,8 @@ public class AssetController {
         return assetService
                 .createAsset(request)
                 .map(Asset::getId)
-                .zipWith(just(authenticatedUser.getName()), this::getAssetPermission)
-                .flatMap(this::grantPermissionToAssetCreator)
+//                .zipWith(just(authenticatedUser.getName()), this::getAssetPermission)
+//                .flatMap(this::grantPermissionToAssetCreator)
                 .map(assetId -> created(create(assetId)).build());
     }
 
@@ -98,24 +92,7 @@ public class AssetController {
         return assetService
                 .deleteAsset(assetId)
                 .thenReturn(assetId)
-                .flatMap(assetStorageService::purgeAsset)
+                .flatMap(assetStorageService::purgeAsset) // TODO Move this to asset service
                 .thenReturn(accepted().build());
-    }
-
-
-    private Mono<String> grantPermissionToAssetCreator(AssetPermission assetPermission) {
-        return assetPermissionService
-                .grantPermission(assetPermission)
-                .thenReturn(assetPermission.getAssetId());
-    }
-
-    private AssetPermission getAssetPermission(String assetId, String subjectId) {
-        return DefaultAssetPermission
-                .newBuilder()
-                .assetId(assetId)
-                .subjectId(subjectId)
-                .grantStartEpochMilliseconds(currentTimeMillis())
-                .grantDurationInMilliseconds(INFINITE_GRANT_DURATION)
-                .build();
     }
 }

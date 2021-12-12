@@ -1,6 +1,5 @@
 package com.github.sujankumarmitra.assetservice.v1.controller;
 
-import com.github.sujankumarmitra.assetservice.v1.config.OpenApiConfiguration;
 import com.github.sujankumarmitra.assetservice.v1.controller.dto.ErrorResponse;
 import com.github.sujankumarmitra.assetservice.v1.exception.AssetNeverStoredException;
 import com.github.sujankumarmitra.assetservice.v1.exception.AssetNotFoundException;
@@ -31,6 +30,8 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+import static com.github.sujankumarmitra.assetservice.v1.config.OpenApiConfiguration.ApiBadRequestResponse;
+import static com.github.sujankumarmitra.assetservice.v1.config.OpenApiConfiguration.ApiSecurityScheme;
 import static io.swagger.v3.oas.annotations.enums.ParameterIn.PATH;
 import static java.lang.String.format;
 import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
@@ -40,7 +41,6 @@ import static org.springframework.http.HttpStatus.PRECONDITION_REQUIRED;
 import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
 import static org.springframework.http.ResponseEntity.ok;
 import static org.springframework.http.ResponseEntity.status;
-import static reactor.core.publisher.Mono.error;
 
 /**
  * @author skmitra
@@ -54,7 +54,7 @@ import static reactor.core.publisher.Mono.error;
         description = "### Controller for storing and retrieving asset objects"
 )
 //@OpenApiConfiguration.ApiSecurityResponse
-@OpenApiConfiguration.ApiSecurityScheme
+@ApiSecurityScheme
 public class AssetStorageController {
 
     public static final String CONTENT_DISPOSITION_FORMAT = "attachment; filename=\"%s\"";
@@ -99,13 +99,13 @@ public class AssetStorageController {
     )
     @PutMapping(value = "/assets/{assetId}", consumes = {APPLICATION_OCTET_STREAM_VALUE})
     @PreAuthorize("hasAuthority('WRITE_ASSET')")
-    @OpenApiConfiguration.ApiBadRequestResponse
+    @ApiBadRequestResponse
     public Mono<ResponseEntity<Void>> storeAsset(@PathVariable String assetId, ServerWebExchange exchange) {
         Flux<DataBuffer> dataBuffers = exchange.getRequest().getBody();
 
         return assetStorageService
                 .storeAsset(assetId, dataBuffers)
-                .map(__ -> ok().build());
+                .thenReturn(ok().build());
 
     }
 
@@ -173,10 +173,9 @@ public class AssetStorageController {
                                                                  @PathVariable String assetId) {
         return assetPermissionService
                 .hasPermission(assetId, authenticatedUser.getName())
-                .filter(res -> res)
+                .filter(Boolean::booleanValue)
                 .switchIfEmpty(Mono.error(new AccessDeniedException("You don't have permission to access this resource")))
-                .flatMap(__ -> assetStorageService.retrieveAsset(assetId))
-                .switchIfEmpty(error(new AssetNotFoundException(assetId)))
+                .flatMap(trueVal -> assetStorageService.retrieveAsset(assetId))
                 .map(this::toResponseEntity);
     }
 
@@ -191,6 +190,11 @@ public class AssetStorageController {
     public Mono<ResponseEntity<ErrorResponse>> accessDeniedExceptionHandler(AccessDeniedException ex) {
         return Mono.just(status(FORBIDDEN)
                 .body(new ErrorResponse(List.of(new DefaultErrorDetails(ex.getMessage())))));
+    }
+
+    @ExceptionHandler(AssetNotFoundException.class)
+    public Mono<ResponseEntity<ErrorResponse>> assetNotFoundExceptionHandler(AssetNotFoundException ex) {
+        return Mono.just(ResponseEntity.notFound().build());
     }
 
     private ResponseEntity<InputStreamSource> toResponseEntity(StoredAsset storedAsset) {

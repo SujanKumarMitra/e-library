@@ -1,6 +1,5 @@
 package com.github.sujankumarmitra.assetservice.v1.controller;
 
-import com.github.sujankumarmitra.assetservice.v1.config.OpenApiConfiguration;
 import com.github.sujankumarmitra.assetservice.v1.controller.dto.GrantPermissionRequest;
 import com.github.sujankumarmitra.assetservice.v1.exception.AssetNotFoundException;
 import com.github.sujankumarmitra.assetservice.v1.service.AssetPermissionService;
@@ -16,6 +15,7 @@ import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
 
+import static com.github.sujankumarmitra.assetservice.v1.config.OpenApiConfiguration.*;
 import static org.springframework.http.ResponseEntity.notFound;
 import static org.springframework.http.ResponseEntity.ok;
 
@@ -30,8 +30,8 @@ import static org.springframework.http.ResponseEntity.ok;
         name = "AssetPermissionController",
         description = "### Controller for granting clients permission to access assets"
 )
-@OpenApiConfiguration.ApiSecurityResponse
-@OpenApiConfiguration.ApiSecurityScheme
+@ApiSecurityResponse
+@ApiSecurityScheme
 public class AssetPermissionController {
 
     @NonNull
@@ -52,13 +52,13 @@ public class AssetPermissionController {
     )
     @PutMapping("/{assetId}/permissions")
     @PreAuthorize("hasAuthority('WRITE_ASSET')")
-    @OpenApiConfiguration.ApiBadRequestResponse
+    @ApiBadRequestResponse
     public Mono<ResponseEntity<Void>> grantPermission(@PathVariable String assetId,
                                                       @RequestBody @Valid GrantPermissionRequest permission) {
         permission.setAssetId(assetId);
         return permissionService
                 .grantPermission(permission)
-                .map(__ -> ok().build());
+                .thenReturn(ok().build());
     }
 
 

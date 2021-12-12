@@ -1,5 +1,6 @@
 package com.github.sujankumarmitra.assetservice.v1.service;
 
+import com.github.sujankumarmitra.assetservice.v1.dao.AssetDao;
 import com.github.sujankumarmitra.assetservice.v1.dao.AssetPermissionDao;
 import com.github.sujankumarmitra.assetservice.v1.model.AssetPermission;
 import lombok.AllArgsConstructor;
@@ -7,7 +8,10 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -21,17 +25,20 @@ import static java.time.Duration.ofDays;
  * @author skmitra
  * @since Sep 25/09/21, 2021
  */
+@ExtendWith(MockitoExtension.class)
 class DefaultAssetPermissionServiceTest {
 
     public static final String VALID_SUBJECT_ID = "VALID_SUBJECT_ID";
     public static final String VALID_ASSET_ID = "VALID_ASSET_ID";
+    @Mock
     private AssetPermissionDao permissionDao;
+    @Mock
+    private AssetDao assetDao;
     private DefaultAssetPermissionService serviceUnderTest;
 
     @BeforeEach
     void setUp() {
-        permissionDao = Mockito.mock(AssetPermissionDao.class);
-        serviceUnderTest = new DefaultAssetPermissionService(permissionDao);
+        serviceUnderTest = new DefaultAssetPermissionService(assetDao, permissionDao);
     }
 
     @Test

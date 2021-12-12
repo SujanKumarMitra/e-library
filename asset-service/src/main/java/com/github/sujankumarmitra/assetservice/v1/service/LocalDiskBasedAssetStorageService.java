@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoSink;
+import reactor.util.function.Tuples;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -50,10 +51,12 @@ public class LocalDiskBasedAssetStorageService implements AssetStorageService {
 
     @Override
     public Mono<StoredAsset> retrieveAsset(String assetId) {
-        Mono<Asset> asset = assetService.getAsset(assetId);
-        Mono<InputStreamSource> inputStreamSource = asset.map(this::fetchFromDisk);
 
-        return Mono.zip(asset, inputStreamSource, DefaultStoredAsset::new);
+        return assetService
+                .getAsset(assetId)
+                .switchIfEmpty(Mono.error(() -> new AssetNotFoundException(assetId)))
+                .map(asset -> Tuples.of(asset, fetchFromDisk(asset)))
+                .map(tuple2 -> new DefaultStoredAsset(tuple2.getT1(), tuple2.getT2()));
     }
 
     @Override
