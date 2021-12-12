@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.github.sujankumarmitra</groupId>
     <artifactId>asset-service</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>asset-service</name>
     <description>Service for storing and serving static assets</description>
     <properties>

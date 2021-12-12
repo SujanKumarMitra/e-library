@@ -1,6 +1,4 @@
-spring:
-  application:
-    name: "asset-service"
-  sql:
-    init:
-      mode: "ALWAYS"
+springdoc:
+  swagger-ui:
+    operationsSorter: "alpha"
+    tagsSorter: "alpha"
