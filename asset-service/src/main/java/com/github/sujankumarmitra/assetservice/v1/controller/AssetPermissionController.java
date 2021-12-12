@@ -4,7 +4,6 @@ import com.github.sujankumarmitra.assetservice.v1.controller.dto.GrantPermission
 import com.github.sujankumarmitra.assetservice.v1.exception.AssetNotFoundException;
 import com.github.sujankumarmitra.assetservice.v1.service.AssetPermissionService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -16,8 +15,8 @@ import reactor.core.publisher.Mono;
 import javax.validation.Valid;
 
 import static com.github.sujankumarmitra.assetservice.v1.config.OpenApiConfiguration.*;
+import static org.springframework.http.ResponseEntity.accepted;
 import static org.springframework.http.ResponseEntity.notFound;
-import static org.springframework.http.ResponseEntity.ok;
 
 /**
  * @author skmitra
@@ -28,7 +27,7 @@ import static org.springframework.http.ResponseEntity.ok;
 @AllArgsConstructor
 @Tag(
         name = "AssetPermissionController",
-        description = "### Controller for granting clients permission to access assets"
+        description = "Controller for granting access permission to clients"
 )
 @ApiSecurityResponse
 @ApiSecurityScheme
@@ -38,27 +37,20 @@ public class AssetPermissionController {
     private final AssetPermissionService permissionService;
 
     @Operation(
-            description = "# Grant permission to a client to access a asset",
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "Server has acknowledged the request"
-                    ),
-                    @ApiResponse(
-                            responseCode = "404",
-                            description = "asset with AssetId not found"
-                    )
-            }
+            summary = "Grant permission to a client to access a asset",
+            description = "Scopes required=WRITE_ASSET"
     )
-    @PutMapping("/{assetId}/permissions")
-    @PreAuthorize("hasAuthority('WRITE_ASSET')")
+    @ApiAcceptedResponse
+    @ApiNotFoundResponse
     @ApiBadRequestResponse
+    @PatchMapping("/{assetId}/permissions")
+    @PreAuthorize("hasAuthority('WRITE_ASSET')")
     public Mono<ResponseEntity<Void>> grantPermission(@PathVariable String assetId,
                                                       @RequestBody @Valid GrantPermissionRequest permission) {
         permission.setAssetId(assetId);
         return permissionService
                 .grantPermission(permission)
-                .thenReturn(ok().build());
+                .thenReturn(accepted().build());
     }
 
 

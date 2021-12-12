@@ -19,7 +19,7 @@ import javax.validation.constraints.NotNull;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Schema(description = "Schema for creating a new Asset")
+@Schema(name = "CreateAssetRequestSchema", description = "Schema for creating a new Asset")
 public class CreateAssetRequest extends Asset {
 
     @JsonIgnore

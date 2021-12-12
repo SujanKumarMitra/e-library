@@ -18,7 +18,7 @@ import static java.lang.System.currentTimeMillis;
  */
 @Data
 @NoArgsConstructor
-@Schema(description = "Payload for granting access to an asset")
+@Schema(name = "GrantPermissionRequest", description = "Payload for granting access to an asset")
 public class GrantPermissionRequest extends AssetPermission {
     @JsonIgnore
     private String assetId;

@@ -1,6 +1,8 @@
 package com.github.sujankumarmitra.assetservice.v1.controller.dto;
 
 import com.github.sujankumarmitra.assetservice.v1.exception.ErrorDetails;
+import com.github.sujankumarmitra.assetservice.v1.openapi.schema.ErrorDetailsSchema;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NonNull;
@@ -13,11 +15,11 @@ import java.util.Collection;
  */
 @Data
 @Schema(
-        name = "ErrorResponse",
+        name = "ErrorResponseSchema",
         description = "Response body in case any error occurs"
 )
 public class ErrorResponse {
-    @Schema
+    @ArraySchema(schema = @Schema(implementation = ErrorDetailsSchema.class))
     @NonNull
     private final Collection<ErrorDetails> errors;
 

@@ -2,6 +2,7 @@ package com.github.sujankumarmitra.assetservice.v1.config;
 
 import com.github.sujankumarmitra.assetservice.v1.controller.dto.ErrorResponse;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.info.Contact;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -10,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
@@ -99,12 +101,57 @@ public class OpenApiConfiguration {
             responseCode = "400",
             description = "Request contains errors",
             content = @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = ErrorResponse.class)
-            )
+                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = ErrorResponse.class))
     )
     @Target({METHOD, TYPE})
     @Retention(RUNTIME)
     public @interface ApiBadRequestResponse {
+    }
+
+    @ApiResponse(
+            responseCode = "409",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = ErrorResponse.class))
+    )
+    @Target({METHOD, TYPE})
+    @Retention(RUNTIME)
+    public @interface ApiConflictResponse {
+    }
+
+
+    @ApiResponse(responseCode = "404", content = @Content(schema = @Schema))
+    @Target({METHOD, TYPE})
+    @Retention(RUNTIME)
+    public @interface ApiNotFoundResponse {
+    }
+
+
+    @ApiResponse(
+            responseCode = "202",
+            description = "Server acknowledged the request",
+            content = @Content(schema = @Schema)
+    )
+    @Target({METHOD, TYPE})
+    @Retention(RUNTIME)
+    public @interface ApiAcceptedResponse {
+    }
+
+
+    @ApiResponse(
+            responseCode = "201",
+            headers = @Header(
+                    name = "Location",
+                    description = "identifier of the created entity",
+                    schema = @Schema(
+                            example = "7d553b6b-c6e4-42a7-bc8d-7cda07909b2f"
+                    )
+            ),
+            content = @Content(schema = @Schema)
+    )
+    @Target({METHOD, TYPE})
+    @Retention(RUNTIME)
+    public @interface ApiCreatedResponse {
     }
 }
