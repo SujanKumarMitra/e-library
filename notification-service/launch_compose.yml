@@ -1,25 +1,19 @@
-version: '2.1'
-
+version: '3'
 services:
-  zoo1:
+  zookeeper:
     image: zookeeper
-    hostname: zoo1
-    ports:
-      - "2181:2181"
+    hostname: zookeeper
     environment:
       ZOO_MY_ID: 1
       ZOO_PORT: 2181
-  kafka1:
+  kafka:
     image: confluentinc/cp-kafka
-    hostname: kafka1
-    ports:
-      - "9092:9092"
-      - "9999:9999"
+    hostname: kafka
     environment:
-      KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://kafka1:19092,LISTENER_DOCKER_EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9092
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://kafka:19092,LISTENER_DOCKER_EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_DOCKER_INTERNAL:PLAINTEXT,LISTENER_DOCKER_EXTERNAL:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_DOCKER_INTERNAL
-      KAFKA_ZOOKEEPER_CONNECT: "zoo1:2181"
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
       KAFKA_BROKER_ID: 1
       KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
@@ -28,8 +22,43 @@ services:
       KAFKA_JMX_PORT: 9999
       KAFKA_JMX_HOSTNAME: ${DOCKER_HOST_IP:-127.0.0.1}
     depends_on:
-      - zoo1
-  mongo:
-    image: mongo
+      - zookeeper
+  control-center:
+    image: confluentinc/cp-enterprise-control-center
+    hostname: control-center
+    container_name: control-center
+    depends_on:
+      - kafka
     ports:
-      - "27017:27017"
+      - "9021:9021"
+    environment:
+      CONTROL_CENTER_BOOTSTRAP_SERVERS: "kafka:19092"
+      CONTROL_CENTER_REPLICATION_FACTOR: 1
+      CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
+      CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
+      CONFLUENT_METRICS_TOPIC_REPLICATION: 1
+      PORT: 9021
+  mongo:
+    image: "mongo"
+  mongoexpress:
+    image: mongo-express
+    ports:
+      - "27018:8081"
+    links:
+      - mongo
+    environment:
+      - ME_CONFIG_MONGODB_URL=mongodb://mongo:27017
+  app:
+    image: "notification-service:1.0.0"
+    ports:
+      - "8083:8080"
+    depends_on:
+      - mongo
+      - kafka
+    environment:
+      JOB_SCHEDULER_MAX_THREAD_CAPACITY: "50"
+      AUTH_SERVER_URL: "http://172.17.0.1:8000"
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:19092"
+      NEW_NOTIFICATIONS_TOPIC_NAME: "new_notifications"
+      CREATE_NOTIFICATIONS_TOPIC_NAME: "create_notifications"
+      DB_URL: "mongodb://mongo:27017/notification_service_db"

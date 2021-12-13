@@ -7,7 +7,9 @@ app:
     baseUrl: "http://localhost:8000"
   kafka:
     bootstrapServers: "localhost:9092"
+    newNotificationsTopicName: "new_notifications"
+    createNotificationsTopicName: "create_notifications"
 spring:
   data:
     mongodb:
-      uri: "mongodb://localhost:27017/notification_service"
+      uri: "mongodb://localhost:27017/notification_service_db"

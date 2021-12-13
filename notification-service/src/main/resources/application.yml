@@ -1,7 +1,3 @@
 spring:
   application:
     name: "notification-service"
-app:
-  kafka:
-    newNotificationsTopicName: "new_notifications"
-    createNotificationsTopicName: "create_notifications"
