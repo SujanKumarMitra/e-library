@@ -47,7 +47,7 @@ services:
     links:
       - mongo
     environment:
-      - ME_CONFIG_MONGODB_URL=mongodb://mongo:27017
+      ME_CONFIG_MONGODB_URL: "mongodb://mongo:27017"
   app:
     image: "notification-service:1.0.0"
     ports:

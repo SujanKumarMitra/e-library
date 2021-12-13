@@ -21,10 +21,18 @@ services:
       PGADMIN_DEFAULT_PASSWORD: "pgadmin_password"
     depends_on:
       - "postgres"
-  mongodb:
+  mongo:
     image: "mongo"
     ports:
       - "27017:27017"
+  mongoexpress:
+    image: mongo-express
+    ports:
+      - "27018:8081"
+    links:
+      - mongo
+    environment:
+      ME_CONFIG_MONGODB_URL: "mongodb://mongo:27017"
   redis:
     image: "redis"
     ports:
@@ -57,3 +65,18 @@ services:
       KAFKA_JMX_HOSTNAME: ${DOCKER_HOST_IP:-127.0.0.1}
     depends_on:
     - zookeeper
+  control-center:
+    image: confluentinc/cp-enterprise-control-center
+    hostname: control-center
+    container_name: control-center
+    depends_on:
+      - kafka
+    ports:
+      - "9021:9021"
+    environment:
+      CONTROL_CENTER_BOOTSTRAP_SERVERS: "kafka:19092"
+      CONTROL_CENTER_REPLICATION_FACTOR: 1
+      CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
+      CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
+      CONFLUENT_METRICS_TOPIC_REPLICATION: 1
+      PORT: 9021
