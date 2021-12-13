@@ -27,4 +27,6 @@ Refer to [requirements.pdf](./requirements.pdf)
 1. Refer to individual services for their 
 requirements and behaviour
 2. The project uses Docker, not all the services are publicly accessible,
-check which services are accessible by `sh status.sh`
+check which services are accessible by 
+
+    `sh status.sh`
