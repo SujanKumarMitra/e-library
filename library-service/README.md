@@ -22,6 +22,6 @@
 `ROLE_ADMIN > ROLE_LIBRARIAN > ROLE_TEACHER > ROLE_STUDENT`
 
 ### Swagger endpoint
-Scheme: `http://hostname:port/swagger-ui.html`
+Scheme: `http://hostname:port`
 
-Example: `http://localhost:8080/swagger-ui.html`
+Example: `http://localhost:8080`

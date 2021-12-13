@@ -14,6 +14,4 @@
 1. **WRITE_ASSET**: For storing and managing assets and its access permissions
 
 ### Swagger endpoint
-Scheme: `http://hostname:port/swagger-ui.html`
-
-Example: `http://localhost:8080/swagger-ui.html`
+Scheme: `http://hostname:port`

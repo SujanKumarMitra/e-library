@@ -11,6 +11,4 @@ None
 `sh stop.sh`
 
 ### Swagger endpoint
-Scheme: `http://hostname:port/swagger-ui.html`
-
-Example: `http://localhost:8080/swagger-ui.html`
+Scheme: `http://hostname:port/`
