@@ -15,7 +15,13 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 public final class SecurityAnnotations {
     @Target({METHOD})
     @Retention(RUNTIME)
+    @PreAuthorize("hasAnyAuthority('ROLE_LIBRARIAN', 'ROLE_ADMIN') && hasAuthority('WRITE_ASSET')")
+    public @interface ProcessEBookScope {
+    }
+
+    @Target({METHOD})
+    @Retention(RUNTIME)
     @PreAuthorize("hasAnyAuthority('ROLE_LIBRARIAN', 'ROLE_ADMIN')")
-    public @interface RoleLibrarian {
+    public @interface EBookProcessStatusScope {
     }
 }
