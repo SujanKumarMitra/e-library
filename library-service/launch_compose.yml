@@ -55,8 +55,7 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: "kafka1"
       NOTIFICATIONS_TOPIC: "new_notifications"
       CREATE_ASSET_PERMISSIONS_TOPIC: "create_asset_permissions"
-#     url for JWT authorization service,
-#     set to host ip to enable communication of non containerized services
+      ASSET_SERVICE_BASEURL: "http://172.17.0.1:8082"
       AUTH_BASEURL: "http://172.17.0.1:8000"
       DB_URL: "r2dbc:postgresql://db/library_service_db"
       DB_USERNAME: "library_service"

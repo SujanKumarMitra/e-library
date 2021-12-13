@@ -7,10 +7,10 @@ app:
     createAssetPermissionsTopicName: "${CREATE_ASSET_PERMISSIONS_TOPIC}"
   auth:
     baseUrl: "${AUTH_BASEURL}"
+  remoteServices:
+    - id: "asset-service"
+      baseUrl: "${ASSET_SERVICE_BASEURL}"
 spring:
-  devtools:
-    livereload:
-      enabled: false
   r2dbc:
     url: "${DB_URL}"
     username: "${DB_USERNAME}"

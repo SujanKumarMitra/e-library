@@ -8,8 +8,6 @@ app:
   auth:
     baseUrl: "http://localhost:8000"
   remoteServices:
-    - id: "library-service"
-      baseUrl: "http://localhost:8080"
     - id: "asset-service"
       baseUrl: "http://localhost:8082"
 logging:
