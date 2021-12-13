@@ -2,6 +2,10 @@ version: '3'
 services:
   redis:
     image: "redis"
+  redisinsight:
+    image: "redislabs/redisinsight"
+    ports:
+      - "6380:8001"
   app:
     image: ebook-processor:1.0.0
     depends_on:
