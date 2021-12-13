@@ -1,0 +1,143 @@
+version: "3"
+services:
+  postgres:
+    image: "postgres"
+    environment:
+      POSTGRES_USER: "user"
+      POSTGRES_PASSWORD: "password"
+      POSTRES_DB: "db"
+    volumes:
+      - "./initdb/:/docker-entrypoint-initdb.d/"
+      - "./asset-service/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/scripts/asset_service_db.sql"
+      - "./library-service/src/main/resources/schema-create.sql:/docker-entrypoint-initdb.d/scripts/library_service_db.sql"
+  pgadmin:
+    image: "dpage/pgadmin4"
+    ports:
+      - "5433:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "pgadmin_user@email.com"
+      PGADMIN_DEFAULT_PASSWORD: "pgadmin_password"
+    depends_on:
+      - postgres
+  mongo:
+    image: "mongo"
+  mongoexpress:
+    image: "mongo-express"
+    ports:
+      - "27018:8081"
+    links:
+      - mongo
+    environment:
+      ME_CONFIG_MONGODB_URL: "mongodb://mongo:27017"
+  redis:
+    image: "redis"
+  redisinsight:
+    image: "redislabs/redisinsight"
+    ports:
+      - "6380:8001"
+  zookeeper:
+    image: zookeeper
+    hostname: zookeeper
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_PORT: 2181
+  kafka:
+    image: confluentinc/cp-kafka
+    hostname: kafka
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://kafka:19092,LISTENER_DOCKER_EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_DOCKER_INTERNAL:PLAINTEXT,LISTENER_DOCKER_EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_DOCKER_INTERNAL
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_BROKER_ID: 1
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_JMX_PORT: 9999
+      KAFKA_JMX_HOSTNAME: ${DOCKER_HOST_IP:-127.0.0.1}
+    depends_on:
+      - zookeeper
+  control-center:
+    image: confluentinc/cp-enterprise-control-center
+    hostname: control-center
+    depends_on:
+      - kafka
+    ports:
+      - "9021:9021"
+    environment:
+      CONTROL_CENTER_BOOTSTRAP_SERVERS: "kafka:19092"
+      CONTROL_CENTER_REPLICATION_FACTOR: 1
+      CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
+      CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
+      CONFLUENT_METRICS_TOPIC_REPLICATION: 1
+      PORT: 9021
+  authorization-service:
+    image: "authorization-service:1.0.0"
+    ports:
+      - "7001:8080"
+  asset-service:
+    image: "asset-service:1.0.0"
+    depends_on:
+      - postgres
+      - authorization-service
+    ports:
+      - "7002:8080"
+    environment:
+      STORAGE_BASEDIR: "/tmp"
+      AUTH_BASEURL: "http://authorization-service:8080"
+      DB_URL: "r2dbc:postgresql://postgres:5432/asset_service_db"
+      DB_USERNAME: "asset_service"
+      DB_PASSWORD: "asset_service"
+      SQL_INIT_MODE: "NEVER"
+  notification-service:
+    image: "notification-service:1.0.0"
+    ports:
+      - "7003:8080"
+    depends_on:
+      - mongo
+      - kafka
+      - authorization-service
+    environment:
+      JOB_SCHEDULER_MAX_THREAD_CAPACITY: "50"
+      AUTH_SERVER_URL: "http://authorization-service:8080"
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:19092"
+      NEW_NOTIFICATIONS_TOPIC_NAME: "new_notifications"
+      CREATE_NOTIFICATIONS_TOPIC_NAME: "create_notifications"
+      DB_URL: "mongodb://mongo:27017/notification_service_db"
+  library-service:
+    image: library-service:1.0.0
+    depends_on:
+      - kafka
+      - postgres
+      - authorization-service
+      - asset-service
+    ports:
+      - "7004:8080"
+    environment:
+      DEFAULT_PAGE_SIZE: "10"
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:19092"
+      NOTIFICATIONS_TOPIC: "create_notifications"
+      CREATE_ASSET_PERMISSIONS_TOPIC: "create_asset_permissions"
+      AUTH_BASEURL: "http://authorization-service:8080"
+      ASSET_SERVICE_BASEURL: "http://asset-service:8080"
+      DB_URL: "r2dbc:postgresql://postgres:5432/library_service_db"
+      DB_USERNAME: "library_service"
+      DB_PASSWORD: "library_service"
+      SQL_INIT_MODE: "NEVER"
+  ebook-processor:
+    image: ebook-processor:1.0.0
+    depends_on:
+      - redis
+      - authorization-service
+      - asset-service
+      - library-service
+    ports:
+      - "7005:8080"
+    environment:
+      REDIS_URL: "redis://redis:6379"
+      REDIS_KEY_EXPIRY_IN_MILLISECONDS: "3600000"
+      REDIS_PASSWORD: ""
+      LIBRARY_SERVICE_BASEURL: "http://library-service:8080"
+      ASSET_SERVICE_BASEURL: "http://asset-service:8080"
+      AUTH_BASEURL: "http://authorization-service:8080"

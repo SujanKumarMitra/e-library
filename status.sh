@@ -1,0 +1,1 @@
+docker-compose -f launch_compose.yml ps
