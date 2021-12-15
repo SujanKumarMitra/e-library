@@ -5,7 +5,7 @@ This system is part of the Niketan project.
 ## Functional Requirements
 Refer to [requirements.pdf](./requirements.pdf)
 
-## System Architecture Diagram:
+## System Architecture
 ![architectural_diagram.png](./architectural_diagram.png)
 
 
@@ -23,7 +23,7 @@ Refer to [requirements.pdf](./requirements.pdf)
 3. See status of all services `sh status.sh`
 4. Stop all services `sh stop.sh`
 
-## NOTE:
+## NOTE
 1. Refer to individual services for their 
 requirements and behaviour
 2. The project uses Docker, not all the services are publicly accessible,
