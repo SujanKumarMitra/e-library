@@ -13,12 +13,13 @@ import java.util.Optional;
 @Schema(name = "TokenIntrospectionResponse")
 public class OpenApiTokenIntrospectionResponse extends TokenIntrospectionResponse {
     @Override
-    @Schema(required = true)
+    @Schema(name = "active", required = true)
     public boolean isActive() {
         return false;
     }
 
     @Override
+    @Schema(name = "sub")
     public Optional<String> getSubject() {
         return Optional.empty();
     }
@@ -29,6 +30,7 @@ public class OpenApiTokenIntrospectionResponse extends TokenIntrospectionRespons
     }
 
     @Override
+    @Schema(name = "exp")
     public Optional<Long> getExpiry() {
         return Optional.empty();
     }
