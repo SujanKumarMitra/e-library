@@ -2,16 +2,11 @@ package com.github.sujankumarmitra.libraryservice.v1.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.sujankumarmitra.libraryservice.v1.config.KafkaConfiguration;
 import com.github.sujankumarmitra.libraryservice.v1.config.KafkaProperties;
 import com.github.sujankumarmitra.libraryservice.v1.config.KafkaTestConfiguration;
 import com.github.sujankumarmitra.libraryservice.v1.model.impl.DefaultNotification;
-import com.github.sujankumarmitra.libraryservice.v1.util.KafkaTestUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.admin.AdminClient;
-import org.apache.kafka.clients.admin.AdminClientConfig;
-import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -30,17 +25,17 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 import reactor.kafka.sender.KafkaSender;
 import reactor.test.StepVerifier;
 
 import java.time.Duration;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
+import java.util.UUID;
 
 import static com.github.sujankumarmitra.libraryservice.v1.util.KafkaTestUtils.createTopics;
 import static com.github.sujankumarmitra.libraryservice.v1.util.KafkaTestUtils.deleteTopics;
-import static java.util.Optional.empty;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.testcontainers.utility.DockerImageName.parse;
 
@@ -56,7 +51,7 @@ import static org.testcontainers.utility.DockerImageName.parse;
 class KafkaNotificationServiceTest {
 
     @Container
-    private static final KafkaContainer KAFKA_CONTAINER;
+    private static final KafkaContainer KAFKA_CONTAINER = new KafkaContainer(parse("confluentinc/cp-kafka"));
     @Autowired
     private KafkaProperties kafkaProperties;
     @Autowired
@@ -66,12 +61,6 @@ class KafkaNotificationServiceTest {
     private KafkaConsumer<String, String> kafkaConsumer;
     private KafkaNotificationService notificationService;
     private final ObjectMapper objectMapper = new ObjectMapper();
-
-    static {
-        DockerImageName confluentKafka = parse("confluentinc/cp-server")
-                .asCompatibleSubstituteFor("confluentinc/cp-kafka");
-        KAFKA_CONTAINER = new KafkaContainer(confluentKafka);
-    }
 
     @DynamicPropertySource
     static void registerKafkaProperties(DynamicPropertyRegistry registry) {

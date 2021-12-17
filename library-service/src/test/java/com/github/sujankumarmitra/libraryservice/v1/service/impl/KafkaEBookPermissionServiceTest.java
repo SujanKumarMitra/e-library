@@ -1,7 +1,6 @@
 package com.github.sujankumarmitra.libraryservice.v1.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.sujankumarmitra.libraryservice.v1.config.KafkaConfiguration;
 import com.github.sujankumarmitra.libraryservice.v1.config.KafkaProperties;
 import com.github.sujankumarmitra.libraryservice.v1.config.KafkaTestConfiguration;
 import com.github.sujankumarmitra.libraryservice.v1.dao.EBookSegmentDao;
@@ -31,7 +30,6 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 import reactor.core.publisher.Flux;
 import reactor.kafka.sender.KafkaSender;
 import reactor.test.StepVerifier;
@@ -41,6 +39,7 @@ import java.util.*;
 
 import static com.github.sujankumarmitra.libraryservice.v1.util.KafkaTestUtils.createTopics;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.testcontainers.utility.DockerImageName.parse;
 
 /**
  * @author skmitra
@@ -54,7 +53,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class KafkaEBookPermissionServiceTest {
 
     @Container
-    private static final KafkaContainer KAFKA_CONTAINER;
+    private static final KafkaContainer KAFKA_CONTAINER = new KafkaContainer(parse("confluentinc/cp-kafka"));
     @MockBean
     private EBookSegmentDao segmentDao;
     @Autowired
@@ -85,14 +84,6 @@ class KafkaEBookPermissionServiceTest {
 
         kafkaConsumer.close();
         kafkaSender.close();
-    }
-
-    static {
-        DockerImageName cpKafka = DockerImageName
-                .parse("confluentinc/cp-server")
-                .asCompatibleSubstituteFor("confluentinc/cp-kafka");
-
-        KAFKA_CONTAINER = new KafkaContainer(cpKafka);
     }
 
     @DynamicPropertySource

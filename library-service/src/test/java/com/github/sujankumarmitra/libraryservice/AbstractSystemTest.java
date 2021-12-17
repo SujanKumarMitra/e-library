@@ -20,7 +20,8 @@ import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
+
+import static org.testcontainers.utility.DockerImageName.parse;
 
 /**
  * @author skmitra
@@ -48,9 +49,7 @@ public abstract class AbstractSystemTest {
 
     static {
         POSTGRESQL_CONTAINER = new PostgreSQLContainer<>("postgres");
-        KAFKA_CONTAINER = new KafkaContainer(
-                DockerImageName.parse("confluentinc/cp-server")
-                        .asCompatibleSubstituteFor("confluentinc/cp-kafka"));
+        KAFKA_CONTAINER = new KafkaContainer(parse("confluentinc/cp-kafka"));
     }
 
     @DynamicPropertySource
