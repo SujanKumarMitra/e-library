@@ -26,7 +26,6 @@ services:
   control-center:
     image: confluentinc/cp-enterprise-control-center
     hostname: control-center
-    container_name: control-center
     depends_on:
       - kafka
     ports:
