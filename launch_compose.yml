@@ -1,4 +1,4 @@
-version: "3"
+version: "2"
 services:
   postgres:
     image: "postgres"
@@ -10,6 +10,7 @@ services:
       - "./initdb/:/docker-entrypoint-initdb.d/"
       - "./asset-service/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/scripts/asset_service_db.sql"
       - "./library-service/src/main/resources/schema-create.sql:/docker-entrypoint-initdb.d/scripts/library_service_db.sql"
+    mem_limit: "100m"
   pgadmin:
     image: "dpage/pgadmin4"
     ports:
@@ -19,8 +20,10 @@ services:
       PGADMIN_DEFAULT_PASSWORD: "pgadmin_password"
     depends_on:
       - postgres
+    mem_limit: "200m"
   mongo:
     image: "mongo"
+    mem_limit: "100m"
   mongoexpress:
     image: "mongo-express"
     ports:
@@ -29,23 +32,27 @@ services:
       - mongo
     environment:
       ME_CONFIG_MONGODB_URL: "mongodb://mongo:27017"
+    mem_limit: "100m"
   redis:
     image: "redis"
+    mem_limit: "50m"
   redisinsight:
     image: "redislabs/redisinsight"
     ports:
       - "6380:8001"
+    mem_limit: "150m"
   zookeeper:
     image: zookeeper
     hostname: zookeeper
     environment:
       ZOO_MY_ID: 1
       ZOO_PORT: 2181
+    mem_limit: "100m"
   kafka:
     image: confluentinc/cp-kafka
     hostname: kafka
     environment:
-      KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://kafka:19092,LISTENER_DOCKER_EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9092
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://kafka:19092,LISTENER_DOCKER_EXTERNAL://localhost:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_DOCKER_INTERNAL:PLAINTEXT,LISTENER_DOCKER_EXTERNAL:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_DOCKER_INTERNAL
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
@@ -55,9 +62,10 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_JMX_PORT: 9999
-      KAFKA_JMX_HOSTNAME: ${DOCKER_HOST_IP:-127.0.0.1}
+      KAFKA_JMX_HOSTNAME: localhost
     depends_on:
       - zookeeper
+    mem_limit: "500m"
   control-center:
     image: confluentinc/cp-enterprise-control-center
     hostname: control-center
@@ -72,10 +80,12 @@ services:
       CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
       CONFLUENT_METRICS_TOPIC_REPLICATION: 1
       PORT: 9021
+    mem_limit: "500m"
   authorization-service:
     image: "authorization-service:1.0.0"
     ports:
       - "7001:8080"
+    mem_limit: "200m"
   asset-service:
     image: "asset-service:1.0.0"
     depends_on:
@@ -90,6 +100,7 @@ services:
       DB_USERNAME: "asset_service"
       DB_PASSWORD: "asset_service"
       SQL_INIT_MODE: "NEVER"
+    mem_limit: "300m"
   notification-service:
     image: "notification-service:1.0.0"
     ports:
@@ -105,6 +116,7 @@ services:
       NEW_NOTIFICATIONS_TOPIC_NAME: "new_notifications"
       CREATE_NOTIFICATIONS_TOPIC_NAME: "create_notifications"
       DB_URL: "mongodb://mongo:27017/notification_service_db"
+    mem_limit: "300m"
   library-service:
     image: library-service:1.0.0
     depends_on:
@@ -125,6 +137,7 @@ services:
       DB_USERNAME: "library_service"
       DB_PASSWORD: "library_service"
       SQL_INIT_MODE: "NEVER"
+    mem_limit: "300m"
   ebook-processor:
     image: ebook-processor:1.0.0
     depends_on:
@@ -141,3 +154,4 @@ services:
       LIBRARY_SERVICE_BASEURL: "http://library-service:8080"
       ASSET_SERVICE_BASEURL: "http://asset-service:8080"
       AUTH_BASEURL: "http://authorization-service:8080"
+    mem_limit: "300m"
