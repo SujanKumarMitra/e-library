@@ -1,1 +1,2 @@
-docker-compose -f launch_compose.yml ps
+#!/bin/sh
+docker-compose -f prod_compose.yml ps

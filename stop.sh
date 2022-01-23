@@ -1,1 +1,2 @@
-docker-compose -f launch_compose.yml down -v
+#!/bin/sh
+docker-compose -f prod_compose.yml down -v
