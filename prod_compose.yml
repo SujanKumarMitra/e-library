@@ -122,3 +122,13 @@ services:
       - '3699:3699'
     container_name: e-learning-system-api
     mem_limit: "100m"
+  react-frontend:
+    image: csuvajit/react-frontend:latest
+    volumes:
+      - "./react-frontend/.env:/app/.env"
+    ports:
+      - '3000:3000'
+    depends_on:
+      - e-learning-system-api
+    container_name: react-frontend
+    mem_limit: "100m"
