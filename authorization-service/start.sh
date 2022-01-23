@@ -1,2 +1,2 @@
 #!/bin/sh
-docker-compose -f launch_compose.yml up -d
+docker-compose -f prod_compose.yml up -d
