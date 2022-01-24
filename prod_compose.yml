@@ -76,10 +76,10 @@ services:
   library-service:
     image: library-service:1.0.0
     depends_on:
-      - kafka
       - postgres
       - e-learning-system-api
       - asset-service
+      - notification-service
     ports:
       - "7004:8080"
     environment:
