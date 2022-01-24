@@ -113,7 +113,7 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
 
                     return notification;
                 })
-                .flatMap(notification -> Mono.fromRunnable(() -> sendNotification(notification)))
+                .flatMap(this::sendNotification)
                 .then();
 
     }
@@ -266,7 +266,7 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
         notification.setCreatedAt(System.currentTimeMillis());
         notification.setPayload(createPayload(status, request.getId()));
 
-        return Mono.fromRunnable(() -> sendNotification(notification));
+        return sendNotification(notification);
     }
 
     private String createPayload(LeaseStatus status, String leaseRequestId) {
@@ -283,13 +283,12 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
         }
     }
 
-    private void sendNotification(Notification notification) {
-        notificationService
+    private Mono<Void> sendNotification(Notification notification) {
+        return notificationService
                 .sendNotification(notification)
-                .subscribe(s -> {
-                        },
-                        err -> log.warn("Error in sending Notification :: {}", err.getMessage()),
-                        () -> log.info("Successfully sent notification"));
+                .doOnSuccess(aVoid -> log.info("Successfully sent notification"))
+                .doOnError(err -> log.warn("Error in sending Notification :: {}", err.getMessage()))
+                .onErrorResume(th -> Mono.empty());
     }
 
 }

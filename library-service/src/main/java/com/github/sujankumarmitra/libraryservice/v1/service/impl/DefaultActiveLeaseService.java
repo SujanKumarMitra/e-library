@@ -146,7 +146,7 @@ public class DefaultActiveLeaseService implements ActiveLeaseService {
                         .markAsRelinquished(leaseRequestId)
                         .then(leaseRequestDao.setLeaseStatus(leaseRequestId, EXPIRED))
                         .then(bookService.onLeaseRelinquish(leaseRequest)))
-                .then(Mono.fromRunnable(() -> sendNotification(leaseRequestId)));
+                .then(sendNotification(leaseRequestId));
     }
 
     private void emitErrorIfAlreadyHandled(LeaseRequest leaseRequest, SynchronousSink<LeaseRequest> sink) {
@@ -166,8 +166,8 @@ public class DefaultActiveLeaseService implements ActiveLeaseService {
                 .then();
     }
 
-    void sendNotification(String leaseRequestId) {
-        leaseRequestDao
+    private Mono<Void> sendNotification(String leaseRequestId) {
+        return leaseRequestDao
                 .getLeaseRequest(leaseRequestId)
                 .map(leaseRequest -> {
                     DefaultNotification notification = new DefaultNotification();
@@ -179,10 +179,9 @@ public class DefaultActiveLeaseService implements ActiveLeaseService {
                     return notification;
                 })
                 .flatMap(notificationService::sendNotification)
-                .subscribe(s -> {
-                        },
-                        err -> log.info("Error in sending notification ", err),
-                        () -> log.info("Sent notification for lease expiry"));
+                .doOnSuccess(aVoid -> log.info("Sent notification for lease expiry"))
+                .doOnError(err -> log.info("Error in sending notification ", err))
+                .onErrorResume(th -> Mono.empty());
     }
 
     private String createPayload(LeaseRequest request) {
