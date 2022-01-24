@@ -18,7 +18,7 @@
 		<openapi.version>1.5.12</openapi.version>
 		<testcontainers.version>1.16.0</testcontainers.version>
 		<wiremock.version>2.32.0</wiremock.version>
-		<pdfbox.version>2.0.12</pdfbox.version>
+		<pdfbox.version>2.0.25</pdfbox.version>
 	</properties>
 	<dependencies>
 		<dependency>
