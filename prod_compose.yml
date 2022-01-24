@@ -114,21 +114,19 @@ services:
   e-learning-system-api:
     image: e-learning-system-api
     volumes:
-      - "./e-learning-system-api/.env:/app/.env"
+      - "./.env:/app/.env"
     build:
       context: .
       dockerfile: e-learning-system-api/Dockerfile
     ports:
       - '3699:3699'
-    container_name: e-learning-system-api
     mem_limit: "100m"
   react-frontend:
     image: csuvajit/react-frontend:latest
     volumes:
-      - "./react-frontend/.env:/app/.env"
+      - "./.env:/app/.env"
     ports:
       - '3000:3000'
     depends_on:
       - e-learning-system-api
-    container_name: react-frontend
     mem_limit: "100m"
