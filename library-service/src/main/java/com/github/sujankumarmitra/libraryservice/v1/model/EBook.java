@@ -31,6 +31,7 @@ public abstract class EBook extends Book {
     public String toString() {
         return "EBook{" +
                 "id='" + getId() + '\'' +
+                ", libraryId='" + getLibraryId() + '\'' +
                 ", title='" + getTitle() + '\'' +
                 ", authors=" + getAuthors() +
                 ", publisher='" + getPublisher() + '\'' +

@@ -4,7 +4,6 @@ import com.github.javafaker.Faker;
 import com.github.sujankumarmitra.libraryservice.v1.dao.AuthorDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.BookDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.BookTagDao;
-import com.github.sujankumarmitra.libraryservice.v1.dao.EBookSegmentDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcAuthor;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBookTag;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcEBook;
@@ -27,8 +26,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import static com.github.sujankumarmitra.libraryservice.v1.util.DaoTestUtils.truncateAllTables;
 import static com.github.sujankumarmitra.libraryservice.v1.model.EBookFormat.PDF;
+import static com.github.sujankumarmitra.libraryservice.v1.util.DaoTestUtils.truncateAllTables;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 
@@ -45,8 +44,6 @@ class R2dbcPostgresqlEBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDe
     private AuthorDao mockAuthorDao;
     @Mock
     private BookTagDao mockBookTagDao;
-    @Mock
-    private EBookSegmentDao mockSegmentDao;
     @SuppressWarnings("FieldMayBeFinal")
     @Autowired
     private R2dbcEntityTemplate entityTemplate = null;
@@ -59,12 +56,8 @@ class R2dbcPostgresqlEBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDe
                 entityTemplate.getDatabaseClient(),
                 mockBookDao,
                 mockAuthorDao,
-                mockBookTagDao,
-                mockSegmentDao
+                mockBookTagDao
         );
-
-        Mockito.doReturn(Mono.empty())
-                .when(mockSegmentDao).deleteSegmentsByBookId(any());
     }
 
     @AfterEach
@@ -79,10 +72,11 @@ class R2dbcPostgresqlEBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDe
         this.entityTemplate
                 .getDatabaseClient()
                 .sql(R2dbcPostgresqlBookDao.INSERT_STATEMENT)
-                .bind("$1", book.getTitle())
-                .bind("$2", book.getPublisher())
-                .bind("$3", book.getEdition())
-                .bind("$4", book.getCoverPageImageAssetId())
+                .bind("$1", book.getLibraryId())
+                .bind("$2", book.getTitle())
+                .bind("$3", book.getPublisher())
+                .bind("$4", book.getEdition())
+                .bind("$5", book.getCoverPageImageAssetId())
                 .map(row -> row.get("id", UUID.class))
                 .one()
                 .doOnSuccess(book::setId)
@@ -115,10 +109,11 @@ class R2dbcPostgresqlEBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDe
         entityTemplate
                 .getDatabaseClient()
                 .sql(R2dbcPostgresqlBookDao.INSERT_STATEMENT)
-                .bind("$1", book.getTitle())
-                .bind("$2", book.getPublisher())
-                .bind("$3", book.getEdition())
-                .bind("$4", book.getCoverPageImageAssetId())
+                .bind("$1", book.getLibraryId())
+                .bind("$2", book.getTitle())
+                .bind("$3", book.getPublisher())
+                .bind("$4", book.getEdition())
+                .bind("$5", book.getCoverPageImageAssetId())
                 .map(row -> row.get("id", UUID.class))
                 .one()
                 .doOnSuccess(book::setId)
@@ -181,10 +176,11 @@ class R2dbcPostgresqlEBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDe
         entityTemplate
                 .getDatabaseClient()
                 .sql(R2dbcPostgresqlBookDao.INSERT_STATEMENT)
-                .bind("$1", expectedBook.getTitle())
-                .bind("$2", expectedBook.getPublisher())
-                .bind("$3", expectedBook.getEdition())
-                .bind("$4", expectedBook.getCoverPageImageAssetId())
+                .bind("$1", expectedBook.getLibraryId())
+                .bind("$2", expectedBook.getTitle())
+                .bind("$3", expectedBook.getPublisher())
+                .bind("$4", expectedBook.getEdition())
+                .bind("$5", expectedBook.getCoverPageImageAssetId())
                 .map(row -> row.get("id", UUID.class))
                 .one()
                 .doOnSuccess(expectedBook::setId)
@@ -254,6 +250,7 @@ class R2dbcPostgresqlEBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDe
 
         com.github.javafaker.Book book = faker.book();
 
+        eBook.setLibraryId(faker.idNumber().valid());
         eBook.setTitle(book.title());
         eBook.setPublisher(book.publisher());
         eBook.setEdition("1st");

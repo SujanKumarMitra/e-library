@@ -1,6 +1,9 @@
 package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 
-import com.github.sujankumarmitra.libraryservice.v1.dao.*;
+import com.github.sujankumarmitra.libraryservice.v1.dao.AuthorDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.BookDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.BookTagDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.EBookDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcEBook;
 import com.github.sujankumarmitra.libraryservice.v1.model.*;
 import io.r2dbc.spi.Row;
@@ -28,10 +31,9 @@ import java.util.stream.Collectors;
 public class R2dbcPostgresqlEBookDao implements EBookDao {
 
     public static final String INSERT_STATEMENT = "INSERT INTO ebooks(book_id, format) VALUES ($1,$2)";
-    public static final String JOINED_SELECT_STATEMENT = "SELECT b.id, b.title, b.publisher, b.edition, b.cover_page_image_asset_id, eb.format FROM books b INNER JOIN ebooks eb ON (eb.book_id=b.id AND eb.book_id=$1)";
+    public static final String JOINED_SELECT_STATEMENT = "SELECT b.id, b.library_id, b.title, b.publisher, b.edition, b.cover_page_image_asset_id, eb.format FROM books b INNER JOIN ebooks eb ON (eb.book_id=b.id AND eb.book_id=$1)";
     public static final String SELECT_STATEMENT = "SELECT eb.book_id, eb.format FROM ebooks eb WHERE eb.book_id=$1";
     public static final String UPDATE_STATEMENT = "UPDATE ebooks SET format=$1 WHERE book_id=$2";
-    public static final String DELETE_STATEMENT = "DELETE FROM ebooks WHERE book_id=$1";
 
     @NonNull
     private final DatabaseClient databaseClient;
@@ -41,8 +43,6 @@ public class R2dbcPostgresqlEBookDao implements EBookDao {
     private final AuthorDao authorDao;
     @NonNull
     private final BookTagDao tagDao;
-    @NonNull
-    private final EBookSegmentDao segmentDao;
 
     @Override
     @Transactional
@@ -123,6 +123,7 @@ public class R2dbcPostgresqlEBookDao implements EBookDao {
 
         if (joinStatement) {
             book.setId(row.get("id", UUID.class));
+            book.setLibraryId(row.get("library_id", String.class));
             book.setTitle(row.get("title", String.class));
             book.setPublisher(row.get("publisher", String.class));
             book.setEdition(row.get("edition", String.class));
