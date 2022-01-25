@@ -64,10 +64,10 @@ services:
     depends_on:
       - mongo
       - kafka
-      - e-learning-system-api
+      - authorization-service
     environment:
       JOB_SCHEDULER_MAX_THREAD_CAPACITY: "50"
-      AUTH_BASEURL: "http://e-learning-system-api:3699/api/auth"
+      AUTH_BASEURL: "http://authorization-service:8080"
       KAFKA_BOOTSTRAP_SERVERS: "kafka:19092"
       NEW_NOTIFICATIONS_TOPIC_NAME: "new_notifications"
       CREATE_NOTIFICATIONS_TOPIC_NAME: "create_notifications"
@@ -130,3 +130,8 @@ services:
     depends_on:
       - e-learning-system-api
     mem_limit: "100m"
+  authorization-service:
+    image: "authorization-service:1.0.0"
+    ports:
+      - "8000:8080"
+
