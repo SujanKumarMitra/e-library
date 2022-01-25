@@ -7,11 +7,14 @@ CREATE TABLE IF NOT EXISTS librarians (
 
 CREATE TABLE IF NOT EXISTS books(
 	id uuid DEFAULT uuid_generate_v4(),
+	library_id text,
 	title text,
 	publisher text,
 	edition text,
 	cover_page_image_asset_id text,
 	CONSTRAINT pk_books PRIMARY KEY (id),
+	CONSTRAINT chk_books_library_id_not_null CHECK (library_id IS NOT NULL),
+    CONSTRAINT chk_books_library_id_not_empty CHECK (LENGTH(library_id) > 0),
 	CONSTRAINT chk_books_title_not_null CHECK (title IS NOT NULL),
 	CONSTRAINT chk_books_title_not_empty CHECK (LENGTH(title) > 0),
 	CONSTRAINT chk_books_publisher_not_null CHECK (publisher IS NOT NULL),

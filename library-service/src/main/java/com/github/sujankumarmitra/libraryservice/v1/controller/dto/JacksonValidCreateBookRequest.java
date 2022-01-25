@@ -30,6 +30,8 @@ public abstract class JacksonValidCreateBookRequest extends Book {
     @JsonIgnore
     private String id;
     @NotEmpty
+    private String libraryId;
+    @NotEmpty
     private String title;
     @NotEmpty
     private String publisher;
@@ -42,4 +44,14 @@ public abstract class JacksonValidCreateBookRequest extends Book {
     private Set<JacksonValidCreateBookTagRequest> tags;
 
     public abstract JacksonBookType getType();
+
+    @Override
+    public boolean equals(Object o) {
+        return super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
 }

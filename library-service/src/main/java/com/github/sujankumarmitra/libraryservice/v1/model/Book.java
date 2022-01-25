@@ -11,6 +11,8 @@ public abstract class Book {
 
     public abstract String getId();
 
+    public abstract String getLibraryId();
+
     public abstract String getTitle();
 
     public abstract <T extends Author> Set<T> getAuthors();
@@ -30,6 +32,7 @@ public abstract class Book {
 
         Book book = (Book) o;
         return Objects.equals(getId(), book.getId()) &&
+                Objects.equals(getLibraryId(), book.getLibraryId()) &&
                 Objects.equals(getTitle(), book.getTitle()) &&
                 Objects.equals(getAuthors(), book.getAuthors()) &&
                 Objects.equals(getPublisher(), book.getPublisher()) &&
@@ -41,6 +44,7 @@ public abstract class Book {
     @Override
     public int hashCode() {
         return Objects.hash(getId(),
+                getLibraryId(),
                 getTitle(),
                 getAuthors(),
                 getPublisher(),
@@ -53,6 +57,7 @@ public abstract class Book {
     public String toString() {
         return "Book{" +
                 "id='" + getId() + '\'' +
+                "libraryId='" + getLibraryId() + '\'' +
                 ", title='" + getTitle() + '\'' +
                 ", authors=" + getAuthors() +
                 ", publisher='" + getPublisher() + '\'' +

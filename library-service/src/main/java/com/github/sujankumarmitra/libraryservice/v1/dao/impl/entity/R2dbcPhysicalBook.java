@@ -20,6 +20,7 @@ import java.util.UUID;
 public final class R2dbcPhysicalBook extends PhysicalBook {
 
     private UUID id;
+    private String libraryId;
     private String title;
     private Set<R2dbcAuthor> authors = new HashSet<>();
     private String publisher;
@@ -59,14 +60,6 @@ public final class R2dbcPhysicalBook extends PhysicalBook {
         this.copiesAvailable = physicalBook.getCopiesAvailable();
     }
 
-//    public void addAuthor(@NonNull Author author) {
-//        this.authors.add(convertToR2dbcAuthor(author));
-//    }
-//
-//    public void addTag(@NonNull BookTag tag) {
-//        this.tags.add(convertToR2dbcBookTag(tag));
-//    }
-
     public <T extends Author> void addAllAuthors(@NonNull Set<T> authors) {
         for (Author author : authors) {
             this.authors.add(convertToR2dbcAuthor(author));
@@ -78,14 +71,6 @@ public final class R2dbcPhysicalBook extends PhysicalBook {
             this.tags.add(convertToR2dbcBookTag(author));
         }
     }
-
-//    public void removeAllTags() {
-//        this.tags.clear();
-//    }
-//
-//    public void removeAllAuthors() {
-//        this.authors.clear();
-//    }
 
     private R2dbcAuthor convertToR2dbcAuthor(Author author) {
         return author instanceof R2dbcAuthor ?
@@ -99,4 +84,14 @@ public final class R2dbcPhysicalBook extends PhysicalBook {
                 new R2dbcBookTag(tag);
     }
 
+
+    @Override
+    public boolean equals(Object o) {
+        return super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
 }

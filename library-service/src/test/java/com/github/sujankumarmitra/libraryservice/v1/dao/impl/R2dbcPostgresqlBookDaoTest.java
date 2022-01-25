@@ -112,10 +112,11 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
         entityTemplate
                 .getDatabaseClient()
                 .sql(R2dbcPostgresqlBookDao.INSERT_STATEMENT)
-                .bind("$1", book.getTitle())
-                .bind("$2", book.getPublisher())
-                .bind("$3", book.getEdition())
-                .bindNull("$4", String.class)
+                .bind("$1", book.getLibraryId())
+                .bind("$2", book.getTitle())
+                .bind("$3", book.getPublisher())
+                .bind("$4", book.getEdition())
+                .bindNull("$5", String.class)
                 .map(row -> row.get("id", UUID.class))
                 .one()
                 .doOnNext(book::setId)
@@ -193,10 +194,11 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
         entityTemplate
                 .getDatabaseClient()
                 .sql(R2dbcPostgresqlBookDao.INSERT_STATEMENT)
-                .bind("$1", book.getTitle())
-                .bind("$2", book.getPublisher())
-                .bind("$3", book.getEdition())
-                .bind("$4", book.getCoverPageImageAssetId())
+                .bind("$1", book.getLibraryId())
+                .bind("$2", book.getTitle())
+                .bind("$3", book.getPublisher())
+                .bind("$4", book.getEdition())
+                .bind("$5", book.getCoverPageImageAssetId())
                 .map(row -> row.get("id", UUID.class))
                 .one()
                 .doOnNext(book::setId)
@@ -305,10 +307,11 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
         entityTemplate
                 .getDatabaseClient()
                 .sql(R2dbcPostgresqlBookDao.INSERT_STATEMENT)
-                .bind("$1", book.getTitle())
-                .bind("$2", book.getPublisher())
-                .bind("$3", book.getEdition())
-                .bind("$4", book.getCoverPageImageAssetId())
+                .bind("$1", book.getLibraryId())
+                .bind("$2", book.getTitle())
+                .bind("$3", book.getPublisher())
+                .bind("$4", book.getEdition())
+                .bind("$5", book.getCoverPageImageAssetId())
                 .fetch()
                 .one()
                 .map(map -> map.get("id"))
@@ -383,10 +386,11 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
     void givenValidBookId_whenDelete_shouldDelete() {
         entityTemplate.getDatabaseClient()
                 .sql(R2dbcPostgresqlBookDao.INSERT_STATEMENT)
-                .bind("$1", faker.book().title())
-                .bind("$2", faker.book().publisher())
-                .bind("$3", "1st")
-                .bind("$4", faker.idNumber().valid())
+                .bind("$1", faker.idNumber().valid())
+                .bind("$2", faker.book().title())
+                .bind("$3", faker.book().publisher())
+                .bind("$4", "1st")
+                .bind("$5", faker.idNumber().valid())
                 .fetch()
                 .one()
                 .map(map -> map.get("id"))
@@ -473,6 +477,8 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
     private R2dbcBook getBook() {
 
         R2dbcBook book = new R2dbcBook();
+
+        book.setLibraryId(faker.idNumber().valid());
         book.setTitle(faker.book().title());
         book.setPublisher(faker.book().publisher());
         book.setEdition("1st");

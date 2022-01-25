@@ -22,6 +22,12 @@ public class GetPhysicalBookResponseSchema extends PhysicalBook {
 
     @Override
     @NotEmpty
+    public String getLibraryId() {
+        return null;
+    }
+
+    @Override
+    @NotEmpty
     public String getTitle() {
         return null;
     }

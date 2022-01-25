@@ -28,6 +28,8 @@ public abstract class JacksonValidUpdateBookRequest {
     @JsonIgnore
     private String id;
     @Size(min = 1)
+    private String libraryId;
+    @Size(min = 1)
     private String title;
     @Size(min = 1)
     private String publisher;

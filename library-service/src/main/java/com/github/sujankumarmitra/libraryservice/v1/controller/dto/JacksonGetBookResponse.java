@@ -27,6 +27,11 @@ public abstract class JacksonGetBookResponse extends Book {
     }
 
     @Override
+    public String getLibraryId() {
+        return book.getLibraryId();
+    }
+
+    @Override
     public String getTitle() {
         return book.getTitle();
     }
@@ -59,4 +64,14 @@ public abstract class JacksonGetBookResponse extends Book {
     }
 
     public abstract JacksonBookType getType();
+
+    @Override
+    public boolean equals(Object o) {
+        return super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
 }

@@ -33,10 +33,10 @@ import java.util.stream.Collectors;
 @Slf4j
 public class R2dbcPostgresqlBookDao implements BookDao<Book> {
 
-    public static final String INSERT_STATEMENT = "INSERT INTO books (title,publisher,edition,cover_page_image_asset_id) values ($1,$2,$3,$4) RETURNING id";
+    public static final String INSERT_STATEMENT = "INSERT INTO books (library_id,title,publisher,edition,cover_page_image_asset_id) values ($1,$2,$3,$4,$5) RETURNING id";
     public static final String DELETE_STATEMENT = "DELETE FROM books WHERE id=$1";
-    public static final String SELECT_STATEMENT = "SELECT title,publisher,edition,cover_page_image_asset_id FROM books WHERE id=$1";
-    public static final String UPDATE_STATEMENT = "UPDATE books SET title=$1, publisher=$2, edition=$3, cover_page_image_asset_id=$4 WHERE id=$5";
+    public static final String SELECT_STATEMENT = "SELECT library_id,title,publisher,edition,cover_page_image_asset_id FROM books WHERE id=$1";
+    public static final String UPDATE_STATEMENT = "UPDATE books SET library_id = $1, title=$2, publisher=$3, edition=$4, cover_page_image_asset_id=$5 WHERE id=$6";
 
     @NonNull
     private final DatabaseClient databaseClient;
@@ -69,14 +69,15 @@ public class R2dbcPostgresqlBookDao implements BookDao<Book> {
             GenericExecuteSpec executeSpec = this.databaseClient.sql(INSERT_STATEMENT);
 
             executeSpec = executeSpec
-                    .bind("$1", r2dbcBook.getTitle())
-                    .bind("$2", r2dbcBook.getPublisher())
-                    .bind("$3", r2dbcBook.getEdition());
+                    .bind("$1", r2dbcBook.getLibraryId())
+                    .bind("$2", r2dbcBook.getTitle())
+                    .bind("$3", r2dbcBook.getPublisher())
+                    .bind("$4", r2dbcBook.getEdition());
 
             if (r2dbcBook.getCoverPageImageAssetId() == null) {
-                executeSpec = executeSpec.bindNull("$4", String.class);
+                executeSpec = executeSpec.bindNull("$5", String.class);
             } else {
-                executeSpec = executeSpec.bind("$4", r2dbcBook.getCoverPageImageAssetId());
+                executeSpec = executeSpec.bind("$5", r2dbcBook.getCoverPageImageAssetId());
             }
             return executeSpec
                     .map(row -> row.get("id", UUID.class))
@@ -189,23 +190,28 @@ public class R2dbcPostgresqlBookDao implements BookDao<Book> {
         log.debug("Saving updates to db");
         GenericExecuteSpec executeSpec = this.databaseClient
                 .sql(UPDATE_STATEMENT)
-                .bind("$1", book.getTitle())
-                .bind("$2", book.getPublisher())
-                .bind("$3", book.getEdition());
+                .bind("$1", book.getLibraryId())
+                .bind("$2", book.getTitle())
+                .bind("$3", book.getPublisher())
+                .bind("$4", book.getEdition());
 
         if (book.getCoverPageImageAssetId() == null)
-            executeSpec = executeSpec.bindNull("$4", String.class);
+            executeSpec = executeSpec.bindNull("$5", String.class);
         else
-            executeSpec = executeSpec.bind("$4", book.getCoverPageImageAssetId());
+            executeSpec = executeSpec.bind("$5", book.getCoverPageImageAssetId());
 
         return executeSpec
-                .bind("$5", book.getUuid())
+                .bind("$6", book.getUuid())
                 .fetch()
                 .rowsUpdated()
                 .then();
     }
 
     private R2dbcBook applyUpdates(Book oldBook, R2dbcBook newBook) {
+
+        if (oldBook.getLibraryId() != null)
+            newBook.setLibraryId(oldBook.getLibraryId());
+
         if (oldBook.getTitle() != null)
             newBook.setTitle(oldBook.getTitle());
 
@@ -235,6 +241,7 @@ public class R2dbcPostgresqlBookDao implements BookDao<Book> {
     private R2dbcBook mapToR2dbcBook(Row row, RowMetadata rowMetadata) {
         R2dbcBook book = new R2dbcBook();
 
+        book.setLibraryId(row.get("library_id", String.class));
         book.setTitle(row.get("title", String.class));
         book.setEdition(row.get("edition", String.class));
         book.setPublisher(row.get("publisher", String.class));

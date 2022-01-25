@@ -21,6 +21,7 @@ import java.util.UUID;
 public final class R2dbcEBook extends EBook {
 
     private UUID id;
+    private String libraryId;
     private String title;
     private String publisher;
     private String edition;
@@ -83,4 +84,14 @@ public final class R2dbcEBook extends EBook {
                 new R2dbcBookTag(tag);
     }
 
+
+    @Override
+    public boolean equals(Object o) {
+        return super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
 }

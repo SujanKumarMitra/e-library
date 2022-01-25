@@ -3,6 +3,7 @@ package com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity;
 import com.github.sujankumarmitra.libraryservice.v1.model.Author;
 import com.github.sujankumarmitra.libraryservice.v1.model.Book;
 import com.github.sujankumarmitra.libraryservice.v1.model.BookTag;
+import com.github.sujankumarmitra.libraryservice.v1.util.UuidUtil;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -20,6 +21,7 @@ import java.util.UUID;
 public final class R2dbcBook extends Book {
 
     private UUID id;
+    private String libraryId;
     private String title;
     private Set<R2dbcAuthor> authors = new HashSet<>();
     private String publisher;
@@ -41,7 +43,8 @@ public final class R2dbcBook extends Book {
 
     public R2dbcBook(@NonNull Book book) {
 
-        this.id = book.getId() == null ? null : UUID.fromString(book.getId());
+        this.id = UuidUtil.nullableUuid(book.getId());
+        this.libraryId = book.getLibraryId();
         this.title = book.getTitle();
         this.publisher = book.getPublisher();
         this.edition = book.getEdition();
@@ -56,14 +59,6 @@ public final class R2dbcBook extends Book {
         }
     }
 
-//    public void addAuthor(@NonNull Author author) {
-//        this.authors.add(convertToR2dbcAuthor(author));
-//    }
-//
-//    public void addTag(@NonNull BookTag tag) {
-//        this.tags.add(convertToR2dbcBookTag(tag));
-//    }
-
     public <T extends Author> void addAllAuthors(@NonNull Set<T> authors) {
         for (Author author : authors) {
             this.authors.add(convertToR2dbcAuthor(author));
@@ -75,14 +70,6 @@ public final class R2dbcBook extends Book {
             this.tags.add(convertToR2dbcBookTag(author));
         }
     }
-
-//    public void removeAllTags() {
-//        this.tags.clear();
-//    }
-//
-//    public void removeAllAuthors() {
-//        this.authors.clear();
-//    }
 
     private R2dbcAuthor convertToR2dbcAuthor(Author author) {
         return author instanceof R2dbcAuthor ?

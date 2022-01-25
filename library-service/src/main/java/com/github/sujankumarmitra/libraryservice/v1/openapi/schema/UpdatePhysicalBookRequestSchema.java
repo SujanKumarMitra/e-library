@@ -25,6 +25,11 @@ public class UpdatePhysicalBookRequestSchema extends PhysicalBook {
     }
 
     @Override
+    public String getLibraryId() {
+        return null;
+    }
+
+    @Override
     public String getTitle() {
         return null;
     }

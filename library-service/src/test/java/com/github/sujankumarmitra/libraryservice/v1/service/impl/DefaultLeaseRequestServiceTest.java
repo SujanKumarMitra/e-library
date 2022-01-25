@@ -203,6 +203,9 @@ class DefaultLeaseRequestServiceTest {
         Mockito.doReturn(Mono.error(new InsufficientCopiesAvailableException("bookId")))
                 .when(bookService).onLeaseAccept(any());
 
+        Mockito.doReturn(Mono.empty())
+                .when(notificationService).sendNotification(any());
+
         DefaultAcceptedLease acceptedLease = new DefaultAcceptedLease();
         acceptedLease.setLeaseRequestId(validLeaseRequestId.toString());
         acceptedLease.setStartTimeInEpochMilliseconds(System.currentTimeMillis());

@@ -24,6 +24,12 @@ public class CreateEBookRequestSchema extends EBook {
 
     @Override
     @NotEmpty
+    public String getLibraryId() {
+        return null;
+    }
+
+    @Override
+    @NotEmpty
     public String getTitle() {
         return null;
     }

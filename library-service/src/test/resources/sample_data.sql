@@ -1,9 +1,9 @@
 -- books
-insert into books (id, title, publisher, edition, cover_page_image_asset_id) values ('d4c608c4-7ac6-48b9-b90d-9952e798578b', 'Lady Vengeance (Sympathy for Lady Vengeance) (Chinjeolhan geumjassi)', 'Wanda Sykes: Sick and Tired', 'Taboo (Gohatto)', '158NhLveCgNHGAaPjbz1E8AJD5X1SBy2HE');
-insert into books (id, title, publisher, edition, cover_page_image_asset_id) values ('1651bee3-4a18-412a-89bc-abb9dcdfe203', 'Amazing Johnathan: Wrong on Every Level', 'Cure, The', 'We the Party', '12Jc5gSRXy9SPrKCukXFCEeByaSSLHVpHJ');
-insert into books (id, title, publisher, edition, cover_page_image_asset_id) values ('7a900746-e6b7-4ddd-a3b5-99f4ad291321', 'Guard, The', 'That''s Entertainment! III', 'Bangkok Dangerous', '1vbuWupWzsiXN6eZ7PwBrsJXi2YpiTzT2');
-insert into books (id, title, publisher, edition, cover_page_image_asset_id) values ('60dc01ad-43be-4501-aaa8-3c12741dff4f', 'War', 'The Boy', 'American Ninja 5', '18YBxX6ZcfwJMDM7r1P1cYHbqJ1L4FpMpa');
-insert into books (id, title, publisher, edition, cover_page_image_asset_id) values ('2e611bfb-d06d-4ef9-9bf6-8d4f445ba736', 'Play Girl', 'Hong Kong Confidential (Amaya)', 'Hatchet', '15bFAeZ4oesWsgVE5cTqSqQxpQDHxmyezA');
+insert into books (library_id, id, title, publisher, edition, cover_page_image_asset_id) values ('library1', 'd4c608c4-7ac6-48b9-b90d-9952e798578b', 'Lady Vengeance (Sympathy for Lady Vengeance) (Chinjeolhan geumjassi)', 'Wanda Sykes: Sick and Tired', 'Taboo (Gohatto)', '158NhLveCgNHGAaPjbz1E8AJD5X1SBy2HE');
+insert into books (library_id, id, title, publisher, edition, cover_page_image_asset_id) values ('library2', '1651bee3-4a18-412a-89bc-abb9dcdfe203', 'Amazing Johnathan: Wrong on Every Level', 'Cure, The', 'We the Party', '12Jc5gSRXy9SPrKCukXFCEeByaSSLHVpHJ');
+insert into books (library_id, id, title, publisher, edition, cover_page_image_asset_id) values ('library1', '7a900746-e6b7-4ddd-a3b5-99f4ad291321', 'Guard, The', 'That''s Entertainment! III', 'Bangkok Dangerous', '1vbuWupWzsiXN6eZ7PwBrsJXi2YpiTzT2');
+insert into books (library_id, id, title, publisher, edition, cover_page_image_asset_id) values ('library2', '60dc01ad-43be-4501-aaa8-3c12741dff4f', 'War', 'The Boy', 'American Ninja 5', '18YBxX6ZcfwJMDM7r1P1cYHbqJ1L4FpMpa');
+insert into books (library_id, id, title, publisher, edition, cover_page_image_asset_id) values ('library3', '2e611bfb-d06d-4ef9-9bf6-8d4f445ba736', 'Play Girl', 'Hong Kong Confidential (Amaya)', 'Hatchet', '15bFAeZ4oesWsgVE5cTqSqQxpQDHxmyezA');
 
 --packages
 insert into packages (id, name) values ('d913745e-9328-49ca-94fa-2ca7118ae1d2', 'Veribet');
