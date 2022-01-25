@@ -36,10 +36,9 @@ import java.util.stream.Collectors;
 public class R2dbcPostgresqlPhysicalBookDao implements PhysicalBookDao {
 
     public static final String INSERT_STATEMENT = "INSERT INTO physical_books(book_id, copies_available, fine_amount, fine_currency_code) VALUES ($1,$2,$3,$4)";
-    public static final String JOINED_SELECT_STATEMENT = "SELECT b.id, b.title, b.publisher, b.edition, b.cover_page_image_asset_id, pb.copies_available, pb.fine_amount, pb.fine_currency_code FROM books b INNER JOIN physical_books pb ON (pb.book_id=b.id AND pb.book_id=$1)";
+    public static final String JOINED_SELECT_STATEMENT = "SELECT b.id, b.library_id, b.title, b.publisher, b.edition, b.cover_page_image_asset_id, pb.copies_available, pb.fine_amount, pb.fine_currency_code FROM books b INNER JOIN physical_books pb ON (pb.book_id=b.id AND pb.book_id=$1)";
     public static final String SELECT_STATEMENT = "SELECT pb.book_id, pb.copies_available, pb.fine_amount, pb.fine_currency_code FROM physical_books pb WHERE pb.book_id=$1";
     public static final String UPDATE_STATEMENT = "UPDATE physical_books SET copies_available=$1, fine_amount=$2, fine_currency_code=$3 WHERE book_id=$4";
-    public static final String DELETE_STATEMENT = "DELETE FROM physical_books WHERE book_id=$1";
     public static final String DECREMENT_COPIES_AVAILABLE_STATEMENT = "UPDATE physical_books SET copies_available=copies_available-1 WHERE book_id=$1";
     public static final String INCREMENT_COPIES_AVAILABLE_STATEMENT = "UPDATE physical_books SET copies_available=copies_available+1 WHERE book_id=$1";
     public static final String POSITIVE_COPIES_AVAILABLE_CONSTRAINT_NAME = "chk_physical_book_copies_positive";
@@ -149,6 +148,7 @@ public class R2dbcPostgresqlPhysicalBookDao implements PhysicalBookDao {
 
         if (joinStatement) {
             book.setId(row.get("id", UUID.class));
+            book.setLibraryId(row.get("library_id", String.class));
             book.setTitle(row.get("title", String.class));
             book.setPublisher(row.get("publisher", String.class));
             book.setEdition(row.get("edition", String.class));

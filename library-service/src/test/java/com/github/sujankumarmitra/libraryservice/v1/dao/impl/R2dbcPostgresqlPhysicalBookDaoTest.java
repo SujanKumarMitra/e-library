@@ -74,13 +74,15 @@ class R2dbcPostgresqlPhysicalBookDaoTest extends AbstractDataR2dbcPostgreSQLCont
     @Test
     void givenValidPhysicalBook_whenInsert_shouldInsert() {
         R2dbcPhysicalBook book = createBook();
+
         this.entityTemplate
                 .getDatabaseClient()
                 .sql(R2dbcPostgresqlBookDao.INSERT_STATEMENT)
-                .bind("$1", book.getTitle())
-                .bind("$2", book.getPublisher())
-                .bind("$3", book.getEdition())
-                .bind("$4", book.getCoverPageImageAssetId())
+                .bind("$1", book.getLibraryId())
+                .bind("$2", book.getTitle())
+                .bind("$3", book.getPublisher())
+                .bind("$4", book.getEdition())
+                .bind("$5", book.getCoverPageImageAssetId())
                 .map(row -> row.get("id", UUID.class))
                 .one()
                 .doOnSuccess(book::setId)
@@ -158,10 +160,11 @@ class R2dbcPostgresqlPhysicalBookDaoTest extends AbstractDataR2dbcPostgreSQLCont
         entityTemplate
                 .getDatabaseClient()
                 .sql(R2dbcPostgresqlBookDao.INSERT_STATEMENT)
-                .bind("$1", book.getTitle())
-                .bind("$2", book.getPublisher())
-                .bind("$3", book.getEdition())
-                .bind("$4", book.getCoverPageImageAssetId())
+                .bind("$1", book.getLibraryId())
+                .bind("$2", book.getTitle())
+                .bind("$3", book.getPublisher())
+                .bind("$4", book.getEdition())
+                .bind("$5", book.getCoverPageImageAssetId())
                 .map(row -> row.get("id", UUID.class))
                 .one()
                 .doOnSuccess(book::setId)
@@ -226,10 +229,11 @@ class R2dbcPostgresqlPhysicalBookDaoTest extends AbstractDataR2dbcPostgreSQLCont
         entityTemplate
                 .getDatabaseClient()
                 .sql(R2dbcPostgresqlBookDao.INSERT_STATEMENT)
-                .bind("$1", expectedBook.getTitle())
-                .bind("$2", expectedBook.getPublisher())
-                .bind("$3", expectedBook.getEdition())
-                .bind("$4", expectedBook.getCoverPageImageAssetId())
+                .bind("$1", expectedBook.getLibraryId())
+                .bind("$2", expectedBook.getTitle())
+                .bind("$3", expectedBook.getPublisher())
+                .bind("$4", expectedBook.getEdition())
+                .bind("$5", expectedBook.getCoverPageImageAssetId())
                 .map(row -> row.get("id", UUID.class))
                 .one()
                 .doOnSuccess(expectedBook::setId)
@@ -313,10 +317,11 @@ class R2dbcPostgresqlPhysicalBookDaoTest extends AbstractDataR2dbcPostgreSQLCont
         entityTemplate
                 .getDatabaseClient()
                 .sql(R2dbcPostgresqlBookDao.INSERT_STATEMENT)
-                .bind("$1", book.getTitle())
-                .bind("$2", book.getPublisher())
-                .bind("$3", book.getEdition())
-                .bind("$4", book.getCoverPageImageAssetId())
+                .bind("$1", book.getLibraryId())
+                .bind("$2", book.getTitle())
+                .bind("$3", book.getPublisher())
+                .bind("$4", book.getEdition())
+                .bind("$5", book.getCoverPageImageAssetId())
                 .map(row -> row.get("id", UUID.class))
                 .one()
                 .doOnSuccess(book::setId)
@@ -368,6 +373,7 @@ class R2dbcPostgresqlPhysicalBookDaoTest extends AbstractDataR2dbcPostgreSQLCont
 
         com.github.javafaker.Book book = faker.book();
 
+        physicalBook.setLibraryId(faker.idNumber().valid());
         physicalBook.setTitle(book.title());
         physicalBook.setPublisher(book.publisher());
         physicalBook.setEdition("1st");

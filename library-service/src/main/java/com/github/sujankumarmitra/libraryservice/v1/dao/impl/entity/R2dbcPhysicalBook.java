@@ -3,6 +3,7 @@ package com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity;
 import com.github.sujankumarmitra.libraryservice.v1.model.Author;
 import com.github.sujankumarmitra.libraryservice.v1.model.BookTag;
 import com.github.sujankumarmitra.libraryservice.v1.model.PhysicalBook;
+import com.github.sujankumarmitra.libraryservice.v1.util.UuidUtil;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -43,7 +44,8 @@ public final class R2dbcPhysicalBook extends PhysicalBook {
     }
 
     public R2dbcPhysicalBook(@NonNull PhysicalBook physicalBook) {
-        this.id = physicalBook.getId() == null ? null : UUID.fromString(physicalBook.getId());
+        this.id = UuidUtil.nullableUuid(physicalBook.getId());
+        this.libraryId = physicalBook.getLibraryId();
         this.title = physicalBook.getTitle();
         this.publisher = physicalBook.getPublisher();
         this.edition = physicalBook.getEdition();
