@@ -11,6 +11,8 @@ public abstract class Package {
 
     public abstract String getId();
 
+    public abstract String getLibraryId();
+
     public abstract String getName();
 
     public abstract <T extends PackageItem> Set<T> getItems();
@@ -23,6 +25,7 @@ public abstract class Package {
 
         Package that = (Package) o;
         return Objects.equals(getId(), that.getId()) &&
+                Objects.equals(getLibraryId(), that.getLibraryId()) &&
                 Objects.equals(getName(), that.getName()) &&
                 Objects.equals(getItems(), that.getItems()) &&
                 Objects.equals(getTags(), that.getTags());
@@ -31,6 +34,7 @@ public abstract class Package {
     @Override
     public int hashCode() {
         return Objects.hash(getId(),
+                getLibraryId(),
                 getName(),
                 getItems(),
                 getTags());
@@ -40,6 +44,7 @@ public abstract class Package {
     public String toString() {
         return "Package{" +
                 "id='" + getId() + '\'' +
+                ", libraryId='" + getLibraryId() + '\'' +
                 ", name='" + getName() + '\'' +
                 ", items=" + getItems() +
                 ", tags=" + getTags() +

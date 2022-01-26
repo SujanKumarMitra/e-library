@@ -20,6 +20,11 @@ public class UpdatePackageRequestSchema extends Package {
     }
 
     @Override
+    public String getLibraryId() {
+        return null;
+    }
+
+    @Override
     public String getName() {
         return null;
     }

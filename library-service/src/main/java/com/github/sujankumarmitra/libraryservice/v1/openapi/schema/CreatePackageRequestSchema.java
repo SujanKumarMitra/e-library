@@ -22,6 +22,13 @@ public class CreatePackageRequestSchema extends Package {
     }
 
     @Override
+    @Schema
+    @NotEmpty
+    public String getLibraryId() {
+        return null;
+    }
+
+    @Override
     @Schema(description = "name of the package")
     @NotEmpty
     public String getName() {

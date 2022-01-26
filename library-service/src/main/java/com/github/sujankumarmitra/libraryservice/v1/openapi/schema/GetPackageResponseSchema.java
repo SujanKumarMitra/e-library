@@ -20,6 +20,12 @@ public class GetPackageResponseSchema extends Package {
 
     @Override
     @NotEmpty
+    public String getLibraryId() {
+        return null;
+    }
+
+    @Override
+    @NotEmpty
     public String getName() {
         return null;
     }

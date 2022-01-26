@@ -61,6 +61,8 @@ class R2dbcPostgresqlPackageDaoTest extends AbstractDataR2dbcPostgreSQLContainer
     @Test
     void givenValidPackage_whenCreate_shouldCreate() {
         R2dbcPackage r2dbcPackage = new R2dbcPackage();
+
+        r2dbcPackage.setLibraryId("library_id");
         r2dbcPackage.setName("package_name");
 
         Mockito.doReturn(Flux.empty())
@@ -90,6 +92,7 @@ class R2dbcPostgresqlPackageDaoTest extends AbstractDataR2dbcPostgreSQLContainer
         PackageDaoTestUtils
                 .insertDummyPackage(this.entityTemplate.getDatabaseClient())
                 .doOnSuccess(insertedPackage -> expectedPackage.setId(insertedPackage.getUuid()))
+                .doOnSuccess(insertedPackage -> expectedPackage.setLibraryId(insertedPackage.getLibraryId()))
                 .doOnSuccess(insertedPackage -> expectedPackage.setName(insertedPackage.getName()))
                 .map(Package::getId)
                 .flatMap(packageDao::getPackage)
@@ -157,6 +160,7 @@ class R2dbcPostgresqlPackageDaoTest extends AbstractDataR2dbcPostgreSQLContainer
         PackageDaoTestUtils
                 .insertDummyPackage(entityTemplate.getDatabaseClient())
                 .doOnSuccess(insertedPackage -> expectedPackage.setId(insertedPackage.getUuid()))
+                .doOnSuccess(insertedPackage -> expectedPackage.setLibraryId(insertedPackage.getLibraryId()))
                 .doOnSuccess(insertedPackage -> expectedPackage.setName(insertedPackage.getName()))
                 .doOnSuccess(that -> expectedPackage.setName("updated_name"))
                 .thenReturn(expectedPackage)
@@ -220,6 +224,11 @@ class R2dbcPostgresqlPackageDaoTest extends AbstractDataR2dbcPostgreSQLContainer
             @Override
             public String getId() {
                 return "malformed";
+            }
+
+            @Override
+            public String getLibraryId() {
+                return "library_id";
             }
 
             @Override

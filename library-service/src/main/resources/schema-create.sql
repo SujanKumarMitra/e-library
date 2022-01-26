@@ -1,8 +1,9 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE IF NOT EXISTS librarians (
-    id text,
-    CONSTRAINT pk_librarians PRIMARY KEY(id)
+    user_id text,
+    library_id text,
+    CONSTRAINT pk_librarians PRIMARY KEY(user_id, library_id)
 );
 
 CREATE TABLE IF NOT EXISTS books(
@@ -89,8 +90,11 @@ CREATE TABLE IF NOT EXISTS ebook_segments(
 
 CREATE TABLE IF NOT EXISTS packages(
 	id uuid DEFAULT uuid_generate_v4(),
+	library_id text,
 	name text,
 	CONSTRAINT pk_packages PRIMARY KEY(id),
+	CONSTRAINT chk_packages_library_id_not_null CHECK(library_id IS NOT NULL),
+    CONSTRAINT chk_packages_library_id_not_empty CHECK(LENGTH(library_id) > 0),
 	CONSTRAINT chk_packages_name_not_null CHECK(name IS NOT NULL),
 	CONSTRAINT chk_packages_name_not_empty CHECK(LENGTH(name) > 0)
 );

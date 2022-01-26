@@ -19,9 +19,20 @@ public class JacksonValidUpdatePackageRequest extends Package {
     @JsonIgnore
     private String id;
     @Size(min = 1)
+    private String libraryId;
+    @Size(min = 1)
     private String name;
     @Size(min = 1)
     private Set<JacksonValidUpdatePackageItemRequest> items;
     private Set<JacksonValidUpdatePackageTagRequest> tags;
 
+    @Override
+    public boolean equals(Object o) {
+        return super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
 }

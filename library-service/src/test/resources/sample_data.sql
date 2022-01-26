@@ -6,11 +6,11 @@ insert into books (library_id, id, title, publisher, edition, cover_page_image_a
 insert into books (library_id, id, title, publisher, edition, cover_page_image_asset_id) values ('library3', '2e611bfb-d06d-4ef9-9bf6-8d4f445ba736', 'Play Girl', 'Hong Kong Confidential (Amaya)', 'Hatchet', '15bFAeZ4oesWsgVE5cTqSqQxpQDHxmyezA');
 
 --packages
-insert into packages (id, name) values ('d913745e-9328-49ca-94fa-2ca7118ae1d2', 'Veribet');
-insert into packages (id, name) values ('b4455113-452b-44af-9873-ac2bfef90129', 'It');
-insert into packages (id, name) values ('5b55d220-37f6-4f53-992a-4686d47e3e3f', 'Sub-Ex');
-insert into packages (id, name) values ('5b9040dd-7425-4c1d-b311-7231ceb18122', 'Job');
-insert into packages (id, name) values ('b1b59ce4-05cc-4732-92ea-34249e3264b7', 'Asoka');
+insert into packages (id, library_id, name) values ('d913745e-9328-49ca-94fa-2ca7118ae1d2', 'library1', 'Veribet');
+insert into packages (id, library_id, name) values ('b4455113-452b-44af-9873-ac2bfef90129', 'library1', 'It');
+insert into packages (id, library_id, name) values ('5b55d220-37f6-4f53-992a-4686d47e3e3f', 'library2', 'Sub-Ex');
+insert into packages (id, library_id, name) values ('5b9040dd-7425-4c1d-b311-7231ceb18122', 'library2', 'Job');
+insert into packages (id, library_id, name) values ('b1b59ce4-05cc-4732-92ea-34249e3264b7', 'library3', 'Asoka');
 
 --package_items
 insert into package_items (package_id, book_id) values('d913745e-9328-49ca-94fa-2ca7118ae1d2','d4c608c4-7ac6-48b9-b90d-9952e798578b');
