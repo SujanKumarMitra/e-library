@@ -235,9 +235,6 @@ class DefaultLeaseRequestServiceTest {
         R2dbcLeaseRequest leaseRequest = new R2dbcLeaseRequest();
         leaseRequest.setBookId(validPhysicalBookId);
 
-        Mockito.doReturn(Mono.fromSupplier(() -> UUID.randomUUID().toString()))
-                .when(leaseRequestDao).createLeaseRequest(leaseRequest);
-
 
         leaseRequestService
                 .createLeaseRequest(leaseRequest)

@@ -88,22 +88,24 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
 
     @Override
     public Mono<String> createLeaseRequest(@NonNull LeaseRequest request) {
+//        TODO: check authenticated user has role {Book.getLibraryId():ROLE_STUDENT} or not
         return bookService
                 .getBook(request.getBookId())
                 .filter(PhysicalBook.class::isInstance)
                 .cast(PhysicalBook.class)
                 .handle(this::emitErrorIfNoCopiesAvailable)
-                .then(leaseRequestDao.createLeaseRequest(request))
-                .flatMap(leaseRequestId -> this
-                        .sendNotificationForNewLeaseRequest(leaseRequestId)
-                        .thenReturn(leaseRequestId));
+                .map(Book::getLibraryId)
+                .flatMap(libraryId -> leaseRequestDao
+                        .createLeaseRequest(request)
+                        .flatMap(leaseRequestId -> sendNotificationForNewLeaseRequest(leaseRequestId, libraryId)
+                                .thenReturn(leaseRequestId)));
     }
 
-    private Mono<Void> sendNotificationForNewLeaseRequest(String leaseRequestId) {
+    private Mono<Void> sendNotificationForNewLeaseRequest(String leaseRequestId, String libraryId) {
 
         return librarianDao
-                .getLibrarians()
-                .map(Librarian::getId)
+                .getLibrarians(libraryId)
+                .map(Librarian::getUserId)
                 .map(librarianId -> {
                     DefaultNotification notification = new DefaultNotification();
 
@@ -132,9 +134,9 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
         }
     }
 
-    private void emitErrorIfNoCopiesAvailable(PhysicalBook book, SynchronousSink<Void> sink) {
+    private void emitErrorIfNoCopiesAvailable(PhysicalBook book, SynchronousSink<PhysicalBook> sink) {
         if (book.getCopiesAvailable() > 0) {
-            sink.complete();
+            sink.next(book);
         } else {
             sink.error(new InsufficientCopiesAvailableException(book.getId()));
         }

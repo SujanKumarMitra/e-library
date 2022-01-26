@@ -11,5 +11,5 @@ public interface LibrarianService {
 
     Mono<Void> addLibrarian(Librarian librarian);
 
-    Mono<Void> deleteLibrarian(String librarianId);
+    Mono<Void> deleteLibrarian(Librarian librarianId);
 }

@@ -4,6 +4,7 @@ import com.github.sujankumarmitra.libraryservice.v1.dao.LibrarianDao;
 import com.github.sujankumarmitra.libraryservice.v1.exception.LibrarianAlreadyExistsException;
 import com.github.sujankumarmitra.libraryservice.v1.model.Librarian;
 import com.github.sujankumarmitra.libraryservice.v1.model.impl.DefaultLibrarian;
+import io.r2dbc.spi.Row;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -23,8 +24,9 @@ import reactor.core.publisher.Mono;
 @AllArgsConstructor
 public class R2dbcPostgresqlLibrarianDao implements LibrarianDao {
     public static final String PRIMARY_KEY_CONSTRAINT_NAME = "pk_librarians";
-    public static final String INSERT_STATEMENT = "INSERT INTO librarians(id) VALUES ($1)";
-    public static final String SELECT_STATEMENT = "SELECT id FROM librarians";
+    public static final String INSERT_STATEMENT = "INSERT INTO librarians(user_id,library_id) VALUES ($1,$2)";
+    public static final String SELECT_STATEMENT = "SELECT user_id,library_id FROM librarians WHERE library_id=$1";
+    public static final String DELETE_STATEMENT = "DELETE FROM librarians WHERE user_id=$1 AND library_id=$2";
     @NonNull
     private final R2dbcEntityTemplate entityTemplate;
 
@@ -34,7 +36,8 @@ public class R2dbcPostgresqlLibrarianDao implements LibrarianDao {
         return entityTemplate
                 .getDatabaseClient()
                 .sql(INSERT_STATEMENT)
-                .bind("$1", librarian.getId())
+                .bind("$1", librarian.getUserId())
+                .bind("$2", librarian.getLibraryId())
                 .fetch()
                 .rowsUpdated()
                 .then()
@@ -44,13 +47,21 @@ public class R2dbcPostgresqlLibrarianDao implements LibrarianDao {
     @Override
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
-    public Flux<Librarian> getLibrarians() {
+    public Flux<Librarian> getLibrarians(String libraryId) {
         return entityTemplate
                 .getDatabaseClient()
                 .sql(SELECT_STATEMENT)
-                .map(row -> new DefaultLibrarian(row.get("id", String.class)))
+                .bind("$1", libraryId)
+                .map(this::mapToLibrarian)
                 .all()
                 .cast(Librarian.class);
+    }
+
+    private DefaultLibrarian mapToLibrarian(Row row) {
+        String id = row.get("user_id",String.class);
+        String libraryId = row.get("library_id",String.class);
+
+        return new DefaultLibrarian(id, libraryId);
     }
 
     private Throwable translateErrors(DataIntegrityViolationException ex, Librarian librarian) {
@@ -63,7 +74,7 @@ public class R2dbcPostgresqlLibrarianDao implements LibrarianDao {
         }
 
         if (message.contains(PRIMARY_KEY_CONSTRAINT_NAME)) {
-            return new LibrarianAlreadyExistsException(librarian.getId());
+            return new LibrarianAlreadyExistsException(librarian.getUserId());
         }
 
         log.debug("failed to translate error, falling back to original thrown exception");
@@ -72,11 +83,12 @@ public class R2dbcPostgresqlLibrarianDao implements LibrarianDao {
 
     @Override
     @Transactional
-    public Mono<Void> deleteLibrarian(@NonNull String librarianId) {
+    public Mono<Void> deleteLibrarian(@NonNull Librarian librarian) {
         return entityTemplate
                 .getDatabaseClient()
-                .sql("DELETE FROM librarians WHERE id=$1")
-                .bind("$1", librarianId)
+                .sql(DELETE_STATEMENT)
+                .bind("$1", librarian.getUserId())
+                .bind("$2", librarian.getLibraryId())
                 .fetch()
                 .rowsUpdated()
                 .then();

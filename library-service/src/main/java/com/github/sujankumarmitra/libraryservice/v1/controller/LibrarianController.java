@@ -23,7 +23,7 @@ import static com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfigu
  * @since Dec 09/12/21, 2021
  */
 @RestController
-@RequestMapping("/api/v1/librarian")
+@RequestMapping("/api/v1/librarians")
 @AllArgsConstructor
 @Tag(
         name = "LibrarianController",
@@ -44,9 +44,9 @@ public class LibrarianController {
     @ApiAcceptedResponse
     @ApiBadRequestResponse
     @RoleAdmin
-    @PutMapping("/{librarianId}")
-    public Mono<ResponseEntity<Void>> createLibrarian(@PathVariable String librarianId) {
-        Librarian librarian = new DefaultLibrarian(librarianId);
+    @PutMapping("/{userId}/{libraryId}")
+    public Mono<ResponseEntity<Void>> createLibrarian(@PathVariable String userId, @PathVariable String libraryId) {
+        Librarian librarian = new DefaultLibrarian(userId, libraryId);
         return librarianService
                 .addLibrarian(librarian)
                 .then(Mono.fromSupplier(() -> ResponseEntity.accepted().build()));
@@ -59,10 +59,11 @@ public class LibrarianController {
     )
     @ApiAcceptedResponse
     @RoleAdmin
-    @DeleteMapping("/{librarianId}")
-    public Mono<ResponseEntity<Void>> deleteLibrarian(@PathVariable String librarianId) {
+    @DeleteMapping("/{userId}/{libraryId}")
+    public Mono<ResponseEntity<Void>> deleteLibrarian(@PathVariable String userId, @PathVariable String libraryId) {
+        Librarian librarian = new DefaultLibrarian(userId, libraryId);
         return librarianService
-                .deleteLibrarian(librarianId)
+                .deleteLibrarian(librarian)
                 .then(Mono.fromSupplier(() -> ResponseEntity.accepted().build()));
     }
 

@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono;
 public interface LibrarianDao {
     Mono<Void> createLibrarian(Librarian librarian);
 
-    <R extends Librarian> Flux<R> getLibrarians();
+    <R extends Librarian> Flux<R> getLibrarians(String libraryId);
 
-    Mono<Void> deleteLibrarian(String librarianId);
+    Mono<Void> deleteLibrarian(Librarian librarian);
 }
