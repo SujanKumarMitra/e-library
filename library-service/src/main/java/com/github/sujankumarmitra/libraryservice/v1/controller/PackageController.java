@@ -64,8 +64,9 @@ public class PackageController {
     @RoleStudent
     @GetMapping
     public Flux<JacksonGetPackageResponse> getPackages(@RequestParam(value = "page_no", defaultValue = "0") int pageNo) {
+//        TODO take libraryId from input
         return packageService
-                .getPackages(pageNo)
+                .getPackages("", pageNo)
                 .map(JacksonGetPackageResponse::new);
     }
 
@@ -86,8 +87,9 @@ public class PackageController {
     @GetMapping("/search")
     public Flux<JacksonGetPackageResponse> getPackagesByNameStartingWith(@RequestParam(value = "name_prefix") String namePrefix,
                                                                          @RequestParam(value = "page_no", defaultValue = "0") int pageNo) {
+//        TODO: take libraryId from input
         return packageService
-                .getPackagesByName(namePrefix, pageNo)
+                .getPackagesByName("", namePrefix, pageNo)
                 .map(JacksonGetPackageResponse::new);
     }
 

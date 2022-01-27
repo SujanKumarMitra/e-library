@@ -12,10 +12,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-
-import static com.github.sujankumarmitra.libraryservice.v1.security.SecurityConstants.ROLE_LIBRARIAN;
-import static com.github.sujankumarmitra.libraryservice.v1.security.SecurityConstants.ROLE_STUDENT;
+import static com.github.sujankumarmitra.libraryservice.v1.security.SecurityConstants.*;
 
 /**
  * @author skmitra
@@ -44,6 +41,7 @@ public class SecuredBookService implements BookService {
     @Override
     @PreAuthorize("hasAnyAuthority(" +
             "#libraryId + ':" + ROLE_LIBRARIAN + "', " +
+            "#libraryId + ':" + ROLE_TEACHER + "', " +
             "#libraryId + ':" + ROLE_STUDENT + "')")
     public Flux<Book> getBooks(String libraryId, int pageNo) {
         return delegate.getBooks(libraryId, pageNo);
@@ -52,6 +50,7 @@ public class SecuredBookService implements BookService {
     @Override
     @PreAuthorize("hasAnyAuthority(" +
             "#libraryId + ':" + ROLE_LIBRARIAN + "', " +
+            "#libraryId + ':" + ROLE_TEACHER + "', " +
             "#libraryId + ':" + ROLE_STUDENT + "')")
     public Flux<Book> getBooksByTitleAndAuthor(String libraryId, String titlePrefix, String authorPrefix, int pageNo) {
         return delegate.getBooksByTitleAndAuthor(libraryId, titlePrefix, authorPrefix, pageNo);
@@ -61,8 +60,9 @@ public class SecuredBookService implements BookService {
     public Mono<Book> getBook(String bookId) {
         return delegate.getBook(bookId)
                 .flatMap(book -> Mono.fromSupplier(book::getLibraryId)
-                        .map(libraryId -> List.of(libraryId + ":" + ROLE_LIBRARIAN, libraryId + ":" + ROLE_STUDENT))
-                        .flatMap(SecurityUtil::hasAnyAuthority)
+                        .flatMapMany(libraryId -> Flux.just(ROLE_LIBRARIAN, ROLE_TEACHER, ROLE_STUDENT)
+                                .map(roleId -> libraryId + ":" + roleId)
+                                .flatMap(SecurityUtil::hasAuthority))
                         .filter(Boolean::booleanValue)
                         .switchIfEmpty(Mono.error(() -> new AccessDeniedException("Denied")))
                         .then(Mono.just(book)));

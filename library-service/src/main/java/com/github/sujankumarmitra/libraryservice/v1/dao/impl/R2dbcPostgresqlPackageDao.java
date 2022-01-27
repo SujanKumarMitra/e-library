@@ -36,8 +36,8 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
 
     public static final String INSERT_STATEMENT = "INSERT INTO packages(library_id, name) values($1,$2) RETURNING id";
     public static final String SELECT_BY_ID_STATEMENT = "SELECT id,library_id,name FROM packages WHERE id=$1";
-    public static final String SELECT_BY_NAME_STATEMENT = "SELECT id,library_id,name FROM packages WHERE name LIKE $1 LIMIT $3 OFFSET $2";
-    public static final String SELECT_ALL_STATEMENT = "SELECT id,library_id,name FROM packages LIMIT $2 OFFSET $1";
+    public static final String SELECT_BY_NAME_STATEMENT = "SELECT id,library_id,name FROM packages WHERE library_id=$4 AND name LIKE $1 LIMIT $3 OFFSET $2";
+    public static final String SELECT_ALL_STATEMENT = "SELECT id,library_id,name FROM packages WHERE library_id=$3 LIMIT $2 OFFSET $1";
     public static final String UPDATE_STATEMENT = "UPDATE packages SET library_id=$1, name=$2 WHERE id=$3";
     public static final String DELETE_STATEMENT = "DELETE FROM packages WHERE id=$1";
 
@@ -75,11 +75,12 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
 
     @Override
     @Transactional(readOnly = true)
-    public Flux<Package> getPackages(int skip, int limit) {
+    public Flux<Package> getPackages(String libraryId, int skip, int limit) {
         return databaseClient
                 .sql(SELECT_ALL_STATEMENT)
                 .bind("$1", skip)
                 .bind("$2", limit)
+                .bind("$3", libraryId)
                 .map(this::mapToR2dbcPackage)
                 .all()
                 .flatMapSequential(aPackage -> packageItemDao
@@ -99,12 +100,13 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
 
     @Override
     @Transactional(readOnly = true)
-    public Flux<Package> getPackagesByNameStartingWith(@NonNull String prefix, int skip, int limit) {
+    public Flux<Package> getPackagesByNameStartingWith(String libraryId, @NonNull String prefix, int skip, int limit) {
         return databaseClient
                 .sql(SELECT_BY_NAME_STATEMENT)
                 .bind("$1", prefix + "%")
                 .bind("$2", skip)
                 .bind("$3", limit)
+                .bind("$4", libraryId)
                 .map(this::mapToR2dbcPackage)
                 .all()
                 .flatMapSequential(aPackage -> packageItemDao

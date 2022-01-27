@@ -16,6 +16,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
+import org.springframework.r2dbc.connection.init.ScriptUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -320,6 +321,45 @@ class R2dbcPostgresqlPackageDaoTest extends AbstractDataR2dbcPostgreSQLContainer
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .expectNext(0)
+                .expectComplete()
+                .verify();
+    }
+
+    @Test
+    void givenSetOfPackages_whenGetPackages_shouldGetPackages() {
+
+        Mockito.doReturn(Flux.empty())
+                        .when(mockPackageItemDao).getItemsByPackageId(any());
+        Mockito.doReturn(Flux.empty())
+                .when(mockPackageTagDao).getTagsByPackageId(any());
+
+        entityTemplate
+                .getDatabaseClient()
+                .inConnection(conn -> executeSqlScript(conn, new ClassPathResource("sample_data.sql")))
+                .thenMany(packageDao.getPackages("library1", 0, 10))
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectNextCount(2L)
+                .expectComplete()
+                .verify();
+
+
+    }
+
+    @Test
+    void givenSetOfPackages_whenGetPackagesByName_shouldGetPackages() {
+        Mockito.doReturn(Flux.empty())
+                .when(mockPackageItemDao).getItemsByPackageId(any());
+        Mockito.doReturn(Flux.empty())
+                .when(mockPackageTagDao).getTagsByPackageId(any());
+
+        entityTemplate
+                .getDatabaseClient()
+                .inConnection(conn -> executeSqlScript(conn, new ClassPathResource("sample_data.sql")))
+                .thenMany(packageDao.getPackagesByNameStartingWith("library1", "I", 0, 10))
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectNextCount(1L)
                 .expectComplete()
                 .verify();
     }

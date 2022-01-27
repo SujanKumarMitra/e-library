@@ -31,7 +31,7 @@ public class DefaultPackageService implements PackageService {
 
     @Override
     public Mono<String> createPackage(Package aPackage) {
-         return handleIncorrectLibraryId(aPackage)
+        return handleIncorrectLibraryId(aPackage)
                 .flatMap(packageDao::createPackage);
     }
 
@@ -46,27 +46,27 @@ public class DefaultPackageService implements PackageService {
     }
 
     @Override
-    public Flux<Package> getPackages(int pageNo) {
+    public Flux<Package> getPackages(String libraryId, int pageNo) {
         int pageSize = pagingProperties.getDefaultPageSize();
         int skip = pageNo * pageSize;
 
         return packageDao
-                .getPackages(skip, pageSize);
+                .getPackages(libraryId, skip, pageSize);
     }
 
     @Override
-    public Flux<Package> getPackagesByName(String namePrefix, int pageNo) {
+    public Flux<Package> getPackagesByName(String libraryId, String namePrefix, int pageNo) {
 
         int pageSize = pagingProperties.getDefaultPageSize();
         int skip = pageNo * pageSize;
 
         return packageDao
-                .getPackagesByNameStartingWith(namePrefix, skip, pageSize);
+                .getPackagesByNameStartingWith(libraryId, namePrefix, skip, pageSize);
     }
 
     @Override
     public Mono<Void> updatePackage(Package aPackage) {
-        if(aPackage.getItems() != null) {
+        if (aPackage.getItems() != null) {
             return handleIncorrectLibraryId(aPackage)
                     .flatMap(packageDao::updatePackage);
         } else {
