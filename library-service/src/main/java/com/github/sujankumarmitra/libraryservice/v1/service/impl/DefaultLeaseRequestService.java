@@ -7,10 +7,8 @@ import com.github.sujankumarmitra.libraryservice.v1.dao.LeaseRecordDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.LeaseRequestDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.LibrarianDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.RejectedLeaseDao;
-import com.github.sujankumarmitra.libraryservice.v1.exception.InsufficientCopiesAvailableException;
+import com.github.sujankumarmitra.libraryservice.v1.exception.*;
 import com.github.sujankumarmitra.libraryservice.v1.exception.InternalError;
-import com.github.sujankumarmitra.libraryservice.v1.exception.LeaseRequestAlreadyHandledException;
-import com.github.sujankumarmitra.libraryservice.v1.exception.LeaseRequestNotFoundException;
 import com.github.sujankumarmitra.libraryservice.v1.model.*;
 import com.github.sujankumarmitra.libraryservice.v1.model.impl.DefaultLeaseRecord;
 import com.github.sujankumarmitra.libraryservice.v1.model.impl.DefaultNotification;
@@ -59,19 +57,19 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
     private final PagingProperties pagingProperties;
 
     @Override
-    public Flux<LeaseRequest> getPendingLeaseRequests(int pageNo) {
+    public Flux<LeaseRequest> getPendingLeaseRequests(String libraryId, int pageNo) {
         int pageSize = pagingProperties.getDefaultPageSize();
         int skip = pageNo * pageSize;
 
-        return leaseRequestDao.getPendingLeaseRequests(skip, pageSize);
+        return leaseRequestDao.getPendingLeaseRequests(libraryId, skip, pageSize);
     }
 
     @Override
-    public Flux<LeaseRequest> getPendingLeaseRequests(@NonNull String userId, int pageNo) {
+    public Flux<LeaseRequest> getPendingLeaseRequests(String libraryId, @NonNull String userId, int pageNo) {
         int pageSize = pagingProperties.getDefaultPageSize();
         int skip = pageNo * pageSize;
 
-        return leaseRequestDao.getPendingLeaseRequests(userId, skip, pageSize);
+        return leaseRequestDao.getPendingLeaseRequests(libraryId, userId, skip, pageSize);
     }
 
     @Override
@@ -88,9 +86,10 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
 
     @Override
     public Mono<String> createLeaseRequest(@NonNull LeaseRequest request) {
-//        TODO: check authenticated user has role {Book.getLibraryId():ROLE_STUDENT} or not
         return bookService
                 .getBook(request.getBookId())
+                .filter(book -> book.getLibraryId().equals(request.getLibraryId()))
+                .switchIfEmpty(Mono.error(() -> new LibraryIdMismatchException("given book does not belong to libraryId '"+ request.getLibraryId() + "'")))
                 .filter(PhysicalBook.class::isInstance)
                 .cast(PhysicalBook.class)
                 .handle(this::emitErrorIfNoCopiesAvailable)

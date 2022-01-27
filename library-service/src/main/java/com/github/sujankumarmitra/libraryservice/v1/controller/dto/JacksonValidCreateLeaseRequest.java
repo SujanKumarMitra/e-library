@@ -20,6 +20,8 @@ public class JacksonValidCreateLeaseRequest extends LeaseRequest {
     @JsonIgnore
     private String id;
     @NotEmpty
+    private String libraryId;
+    @NotEmpty
     private String bookId;
     @JsonIgnore
     private String userId;

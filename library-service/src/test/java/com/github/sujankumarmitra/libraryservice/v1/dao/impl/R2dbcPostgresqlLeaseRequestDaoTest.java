@@ -3,6 +3,7 @@ package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBook;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcLeaseRequest;
 import com.github.sujankumarmitra.libraryservice.v1.exception.BookNotFoundException;
+import com.github.sujankumarmitra.libraryservice.v1.model.Book;
 import com.github.sujankumarmitra.libraryservice.v1.model.LeaseRequest;
 import com.github.sujankumarmitra.libraryservice.v1.model.LeaseStatus;
 import com.github.sujankumarmitra.libraryservice.v1.util.BookDaoTestUtils;
@@ -19,8 +20,8 @@ import reactor.test.StepVerifier;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.github.sujankumarmitra.libraryservice.v1.util.DaoTestUtils.truncateAllTables;
 import static com.github.sujankumarmitra.libraryservice.v1.model.LeaseStatus.*;
+import static com.github.sujankumarmitra.libraryservice.v1.util.DaoTestUtils.truncateAllTables;
 import static java.util.Collections.shuffle;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -51,6 +52,7 @@ class R2dbcPostgresqlLeaseRequestDaoTest extends AbstractDataR2dbcPostgreSQLCont
 
         R2dbcLeaseRequest leaseRequest = new R2dbcLeaseRequest();
 
+        leaseRequest.setLibraryId("library1");
         leaseRequest.setStatus(PENDING);
         leaseRequest.setTimestamp(System.currentTimeMillis());
         leaseRequest.setUserId("user_id");
@@ -105,6 +107,7 @@ class R2dbcPostgresqlLeaseRequestDaoTest extends AbstractDataR2dbcPostgreSQLCont
         for (int i = 1; i <= 10; i++) {
             R2dbcLeaseRequest request = new R2dbcLeaseRequest();
 
+            request.setLibraryId("library1");
             request.setTimestamp(System.currentTimeMillis());
             request.setUserId("user_" + i);
             request.setStatus(EXPIRED);
@@ -117,6 +120,7 @@ class R2dbcPostgresqlLeaseRequestDaoTest extends AbstractDataR2dbcPostgreSQLCont
         for (int i = 11; i <= 15; i++) {
             R2dbcLeaseRequest request = new R2dbcLeaseRequest();
 
+            request.setLibraryId("library1");
             request.setTimestamp(System.currentTimeMillis());
             request.setUserId("user_" + i);
             request.setStatus(PENDING);
@@ -143,7 +147,7 @@ class R2dbcPostgresqlLeaseRequestDaoTest extends AbstractDataR2dbcPostgreSQLCont
 
 
         leaseRequestDao
-                .getPendingLeaseRequests(0, 5)
+                .getPendingLeaseRequests("library1", 0, 5)
                 .collect(Collectors.toCollection(HashSet::new))
                 .as(StepVerifier::create)
                 .expectSubscription()
@@ -181,6 +185,7 @@ class R2dbcPostgresqlLeaseRequestDaoTest extends AbstractDataR2dbcPostgreSQLCont
             R2dbcLeaseRequest leaseRequest = new R2dbcLeaseRequest();
 
             leaseRequest.setBookId(bookIds.get(i));
+            leaseRequest.setLibraryId("library1");
             leaseRequest.setUserId(userId);
             leaseRequest.setStatus(PENDING);
             leaseRequest.setTimestamp(System.currentTimeMillis());
@@ -193,6 +198,7 @@ class R2dbcPostgresqlLeaseRequestDaoTest extends AbstractDataR2dbcPostgreSQLCont
             R2dbcLeaseRequest leaseRequest = new R2dbcLeaseRequest();
 
             leaseRequest.setBookId(bookIds.get(i));
+            leaseRequest.setLibraryId("library1");
             leaseRequest.setUserId("user_id2");
             leaseRequest.setStatus(PENDING);
             leaseRequest.setTimestamp(System.currentTimeMillis());
@@ -204,7 +210,7 @@ class R2dbcPostgresqlLeaseRequestDaoTest extends AbstractDataR2dbcPostgreSQLCont
                 .flatMap(request -> entityTemplate
                         .insert(request)
                         .doOnNext(savedRequest -> request.setId(savedRequest.getUuid())))
-                .thenMany(leaseRequestDao.getPendingLeaseRequests(userId, 0, 5))
+                .thenMany(leaseRequestDao.getPendingLeaseRequests("", userId, 0, 5))
                 .collect(Collectors.toCollection(HashSet::new))
                 .as(StepVerifier::create)
                 .expectSubscription()
@@ -223,6 +229,7 @@ class R2dbcPostgresqlLeaseRequestDaoTest extends AbstractDataR2dbcPostgreSQLCont
     void givenValidLeaseRequest_whenCreate_shouldCreate() {
         R2dbcLeaseRequest leaseRequest = new R2dbcLeaseRequest();
 
+        leaseRequest.setLibraryId("library1");
         leaseRequest.setUserId("user_id");
         leaseRequest.setTimestamp(System.currentTimeMillis());
         leaseRequest.setStatus(PENDING);
@@ -251,6 +258,7 @@ class R2dbcPostgresqlLeaseRequestDaoTest extends AbstractDataR2dbcPostgreSQLCont
     void givenLeaseRequestWithNonExistingBookId_whenCreate_shouldEmitError() {
         R2dbcLeaseRequest leaseRequest = new R2dbcLeaseRequest();
 
+        leaseRequest.setLibraryId("library");
         leaseRequest.setUserId("user_id");
         leaseRequest.setTimestamp(System.currentTimeMillis());
         leaseRequest.setStatus(PENDING);
@@ -269,6 +277,11 @@ class R2dbcPostgresqlLeaseRequestDaoTest extends AbstractDataR2dbcPostgreSQLCont
         LeaseRequest leaseRequest = new LeaseRequest() {
             @Override
             public String getId() {
+                return null;
+            }
+
+            @Override
+            public String getLibraryId() {
                 return null;
             }
 
@@ -307,6 +320,7 @@ class R2dbcPostgresqlLeaseRequestDaoTest extends AbstractDataR2dbcPostgreSQLCont
     void givenValidPendingLeaseRequestId_whenDelete_shouldDelete() {
         R2dbcLeaseRequest leaseRequest = new R2dbcLeaseRequest();
 
+        leaseRequest.setLibraryId("library1");
         leaseRequest.setStatus(PENDING);
         leaseRequest.setTimestamp(System.currentTimeMillis());
         leaseRequest.setUserId("user_id");
@@ -332,6 +346,7 @@ class R2dbcPostgresqlLeaseRequestDaoTest extends AbstractDataR2dbcPostgreSQLCont
     void givenValidLeaseRequestNotInPendingState_whenDelete_shouldNotDelete() {
         R2dbcLeaseRequest leaseRequest = new R2dbcLeaseRequest();
 
+        leaseRequest.setLibraryId("library1");
         leaseRequest.setStatus(REJECTED);
         leaseRequest.setTimestamp(System.currentTimeMillis());
         leaseRequest.setUserId("user_id");
@@ -376,6 +391,8 @@ class R2dbcPostgresqlLeaseRequestDaoTest extends AbstractDataR2dbcPostgreSQLCont
     @Test
     void givenValidLeaseRequestId_whenUpdateStatus_shouldSetStatus() {
         R2dbcLeaseRequest leaseRequest = new R2dbcLeaseRequest();
+
+        leaseRequest.setLibraryId("library1");
         leaseRequest.setStatus(PENDING);
         leaseRequest.setTimestamp(System.currentTimeMillis());
         leaseRequest.setUserId("user_id");
@@ -422,5 +439,115 @@ class R2dbcPostgresqlLeaseRequestDaoTest extends AbstractDataR2dbcPostgreSQLCont
                 .verify();
     }
 
+
+    @Test
+    void givenSetOfLeaseRequests_whenGetPendingLeaseRequestsForLibrary_shouldGetPendingLeaseRequests() {
+
+        String bookId = BookDaoTestUtils.insertDummyBook(entityTemplate.getDatabaseClient())
+                .map(Book::getId)
+                .block();
+
+        bookId = Objects.requireNonNull(bookId);
+
+        Set<R2dbcLeaseRequest> leaseRequests = new HashSet<>();
+        String libraryId = "library1";
+
+        for (int i = 0; i < 100; i++) {
+            R2dbcLeaseRequest request = new R2dbcLeaseRequest();
+
+            request.setBookId(UUID.fromString(bookId));
+            request.setUserId("user1");
+            request.setTimestamp(System.currentTimeMillis());
+
+
+            if (Math.random() >= 0.5d) {
+                request.setLibraryId(libraryId);
+            } else {
+                request.setLibraryId("other");
+            }
+
+            if (Math.random() >= 0.5d) {
+                request.setStatus(PENDING);
+            } else {
+                request.setStatus(REJECTED);
+            }
+
+            leaseRequests.add(request);
+        }
+
+        long pendingLeaseRequestForLibraryIdCount = leaseRequests
+                .stream()
+                .filter(request -> request.getLibraryId().equals(libraryId))
+                .filter(request -> request.getStatus().equals(PENDING))
+                .count();
+
+        Mono.when(Flux.fromIterable(leaseRequests)
+                        .flatMap(entityTemplate::insert))
+                .thenMany(leaseRequestDao.getPendingLeaseRequests(libraryId, 0, 100))
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectNextCount(pendingLeaseRequestForLibraryIdCount)
+                .expectComplete()
+                .verify();
+    }
+
+    @Test
+    void givenSetOfLeaseRequests_whenGetPendingLeaseRequestsForUserAndLibrary_shouldGetPendingLeaseRequests() {
+        UUID bookId = BookDaoTestUtils
+                .insertDummyBook(entityTemplate.getDatabaseClient())
+                .map(R2dbcBook::getUuid)
+                .single()
+                .block();
+
+        String libraryId = UUID.randomUUID().toString();
+        String userId = UUID.randomUUID().toString();
+
+        Set<R2dbcLeaseRequest> leaseRequests = new HashSet<>();
+
+        for (int i = 0; i < 100; i++) {
+            R2dbcLeaseRequest request = new R2dbcLeaseRequest();
+
+            request.setBookId(bookId);
+            request.setTimestamp(System.currentTimeMillis());
+
+            if (Math.random() >= 0.5d) {
+                request.setLibraryId(libraryId);
+            } else {
+                request.setLibraryId(UUID.randomUUID().toString());
+            }
+
+            if (Math.random() >= 0.5d) {
+                request.setUserId(userId);
+            } else {
+                request.setUserId(UUID.randomUUID().toString());
+            }
+
+            if (Math.random() >= 0.5d) {
+                request.setStatus(PENDING);
+            } else {
+                request.setStatus(REJECTED);
+            }
+
+            leaseRequests.add(request);
+        }
+
+        long expectedCount = leaseRequests
+                .stream()
+                .filter(req -> req.getLibraryId().equals(libraryId))
+                .filter(req -> req.getUserId().equals(userId))
+                .filter(req -> req.getStatus().equals(PENDING))
+                .count();
+
+
+        Mono.when(Flux.fromIterable(leaseRequests)
+                        .flatMap(entityTemplate::insert))
+                .thenMany(leaseRequestDao.getPendingLeaseRequests(libraryId, userId, 0, 100))
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectNextCount(expectedCount)
+                .expectComplete()
+                .verify();
+
+    }
 
 }

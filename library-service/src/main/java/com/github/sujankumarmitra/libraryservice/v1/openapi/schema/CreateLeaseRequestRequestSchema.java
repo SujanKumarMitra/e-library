@@ -18,6 +18,13 @@ public class CreateLeaseRequestRequestSchema extends LeaseRequest {
     }
 
     @Override
+    @Schema
+    @NotEmpty
+    public String getLibraryId() {
+        return null;
+    }
+
+    @Override
     @Schema(description = "the id of book to lease")
     @NotEmpty
     public String getBookId() {

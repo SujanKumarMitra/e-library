@@ -74,8 +74,9 @@ public class LeaseRequestController {
     @RoleLibrarian
     @GetMapping("/pending")
     public Flux<JacksonGetPendingLeaseRequestResponse> getPendingLeases(@RequestParam(name = "page_no", defaultValue = "0") int pageNo) {
+//        TODO take libraryId from input
         return leaseRequestService
-                .getPendingLeaseRequests(pageNo)
+                .getPendingLeaseRequests("", pageNo)
                 .map(JacksonGetPendingLeaseRequestResponse::new);
     }
 
@@ -95,8 +96,9 @@ public class LeaseRequestController {
     @RoleStudent
     @GetMapping("/pending/self")
     public Flux<JacksonGetPendingLeaseRequestResponse> getAllPendingLeasesForCurrentUser(@RequestParam(name = "page_no", defaultValue = "0") int pageNo, Authentication authentication) {
+        //        TODO take libraryId from input
         return leaseRequestService
-                .getPendingLeaseRequests(authentication.getName(), pageNo)
+                .getPendingLeaseRequests("", authentication.getName(), pageNo)
                 .map(JacksonGetPendingLeaseRequestResponse::new);
     }
 

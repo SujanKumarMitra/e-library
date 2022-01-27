@@ -6,7 +6,7 @@ import com.github.sujankumarmitra.libraryservice.v1.dao.PackageDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBook;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcPackage;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcPackageItem;
-import com.github.sujankumarmitra.libraryservice.v1.exception.IncorrectLibraryIdException;
+import com.github.sujankumarmitra.libraryservice.v1.exception.LibraryIdMismatchException;
 import com.github.sujankumarmitra.libraryservice.v1.model.Book;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -70,7 +70,7 @@ class DefaultPackageServiceTest {
                 .createPackage(aPackage)
                 .as(StepVerifier::create)
                 .expectSubscription()
-                .expectError(IncorrectLibraryIdException.class)
+                .expectError(LibraryIdMismatchException.class)
                 .verify();
     }
 
@@ -101,7 +101,7 @@ class DefaultPackageServiceTest {
                 .updatePackage(aPackage)
                 .as(StepVerifier::create)
                 .expectSubscription()
-                .expectError(IncorrectLibraryIdException.class)
+                .expectError(LibraryIdMismatchException.class)
                 .verify();
     }
 

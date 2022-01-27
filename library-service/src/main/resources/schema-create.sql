@@ -127,12 +127,15 @@ CREATE TABLE IF NOT EXISTS package_items(
 
 CREATE TABLE IF NOT EXISTS lease_requests (
 	id uuid DEFAULT uuid_generate_v4(),
+	library_id text,
 	book_id uuid,
 	user_id text,
 	timestamp bigint DEFAULT extract(epoch from now()) *1000,
 	status text DEFAULT 'PENDING',
 	CONSTRAINT pk_lease_requests PRIMARY KEY(id),
  	CONSTRAINT fk_lease_requests_books FOREIGN KEY(book_id) REFERENCES books(id) ON DELETE CASCADE,
+	CONSTRAINT chk_lease_requests_library_id_not_null CHECK(library_id IS NOT NULL),
+	CONSTRAINT chk_lease_requests_library_id_not_empty CHECK(LENGTH(library_id) > 0),
 	CONSTRAINT chk_lease_requests_book_id_not_null CHECK(book_id IS NOT NULL),
 	CONSTRAINT chk_lease_requests_user_id_not_null CHECK(user_id IS NOT NULL),
 	CONSTRAINT chk_lease_requests_user_id_not_empty CHECK(LENGTH(user_id) > 0),

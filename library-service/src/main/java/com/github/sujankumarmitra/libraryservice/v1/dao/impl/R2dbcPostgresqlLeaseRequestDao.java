@@ -37,9 +37,8 @@ public class R2dbcPostgresqlLeaseRequestDao implements LeaseRequestDao {
     private final R2dbcEntityTemplate entityTemplate;
 
     @Override
-    @SuppressWarnings("unchecked")
     @Transactional(readOnly = true)
-    public Mono<R2dbcLeaseRequest> getLeaseRequest(@NonNull String leaseRequestId) {
+    public Mono<LeaseRequest> getLeaseRequest(@NonNull String leaseRequestId) {
         return Mono.defer(() -> {
             UUID uuid;
             try {
@@ -52,51 +51,51 @@ public class R2dbcPostgresqlLeaseRequestDao implements LeaseRequestDao {
             return entityTemplate
                     .select(R2dbcLeaseRequest.class)
                     .matching(query(where("id").is(uuid)))
-                    .first();
+                    .first()
+                    .cast(LeaseRequest.class);
         });
     }
 
     @Override
     @Transactional(readOnly = true)
-    @SuppressWarnings("unchecked")
-    public Flux<R2dbcLeaseRequest> getPendingLeaseRequests(int skip, int limit) {
+    public Flux<LeaseRequest> getPendingLeaseRequests(@NonNull String libraryId, int skip, int limit) {
         return entityTemplate
                 .select(R2dbcLeaseRequest.class)
-                .matching(query(where(STATUS_COLUMN_NAME).is(PENDING.toString()))
+                .matching(query(where(STATUS_COLUMN_NAME).is(PENDING.toString())
+                        .and(where("library_id").is(libraryId)))
                         .offset(skip)
                         .limit(limit))
-                .all();
+                .all()
+                .cast(LeaseRequest.class);
     }
 
     @Override
     @Transactional(readOnly = true)
-    @SuppressWarnings("unchecked")
-    public Flux<R2dbcLeaseRequest> getPendingLeaseRequests(@NonNull String userId, int skip, int limit) {
+    public Flux<LeaseRequest> getPendingLeaseRequests(@NonNull String libraryId, @NonNull String userId, int skip, int limit) {
         return entityTemplate
                 .select(R2dbcLeaseRequest.class)
                 .matching(query(where(STATUS_COLUMN_NAME).is(PENDING.toString())
-                        .and(where("user_id").is(userId)))
+                        .and(where("user_id").is(userId))
+                        .and(where("library_id").is(libraryId)))
                         .offset(skip)
                         .limit(limit))
-                .all();
+                .all()
+                .cast(LeaseRequest.class);
     }
 
     @Override
     @Transactional
     public Mono<String> createLeaseRequest(@NonNull LeaseRequest leaseRequest) {
         return Mono.defer(() -> {
-            R2dbcLeaseRequest r2dbcLeaseRequest = new R2dbcLeaseRequest();
+            R2dbcLeaseRequest r2dbcLeaseRequest;
 
-            r2dbcLeaseRequest.setTimestamp(leaseRequest.getTimestamp());
-            r2dbcLeaseRequest.setStatus(leaseRequest.getStatus());
-            String bookId = leaseRequest.getBookId();
             try {
-                r2dbcLeaseRequest.setBookId(UUID.fromString(bookId));
+                r2dbcLeaseRequest = new R2dbcLeaseRequest(leaseRequest);
             } catch (IllegalArgumentException ex) {
+                String bookId = leaseRequest.getBookId();
                 log.debug("{} is not a valid uuid for book, returning Mono.error(BookNotFoundException)", bookId);
                 return Mono.error(new BookNotFoundException(bookId));
             }
-            r2dbcLeaseRequest.setUserId(leaseRequest.getUserId());
 
             return entityTemplate
                     .insert(r2dbcLeaseRequest)

@@ -226,6 +226,7 @@ class DefaultLeaseRequestServiceTest {
 
 
         R2dbcPhysicalBook physicalBook = new R2dbcPhysicalBook();
+        physicalBook.setLibraryId("library1");
         physicalBook.setId(validPhysicalBookId);
         physicalBook.setCopiesAvailable(0L);
 
@@ -233,6 +234,7 @@ class DefaultLeaseRequestServiceTest {
                 .when(bookService).getBook(validPhysicalBookId.toString());
 
         R2dbcLeaseRequest leaseRequest = new R2dbcLeaseRequest();
+        leaseRequest.setLibraryId("library1");
         leaseRequest.setBookId(validPhysicalBookId);
 
 

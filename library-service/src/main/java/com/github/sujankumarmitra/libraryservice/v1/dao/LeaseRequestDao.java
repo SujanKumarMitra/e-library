@@ -11,11 +11,11 @@ import reactor.core.publisher.Mono;
  */
 public interface LeaseRequestDao {
 
-    <R extends LeaseRequest> Mono<R> getLeaseRequest(String leaseRequestId);
+    Mono<LeaseRequest> getLeaseRequest(String leaseRequestId);
 
-    <R extends LeaseRequest> Flux<R> getPendingLeaseRequests(int skip, int limit);
+    Flux<LeaseRequest> getPendingLeaseRequests(String libraryId, int skip, int limit);
 
-    <R extends LeaseRequest> Flux<R> getPendingLeaseRequests(String userId, int skip, int limit);
+    Flux<LeaseRequest> getPendingLeaseRequests(String libraryId, String userId, int skip, int limit);
 
     Mono<String> createLeaseRequest(LeaseRequest request);
 

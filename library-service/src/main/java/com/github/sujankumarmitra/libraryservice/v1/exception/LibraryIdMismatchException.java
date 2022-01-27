@@ -12,10 +12,10 @@ import java.util.List;
  */
 @Getter
 @AllArgsConstructor
-public class IncorrectLibraryIdException extends ApiOperationException {
+public class LibraryIdMismatchException extends ApiOperationException {
     private final Collection<ErrorDetails> errors;
 
-    public IncorrectLibraryIdException(String libraryId) {
-        errors = List.of(new DefaultErrorDetails("'" + libraryId + "' does not belong to given package"));
+    public LibraryIdMismatchException(String message) {
+        errors = List.of(new DefaultErrorDetails(message));
     }
 }

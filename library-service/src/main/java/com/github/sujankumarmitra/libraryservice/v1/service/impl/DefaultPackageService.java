@@ -3,7 +3,7 @@ package com.github.sujankumarmitra.libraryservice.v1.service.impl;
 import com.github.sujankumarmitra.libraryservice.v1.config.PagingProperties;
 import com.github.sujankumarmitra.libraryservice.v1.dao.BookDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.PackageDao;
-import com.github.sujankumarmitra.libraryservice.v1.exception.IncorrectLibraryIdException;
+import com.github.sujankumarmitra.libraryservice.v1.exception.LibraryIdMismatchException;
 import com.github.sujankumarmitra.libraryservice.v1.model.Book;
 import com.github.sujankumarmitra.libraryservice.v1.model.Package;
 import com.github.sujankumarmitra.libraryservice.v1.model.PackageItem;
@@ -41,7 +41,8 @@ public class DefaultPackageService implements PackageService {
                 .flatMap(bookDao::getBook)
                 .map(Book::getLibraryId)
                 .filter(bookLibraryId -> !bookLibraryId.equals(aPackage.getLibraryId()))
-                .flatMap(differentLibraryId -> Flux.<String>error(() -> new IncorrectLibraryIdException(differentLibraryId)))
+                .flatMap(differentLibraryId -> Flux.<String>error(() ->
+                        new LibraryIdMismatchException("given book id(s) libraryId is not equal to '" + differentLibraryId + "'")))
                 .then(Mono.fromSupplier(() -> aPackage));
     }
 
