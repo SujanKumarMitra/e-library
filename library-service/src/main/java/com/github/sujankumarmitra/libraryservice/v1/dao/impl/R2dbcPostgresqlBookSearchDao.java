@@ -21,23 +21,24 @@ import java.util.UUID;
 @Slf4j
 public class R2dbcPostgresqlBookSearchDao implements BookSearchDao {
 
-    public static final String SELECT_IDS_STATEMENT = "SELECT id FROM books LIMIT $2 OFFSET $1";
+    public static final String SELECT_IDS_STATEMENT = "SELECT id FROM books  WHERE library_id=$3 LIMIT $2 OFFSET $1";
     public static final String SELECT_ID_BY_AUTHOR_AND_TITLE_STATEMENT = "SELECT * FROM (" +
-            "(SELECT id FROM books WHERE title LIKE $1) " +
+            "(SELECT id FROM books WHERE library_id=$5 AND title LIKE $1) " +
             " UNION " +
-            "(SELECT book_id FROM authors WHERE name LIKE $2)) AS candidate_book_ids LIMIT $4 OFFSET $3";
+            "(SELECT authors.book_id FROM authors JOIN books ON (books.id=authors.book_id) WHERE library_id=$5 AND name LIKE $2)) AS candidate_book_ids LIMIT $4 OFFSET $3";
 
     @NotNull
     private final R2dbcEntityTemplate entityTemplate;
 
     @Override
     @Transactional(readOnly = true)
-    public Flux<String> getBookIds(int skip, int limit) {
+    public Flux<String> getBookIds(String libraryId, int skip, int limit) {
         return entityTemplate
                 .getDatabaseClient()
                 .sql(SELECT_IDS_STATEMENT)
                 .bind("$1", skip)
                 .bind("$2", limit)
+                .bind("$3", libraryId)
                 .map(row -> row.get("id", UUID.class))
                 .all()
                 .map(Object::toString);
@@ -46,12 +47,13 @@ public class R2dbcPostgresqlBookSearchDao implements BookSearchDao {
 
     @Override
     @Transactional(readOnly = true)
-    public Flux<String> getBookIdsByTitleAndAuthorStartingWith(String titlePrefix, String authorPrefix, int skip, int limit) {
+    public Flux<String> getBookIdsByTitleAndAuthorStartingWith(String libraryId, String titlePrefix, String authorPrefix, int skip, int limit) {
         DatabaseClient.GenericExecuteSpec executeSpec = entityTemplate
                 .getDatabaseClient()
                 .sql(SELECT_ID_BY_AUTHOR_AND_TITLE_STATEMENT)
                 .bind("$3", skip)
-                .bind("$4", limit);
+                .bind("$4", limit)
+                .bind("$5", libraryId);
 
         return bindNonNullParams(executeSpec, titlePrefix, authorPrefix)
                 .map(row -> row.get(0, UUID.class))

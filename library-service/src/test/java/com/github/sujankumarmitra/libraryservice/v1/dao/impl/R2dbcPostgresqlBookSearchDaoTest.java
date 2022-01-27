@@ -41,10 +41,10 @@ class R2dbcPostgresqlBookSearchDaoTest extends AbstractDataR2dbcPostgreSQLContai
     @Test
     void givenSetOfBooks_whenGetBookIds_shouldGetBookIds() {
         bookSearchDao
-                .getBookIds(0,10)
+                .getBookIds("library1", 0, 10)
                 .as(StepVerifier::create)
                 .expectSubscription()
-                .expectNextCount(5L)
+                .expectNextCount(2L)
                 .expectComplete()
                 .verify();
     }
@@ -52,10 +52,10 @@ class R2dbcPostgresqlBookSearchDaoTest extends AbstractDataR2dbcPostgreSQLContai
     @Test
     void givenSetOfBooks_whenGetBookIdsByTitleAndAuthor_shouldGetBookIds() {
         bookSearchDao
-                .getBookIdsByTitleAndAuthorStartingWith("Lad","Fat",0,10)
+                .getBookIdsByTitleAndAuthorStartingWith("library1", "Lad", "Fat", 0, 10)
                 .as(StepVerifier::create)
                 .expectSubscription()
-                .expectNextCount(2L)
+                .expectNextCount(1L)
                 .expectComplete()
                 .verify();
     }

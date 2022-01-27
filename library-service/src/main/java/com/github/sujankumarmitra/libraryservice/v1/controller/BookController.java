@@ -66,8 +66,9 @@ public class BookController {
     @GetMapping
     @RoleStudent
     public Flux<JacksonGetBookResponse> getBooks(@RequestParam(value = "page_no", defaultValue = "0") int pageNo) {
+//        TODO take libraryId as input
         return bookService
-                .getBooks(pageNo)
+                .getBooks("", pageNo)
                 .map(this::adaptToJacksonBook);
     }
 
@@ -139,8 +140,9 @@ public class BookController {
             @RequestParam(name = "title_prefix", required = false) String titlePrefix,
             @RequestParam(name = "author_prefix", required = false) String authorPrefix,
             @RequestParam(value = "page_no", defaultValue = "0") int pageNo) {
+        //  TODO take libraryId as input
         return bookService
-                .getBooksByTitleAndAuthor(titlePrefix, authorPrefix, pageNo)
+                .getBooksByTitleAndAuthor("", titlePrefix, authorPrefix, pageNo)
                 .map(this::adaptToJacksonBook);
 
     }
