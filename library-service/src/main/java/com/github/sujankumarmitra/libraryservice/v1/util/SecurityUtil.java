@@ -8,6 +8,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.Collection;
 
+import static java.lang.Boolean.FALSE;
 import static java.util.Arrays.asList;
 
 /**
@@ -28,10 +29,9 @@ public final class SecurityUtil {
     }
 
     public static Mono<Boolean> hasAuthority(String authority) {
-        return ReactiveSecurityContextHolder
-                .getContext()
-                .map(SecurityContext::getAuthentication)
-                .map(authentication -> hasAuthority(authentication, authority));
+        return getCurrentUser()
+                .map(authentication -> hasAuthority(authentication, authority))
+                .switchIfEmpty(Mono.fromSupplier(() -> FALSE));
     }
 
     public static boolean hasAnyAuthority(Authentication authentication, String... authorities) {
@@ -43,15 +43,21 @@ public final class SecurityUtil {
                 .anyMatch(authority -> hasAuthority(authentication, authority));
     }
 
-    public static Mono<Boolean> hasAnyAuthority(String... authorities) {
-        return hasAnyAuthority(asList(authorities));
-    }
+//    public static Mono<Boolean> hasAnyAuthority(String... authorities) {
+//        return hasAnyAuthority(asList(authorities));
+//    }
 
-    public static Mono<Boolean> hasAnyAuthority(Collection<String> authorities) {
+//    public static Mono<Boolean> hasAnyAuthority(Collection<String> authorities) {
+//        return getCurrentUser()
+//                .map(authentication -> hasAnyAuthority(authentication, authorities))
+//                .switchIfEmpty(Mono.fromSupplier(() -> FALSE));
+//    }
+
+
+    public static Mono<Authentication> getCurrentUser() {
         return ReactiveSecurityContextHolder
                 .getContext()
-                .map(SecurityContext::getAuthentication)
-                .map(authentication -> hasAnyAuthority(authentication, authorities));
+                .map(SecurityContext::getAuthentication);
     }
 
 }
