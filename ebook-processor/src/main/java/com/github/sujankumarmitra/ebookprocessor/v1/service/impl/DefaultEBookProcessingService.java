@@ -67,9 +67,12 @@ public class DefaultEBookProcessingService implements EBookProcessingService, In
     private EbookProcessDetails createProcessDetails(Tuple2<EBook, Path> tuple2, EBookProcessRequest request) {
         DefaultEbookProcessDetails processDetails = new DefaultEbookProcessDetails();
 
-        processDetails.setProcessId(tuple2.getT2().getFileName().toString());
-        processDetails.setBookId(tuple2.getT1().getId());
-        processDetails.setBookPath(tuple2.getT2());
+        EBook ebook = tuple2.getT1();
+        Path bookPath = tuple2.getT2();
+
+        processDetails.setProcessId(ebook.getLibraryId() + ":" + ebook.getId());
+        processDetails.setBookId(ebook.getId());
+        processDetails.setBookPath(bookPath);
         processDetails.setAuthToken(request.getToken());
 
         return processDetails;

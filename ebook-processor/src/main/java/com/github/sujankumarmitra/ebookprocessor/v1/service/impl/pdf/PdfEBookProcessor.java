@@ -73,7 +73,7 @@ public class PdfEBookProcessor implements EBookProcessor {
                 .index()
                 .concatMap(tuple2 -> saveAsset(tuple2, bookId))
                 .doOnComplete(() -> log.info("Created assets for pdf segments"))
-                .doOnTerminate(() -> deleteFile(splitBaseDirRef.get()))
+                .doOnComplete(() -> deleteFile(splitBaseDirRef.get()))
                 .map(tuple2 -> new DefaultEBookSegment(bookId, tuple2.getT1().intValue(), tuple2.getT2()))
                 .cast(EBookSegment.class)
                 .concatMap(this::saveToLibrary)

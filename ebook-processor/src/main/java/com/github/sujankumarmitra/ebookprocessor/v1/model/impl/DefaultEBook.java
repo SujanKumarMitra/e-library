@@ -12,7 +12,17 @@ import lombok.Setter;
 @Getter
 @Setter
 public class DefaultEBook extends EBook {
-    String id;
-    EBookFormat format;
+    private String id;
+    private String libraryId;
+    private EBookFormat format;
 
+    @Override
+    public boolean equals(Object o) {
+        return super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
 }

@@ -10,14 +10,14 @@ import com.github.sujankumarmitra.ebookprocessor.v1.service.LibraryServiceClient
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import static org.springframework.http.HttpHeaders.ACCEPT;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
-import static org.springframework.http.HttpStatus.CONFLICT;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.web.reactive.function.BodyInserters.fromPublisher;
 import static reactor.core.publisher.Mono.just;
@@ -30,7 +30,8 @@ import static reactor.core.publisher.Mono.just;
 public class RemoteServiceLibraryServiceClient implements LibraryServiceClient {
 
     public static final String LOCATION_HEADER = "Location";
-    public static final String EBOOK_SEGMENT_URI = "/api/v1/books/{bookId}/segments";
+    public static final String EBOOK_SEGMENT_URI = "/api/ebooks/{bookId}/segments";
+    public static final String EBOOK_URI = "/api/books/{bookId}";
     @NonNull
     private final WebClient client;
 
@@ -46,10 +47,11 @@ public class RemoteServiceLibraryServiceClient implements LibraryServiceClient {
     }
 
     @Override
-    public Mono<EBook> getEBook(String bookId) {
+    public Mono<EBook> getEBook(String ebookId) {
         return client.get()
-                .uri("/api/v1/books/{bookId}", bookId)
+                .uri(EBOOK_URI, ebookId)
                 .retrieve()
+                .onStatus(status -> status == FORBIDDEN, response -> Mono.error(() -> new AccessDeniedException("Denied")))
                 .onStatus(status -> status == NOT_FOUND, res -> Mono.empty())
                 .bodyToMono(GetEBookResponse.class)
                 .filter(GetEBookResponse::isValidEBook)
@@ -85,6 +87,7 @@ public class RemoteServiceLibraryServiceClient implements LibraryServiceClient {
         public static final String BOOK_TYPE = "EBOOK";
 
         private String id;
+        private String libraryId;
         private String type;
         private EBookFormat format;
 

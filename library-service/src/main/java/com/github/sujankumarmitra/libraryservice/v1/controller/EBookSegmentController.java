@@ -118,9 +118,9 @@ public class EBookSegmentController {
     )
     @DeleteMapping
     @ApiAcceptedResponse
-    public Mono<ResponseEntity<Void>> deleteSegments(@PathVariable String bookId) {
+    public Mono<ResponseEntity<Void>> deleteSegments(@PathVariable String ebookId) {
         return ebookSegmentService
-                .deleteSegmentsByBookId(bookId)
+                .deleteSegmentsByBookId(ebookId)
                 .then(Mono.fromSupplier(() -> ResponseEntity.accepted().build()));
     }
 
