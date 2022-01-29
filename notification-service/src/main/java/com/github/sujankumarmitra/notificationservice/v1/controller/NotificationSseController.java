@@ -15,7 +15,6 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.codec.ServerSentEvent;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -37,7 +36,7 @@ import static org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE;
 @RestController
 @AllArgsConstructor
 @Slf4j
-@RequestMapping("/api/v1/sse")
+@RequestMapping("/api/sse")
 @Tag(
         name = "NotificationSseController",
         description = "Controller for subscribing to Server-Sent Events of Notifications"
@@ -65,7 +64,6 @@ public class NotificationSseController {
             description = "Server acknowledged the request",
             content = @Content(mediaType = TEXT_EVENT_STREAM_VALUE)
     )
-    @PreAuthorize("hasAuthority('NOTIFICATION_CONSUME')")
     public Flux<ServerSentEvent<Notification>> createNotificationSse(AuthenticationToken authentication) {
         return Flux.create(sink -> {
 
