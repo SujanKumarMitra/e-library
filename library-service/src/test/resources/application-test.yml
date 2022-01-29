@@ -6,6 +6,9 @@ app:
     createAssetPermissionsTopicName: "asset_permissions"
   auth:
     baseUrl: "http://localhost:8000"
+    internal-user:
+      username: "${INTERNAL_USERNAME}"
+      password: "${INTERNAL_PASSWORD}"
   remoteServices:
     - id: "asset-service"
       baseUrl: "http://localhost:8082"

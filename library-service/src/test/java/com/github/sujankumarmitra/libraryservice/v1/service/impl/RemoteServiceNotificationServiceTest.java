@@ -1,11 +1,8 @@
 package com.github.sujankumarmitra.libraryservice.v1.service.impl;
 
-import com.github.sujankumarmitra.libraryservice.v1.config.DefaultRemoteService;
-import com.github.sujankumarmitra.libraryservice.v1.config.RemoteService;
-import com.github.sujankumarmitra.libraryservice.v1.config.RemoteServiceRegistry;
+import com.github.sujankumarmitra.libraryservice.v1.config.*;
 import com.github.sujankumarmitra.libraryservice.v1.model.impl.DefaultNotification;
 import com.github.sujankumarmitra.libraryservice.v1.security.AuthenticationToken;
-import com.github.sujankumarmitra.libraryservice.v1.security.AuthenticationTokenExchangeFilterFunction;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
@@ -19,7 +16,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.sujankumarmitra.libraryservice.v1.service.impl.RemoteServiceNotificationService.NOTIFICATIONS_URI;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static java.lang.System.currentTimeMillis;
 import static java.util.Collections.emptyList;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -34,6 +33,7 @@ import static org.springframework.security.core.context.ReactiveSecurityContextH
 class RemoteServiceNotificationServiceTest {
     public static final String TOKEN_VALUE = "token_value";
     private RemoteServiceNotificationService notificationService;
+    private InternalUser internalUser = new DefaultInternalUser("user", "pass");
     @Mock
     private RemoteServiceRegistry registry;
 
@@ -45,17 +45,15 @@ class RemoteServiceNotificationServiceTest {
 
         notificationService = new RemoteServiceNotificationService(
                 WebClient.builder(),
-                registry,
-                new AuthenticationTokenExchangeFilterFunction()
-        );
+                internalUser,
+                registry);
     }
-
 
     @Test
     void shouldSendHttpRequestWithAuthorizationHeader(WireMockRuntimeInfo runtimeInfo) {
         // given
-        stubFor(post("/api/v1/notifications")
-                .withHeader("Authorization", equalTo("Bearer " + TOKEN_VALUE))
+        stubFor(post(NOTIFICATIONS_URI)
+                .withBasicAuth(internalUser.getUsername(), internalUser.getPassword())
                 .willReturn(WireMock.aResponse()
                         .withStatus(CREATED.value())
                         .withHeader("Location", "notificationId")));
