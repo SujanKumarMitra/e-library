@@ -35,7 +35,7 @@ public class GetEBookResponseSchema extends EBook {
     @Override
     @SuppressWarnings("unchecked")
     @NotEmpty
-    public Set<GetAuthorResponseSchema> getAuthors() {
+    public Set<GetBookAuthorResponseSchema> getAuthors() {
         return Collections.emptySet();
     }
 

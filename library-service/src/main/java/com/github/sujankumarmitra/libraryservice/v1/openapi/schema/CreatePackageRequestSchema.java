@@ -1,6 +1,8 @@
 package com.github.sujankumarmitra.libraryservice.v1.openapi.schema;
 
 import com.github.sujankumarmitra.libraryservice.v1.model.Package;
+import com.github.sujankumarmitra.libraryservice.v1.model.PackageItem;
+import com.github.sujankumarmitra.libraryservice.v1.model.PackageTag;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.validation.constraints.NotEmpty;
@@ -39,13 +41,13 @@ public class CreatePackageRequestSchema extends Package {
     @SuppressWarnings("unchecked")
     @NotNull
     @Size(min = 1)
-    public Set<CreatePackageItemSchema> getItems() {
+    public Set<PackageItem> getItems() {
         return Collections.emptySet();
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public Set<CreatePackageTagRequestSchema> getTags() {
+    public Set<PackageTag> getTags() {
         return Collections.emptySet();
     }
 }

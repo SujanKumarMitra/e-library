@@ -1,7 +1,7 @@
 package com.github.sujankumarmitra.libraryservice.v1.service.impl;
 
 import com.github.sujankumarmitra.libraryservice.v1.dao.AuthorDao;
-import com.github.sujankumarmitra.libraryservice.v1.model.Author;
+import com.github.sujankumarmitra.libraryservice.v1.model.BookAuthor;
 import com.github.sujankumarmitra.libraryservice.v1.service.AuthorService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,13 +18,13 @@ public class DefaultAuthorService implements AuthorService {
     private final AuthorDao authorDao;
 
     @Override
-    public Mono<String> createAuthor(Author author) {
-        return authorDao.createAuthor(author);
+    public Mono<String> createAuthor(BookAuthor bookAuthor) {
+        return authorDao.createAuthor(bookAuthor);
     }
 
     @Override
-    public Mono<Void> updateAuthor(Author author) {
-        return authorDao.updateAuthor(author);
+    public Mono<Void> updateAuthor(BookAuthor bookAuthor) {
+        return authorDao.updateAuthor(bookAuthor);
     }
 
     @Override

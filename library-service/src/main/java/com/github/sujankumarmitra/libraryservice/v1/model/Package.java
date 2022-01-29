@@ -15,9 +15,9 @@ public abstract class Package {
 
     public abstract String getName();
 
-    public abstract <T extends PackageItem> Set<T> getItems();
+    public abstract Set<? extends PackageItem> getItems();
 
-    public abstract <T extends PackageTag> Set<T> getTags();
+    public abstract Set<? extends PackageTag> getTags();
 
     @Override
     public boolean equals(Object o) {

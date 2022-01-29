@@ -4,7 +4,7 @@ import com.github.sujankumarmitra.libraryservice.v1.dao.AuthorDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.BookDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.BookTagDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBook;
-import com.github.sujankumarmitra.libraryservice.v1.model.Author;
+import com.github.sujankumarmitra.libraryservice.v1.model.BookAuthor;
 import com.github.sujankumarmitra.libraryservice.v1.model.Book;
 import com.github.sujankumarmitra.libraryservice.v1.model.BookTag;
 import io.r2dbc.spi.Row;
@@ -45,12 +45,12 @@ public class R2dbcPostgresqlBookDao implements BookDao<Book> {
     @NonNull
     private final BookTagDao bookTagDao;
 
-    private R2dbcBook assembleResult(Tuple3<R2dbcBook, Set<Author>, Set<BookTag>> tuple3) {
+    private R2dbcBook assembleResult(Tuple3<R2dbcBook, Set<BookAuthor>, Set<BookTag>> tuple3) {
         R2dbcBook book = tuple3.getT1();
-        Set<Author> authors = tuple3.getT2();
+        Set<BookAuthor> bookAuthors = tuple3.getT2();
         Set<BookTag> tags = tuple3.getT3();
 
-        book.addAllAuthors(authors);
+        book.addAllAuthors(bookAuthors);
         book.addAllTags(tags);
 
         return book;
@@ -122,7 +122,7 @@ public class R2dbcPostgresqlBookDao implements BookDao<Book> {
                     .one()
                     .doOnNext(r2dbcBook -> r2dbcBook.setId(finalId));
 
-            Mono<Set<Author>> authors = authorDao
+            Mono<Set<BookAuthor>> authors = authorDao
                     .getAuthorsByBookId(bookId)
                     .collect(Collectors.toCollection(HashSet::new));
 

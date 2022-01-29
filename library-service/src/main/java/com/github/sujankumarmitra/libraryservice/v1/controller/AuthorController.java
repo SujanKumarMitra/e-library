@@ -1,10 +1,10 @@
 package com.github.sujankumarmitra.libraryservice.v1.controller;
 
-import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonValidCreateAuthorRequest;
-import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonValidUpdateAuthorRequest;
+import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonValidCreateBookAuthorRequest;
+import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonValidUpdateBookAuthorRequest;
 import com.github.sujankumarmitra.libraryservice.v1.exception.ApiOperationException;
-import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.CreateAuthorRequestSchema;
-import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.UpdateBookAuthorRequestSchema;
+import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.CreateBookAuthorRequestSchema;
+import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.UpdateBookBookAuthorRequestSchema;
 import com.github.sujankumarmitra.libraryservice.v1.security.SecurityAnnotations.RoleLibrarian;
 import com.github.sujankumarmitra.libraryservice.v1.service.AuthorService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -46,7 +46,7 @@ public class AuthorController {
             summary = "Create an author",
             description = "Librarians will invoke this API")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
-            content = @Content(schema = @Schema(implementation = CreateAuthorRequestSchema.class))
+            content = @Content(schema = @Schema(implementation = CreateBookAuthorRequestSchema.class))
     )
     @ApiCreatedResponse
     @ApiBadRequestResponse
@@ -54,7 +54,7 @@ public class AuthorController {
     @PostMapping
     @RoleLibrarian
     public Mono<ResponseEntity<Object>> createAuthor(@PathVariable("bookId") String bookId,
-                                                     @RequestBody @Valid JacksonValidCreateAuthorRequest request) {
+                                                     @RequestBody @Valid JacksonValidCreateBookAuthorRequest request) {
 
         request.setBookId(bookId);
         return authorService
@@ -70,7 +70,7 @@ public class AuthorController {
             summary = "Update an existing author",
             description = "Librarians will invoke this API")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
-            content = @Content(schema = @Schema(implementation = UpdateBookAuthorRequestSchema.class))
+            content = @Content(schema = @Schema(implementation = UpdateBookBookAuthorRequestSchema.class))
     )
     @ApiConflictResponse
     @ApiAcceptedResponse
@@ -78,7 +78,7 @@ public class AuthorController {
     @PatchMapping(path = "/{authorId}", consumes = {"application/merge-patch+json", "application/json"})
     public Mono<ResponseEntity<Object>> updateAuthor(@PathVariable String bookId,
                                                      @PathVariable String authorId,
-                                                     @RequestBody @Valid JacksonValidUpdateAuthorRequest request) {
+                                                     @RequestBody @Valid JacksonValidUpdateBookAuthorRequest request) {
 
         request.setBookId(bookId);
         request.setId(authorId);

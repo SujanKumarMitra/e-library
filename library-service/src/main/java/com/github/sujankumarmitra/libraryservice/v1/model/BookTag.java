@@ -6,15 +6,9 @@ import java.util.Objects;
  * @author skmitra
  * @since Nov 20/11/21, 2021
  */
-public abstract class BookTag {
-
-    public abstract String getId();
+public abstract class BookTag extends Tag {
 
     public abstract String getBookId();
-
-    public abstract String getKey();
-
-    public abstract String getValue();
 
     @Override
     public int hashCode() {

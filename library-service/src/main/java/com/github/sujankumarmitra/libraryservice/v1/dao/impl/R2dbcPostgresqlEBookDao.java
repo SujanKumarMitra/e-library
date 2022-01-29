@@ -92,7 +92,7 @@ public class R2dbcPostgresqlEBookDao implements EBookDao {
                     .map(row -> mapToR2dbcEBook(row, true))
                     .one();
 
-            Mono<Set<Author>> authorsMono = authorDao
+            Mono<Set<BookAuthor>> authorsMono = authorDao
                     .getAuthorsByBookId(uuid.toString())
                     .collect(Collectors.toCollection(HashSet::new));
 
@@ -107,12 +107,12 @@ public class R2dbcPostgresqlEBookDao implements EBookDao {
 
     }
 
-    private R2dbcEBook assembleEBook(Tuple3<R2dbcEBook, Set<Author>, Set<BookTag>> tuple3) {
+    private R2dbcEBook assembleEBook(Tuple3<R2dbcEBook, Set<BookAuthor>, Set<BookTag>> tuple3) {
         R2dbcEBook book = tuple3.getT1();
-        Set<Author> authors = tuple3.getT2();
+        Set<BookAuthor> bookAuthors = tuple3.getT2();
         Set<BookTag> tags = tuple3.getT3();
 
-        book.addAllAuthors(authors);
+        book.addAllAuthors(bookAuthors);
         book.addAllTags(tags);
 
         return book;

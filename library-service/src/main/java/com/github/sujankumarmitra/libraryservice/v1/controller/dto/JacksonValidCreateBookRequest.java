@@ -40,7 +40,7 @@ public abstract class JacksonValidCreateBookRequest extends Book {
     private String coverPageImageAssetId;
     @NotNull
     @Size(min = 1)
-    private Set<JacksonValidCreateAuthorRequest> authors;
+    private Set<JacksonValidCreateBookAuthorRequest> authors;
     private Set<JacksonValidCreateBookTagRequest> tags;
 
     public abstract JacksonBookType getType();

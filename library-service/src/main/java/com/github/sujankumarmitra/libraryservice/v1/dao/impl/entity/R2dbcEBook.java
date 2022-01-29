@@ -1,6 +1,6 @@
 package com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity;
 
-import com.github.sujankumarmitra.libraryservice.v1.model.Author;
+import com.github.sujankumarmitra.libraryservice.v1.model.BookAuthor;
 import com.github.sujankumarmitra.libraryservice.v1.model.BookTag;
 import com.github.sujankumarmitra.libraryservice.v1.model.EBook;
 import com.github.sujankumarmitra.libraryservice.v1.model.EBookFormat;
@@ -27,7 +27,7 @@ public final class R2dbcEBook extends EBook {
     private String edition;
     private String coverPageImageAssetId;
     private EBookFormat format;
-    private Set<R2dbcAuthor> authors = new HashSet<>();
+    private Set<R2dbcBookAuthor> authors = new HashSet<>();
     private Set<R2dbcBookTag> tags = new HashSet<>();
 
     @Override
@@ -60,9 +60,9 @@ public final class R2dbcEBook extends EBook {
 
     }
 
-    public <T extends Author> void addAllAuthors(@NonNull Set<T> authors) {
-        for (Author author : authors) {
-            this.authors.add(convertToR2dbcAuthor(author));
+    public <T extends BookAuthor> void addAllAuthors(@NonNull Set<T> authors) {
+        for (BookAuthor bookAuthor : authors) {
+            this.authors.add(convertToR2dbcAuthor(bookAuthor));
         }
     }
 
@@ -72,10 +72,10 @@ public final class R2dbcEBook extends EBook {
         }
     }
 
-    private R2dbcAuthor convertToR2dbcAuthor(Author author) {
-        return author instanceof R2dbcAuthor ?
-                (R2dbcAuthor) author :
-                new R2dbcAuthor(author);
+    private R2dbcBookAuthor convertToR2dbcAuthor(BookAuthor bookAuthor) {
+        return bookAuthor instanceof R2dbcBookAuthor ?
+                (R2dbcBookAuthor) bookAuthor :
+                new R2dbcBookAuthor(bookAuthor);
     }
 
     private R2dbcBookTag convertToR2dbcBookTag(BookTag tag) {

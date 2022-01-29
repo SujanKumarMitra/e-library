@@ -15,7 +15,7 @@ public abstract class Book {
 
     public abstract String getTitle();
 
-    public abstract <T extends Author> Set<T> getAuthors();
+    public abstract Set<? extends BookAuthor> getAuthors();
 
     public abstract String getPublisher();
 
@@ -23,7 +23,7 @@ public abstract class Book {
 
     public abstract String getCoverPageImageAssetId();
 
-    public abstract <T extends BookTag> Set<T> getTags();
+    public abstract Set<? extends BookTag> getTags();
 
     @Override
     public boolean equals(Object o) {

@@ -1,6 +1,6 @@
 package com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity;
 
-import com.github.sujankumarmitra.libraryservice.v1.model.Author;
+import com.github.sujankumarmitra.libraryservice.v1.model.BookAuthor;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -13,19 +13,18 @@ import java.util.UUID;
  */
 @Getter
 @Setter
-public final class R2dbcAuthor extends Author {
+public final class R2dbcBookAuthor extends BookAuthor {
     private UUID id;
     private UUID bookId;
     private String name;
 
-
-    public R2dbcAuthor() {
+    public R2dbcBookAuthor() {
     }
 
-    public R2dbcAuthor(@NonNull Author author) {
-        this.id = author.getId() == null ? null : UUID.fromString(author.getId());
-        this.bookId = author.getBookId() == null ? null : UUID.fromString(author.getBookId());
-        this.name = author.getName();
+    public R2dbcBookAuthor(@NonNull BookAuthor bookAuthor) {
+        this.id = bookAuthor.getId() == null ? null : UUID.fromString(bookAuthor.getId());
+        this.bookId = bookAuthor.getBookId() == null ? null : UUID.fromString(bookAuthor.getBookId());
+        this.name = bookAuthor.getName();
     }
 
     public String getId() {
@@ -43,5 +42,15 @@ public final class R2dbcAuthor extends Author {
 
     public UUID getBookUuid() {
         return bookId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 }

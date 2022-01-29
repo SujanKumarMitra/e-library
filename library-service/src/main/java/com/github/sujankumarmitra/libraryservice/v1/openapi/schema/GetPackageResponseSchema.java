@@ -1,6 +1,8 @@
 package com.github.sujankumarmitra.libraryservice.v1.openapi.schema;
 
 import com.github.sujankumarmitra.libraryservice.v1.model.Package;
+import com.github.sujankumarmitra.libraryservice.v1.model.PackageItem;
+import com.github.sujankumarmitra.libraryservice.v1.model.PackageTag;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -33,14 +35,14 @@ public class GetPackageResponseSchema extends Package {
     @Override
     @SuppressWarnings("unchecked")
     @NotEmpty
-    public Set<GetPackageItemResponseSchema> getItems() {
+    public Set<PackageItem> getItems() {
         return Collections.emptySet();
     }
 
     @Override
     @SuppressWarnings("unchecked")
     @NotNull
-    public Set<GetPackageTagResponseSchema> getTags() {
+    public Set<PackageTag> getTags() {
         return Collections.emptySet();
     }
 }

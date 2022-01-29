@@ -6,7 +6,7 @@ import java.util.Objects;
  * @author skmitra
  * @since Nov 21/11/21, 2021
  */
-public abstract class Author {
+public abstract class BookAuthor {
 
     public abstract String getId();
 
@@ -17,9 +17,9 @@ public abstract class Author {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Author)) return false;
+        if (!(o instanceof BookAuthor)) return false;
 
-        Author other = (Author) o;
+        BookAuthor other = (BookAuthor) o;
         return Objects.equals(getId(), other.getId()) &&
                 Objects.equals(getBookId(), other.getBookId()) &&
                 Objects.equals(getName(), other.getName());
@@ -35,7 +35,7 @@ public abstract class Author {
 
     @Override
     public String toString() {
-        return "Author{" +
+        return "BookAuthor{" +
                 "id='" + getId() + '\'' +
                 ", bookId='" + getBookId() + '\'' +
                 ", name='" + getName() + '\'' +

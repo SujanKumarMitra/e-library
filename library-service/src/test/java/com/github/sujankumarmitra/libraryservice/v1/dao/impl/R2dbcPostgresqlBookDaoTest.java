@@ -3,10 +3,10 @@ package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 import com.github.javafaker.Faker;
 import com.github.sujankumarmitra.libraryservice.v1.dao.AuthorDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.BookTagDao;
-import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcAuthor;
+import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBookAuthor;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBook;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBookTag;
-import com.github.sujankumarmitra.libraryservice.v1.model.Author;
+import com.github.sujankumarmitra.libraryservice.v1.model.BookAuthor;
 import com.github.sujankumarmitra.libraryservice.v1.model.Book;
 import com.github.sujankumarmitra.libraryservice.v1.model.BookTag;
 import lombok.extern.slf4j.Slf4j;
@@ -133,15 +133,15 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
         String expectedPublisher = book.getPublisher();
         String expectedEdition = book.getEdition();
 
-        R2dbcAuthor author1 = new R2dbcAuthor();
+        R2dbcBookAuthor author1 = new R2dbcBookAuthor();
         author1.setBookId(book.getUuid());
         author1.setName(faker.book().author());
 
-        R2dbcAuthor author2 = new R2dbcAuthor();
+        R2dbcBookAuthor author2 = new R2dbcBookAuthor();
         author1.setBookId(book.getUuid());
         author1.setName(faker.book().author());
 
-        Set<R2dbcAuthor> expectedAuthors = Set.of(author1, author2);
+        Set<R2dbcBookAuthor> expectedAuthors = Set.of(author1, author2);
 
         R2dbcBookTag tag1 = new R2dbcBookTag();
         tag1.setBookId(book.getUuid());
@@ -160,7 +160,7 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
         book.getTags().addAll(expectedTags);
 
 
-        Mockito.doReturn(Flux.fromIterable(expectedAuthors).cast(Author.class))
+        Mockito.doReturn(Flux.fromIterable(expectedAuthors).cast(BookAuthor.class))
                 .when(mockAuthorDao).getAuthorsByBookId(any());
 
         Mockito.doReturn(Flux.fromIterable(expectedTags).cast(BookTag.class))
@@ -216,15 +216,15 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
         String expectedEdition = book.getEdition();
         String expectedCoverPageImageId = book.getCoverPageImageAssetId();
 
-        R2dbcAuthor author1 = new R2dbcAuthor();
+        R2dbcBookAuthor author1 = new R2dbcBookAuthor();
         author1.setBookId(book.getUuid());
         author1.setName(faker.book().author());
 
-        R2dbcAuthor author2 = new R2dbcAuthor();
+        R2dbcBookAuthor author2 = new R2dbcBookAuthor();
         author1.setBookId(book.getUuid());
         author1.setName(faker.book().author());
 
-        Set<R2dbcAuthor> expectedAuthors = Set.of(author1, author2);
+        Set<R2dbcBookAuthor> expectedAuthors = Set.of(author1, author2);
 
         R2dbcBookTag tag1 = new R2dbcBookTag();
         tag1.setBookId(book.getUuid());
@@ -243,7 +243,7 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
         book.getTags().addAll(expectedTags);
 
 
-        Mockito.doReturn(Flux.fromIterable(expectedAuthors).cast(Author.class))
+        Mockito.doReturn(Flux.fromIterable(expectedAuthors).cast(BookAuthor.class))
                 .when(mockAuthorDao).getAuthorsByBookId(any());
 
         Mockito.doReturn(Flux.fromIterable(expectedTags).cast(BookTag.class))

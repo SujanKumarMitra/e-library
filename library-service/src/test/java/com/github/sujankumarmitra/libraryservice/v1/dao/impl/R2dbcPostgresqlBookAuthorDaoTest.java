@@ -1,8 +1,8 @@
 package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 
-import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcAuthor;
+import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBookAuthor;
 import com.github.sujankumarmitra.libraryservice.v1.exception.BookNotFoundException;
-import com.github.sujankumarmitra.libraryservice.v1.model.Author;
+import com.github.sujankumarmitra.libraryservice.v1.model.BookAuthor;
 import com.github.sujankumarmitra.libraryservice.v1.util.BookDaoTestUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @since Nov 23/11/21, 2021
  */
 @Slf4j
-class R2dbcPostgresqlAuthorDaoTest extends AbstractDataR2dbcPostgreSQLContainerDependentTest {
+class R2dbcPostgresqlBookAuthorDaoTest extends AbstractDataR2dbcPostgreSQLContainerDependentTest {
 
     private R2dbcPostgresqlAuthorDao authorDao = null;
     @Autowired
@@ -44,16 +44,16 @@ class R2dbcPostgresqlAuthorDaoTest extends AbstractDataR2dbcPostgreSQLContainerD
     @Test
     void givenValidBookId_whenInsert_ShouldInsert() {
 
-        R2dbcAuthor author1 = new R2dbcAuthor();
+        R2dbcBookAuthor author1 = new R2dbcBookAuthor();
         author1.setName("name1");
 
-        R2dbcAuthor author2 = new R2dbcAuthor();
+        R2dbcBookAuthor author2 = new R2dbcBookAuthor();
         author2.setName("name2");
 
-        R2dbcAuthor author3 = new R2dbcAuthor();
+        R2dbcBookAuthor author3 = new R2dbcBookAuthor();
         author3.setName("name3");
 
-        Collection<R2dbcAuthor> authors = List.of(author1, author2, author3);
+        Collection<R2dbcBookAuthor> authors = List.of(author1, author2, author3);
 
 
         BookDaoTestUtils.insertDummyBook(entityTemplate.getDatabaseClient())
@@ -62,7 +62,7 @@ class R2dbcPostgresqlAuthorDaoTest extends AbstractDataR2dbcPostgreSQLContainerD
                 .flatMapMany(authorDao::createAuthors)
                 .then(
                         entityTemplate
-                                .select(R2dbcAuthor.class)
+                                .select(R2dbcBookAuthor.class)
                                 .from("authors")
                                 .all()
                                 .count())
@@ -92,7 +92,7 @@ class R2dbcPostgresqlAuthorDaoTest extends AbstractDataR2dbcPostgreSQLContainerD
     @Test
     void givenMalformedUuidBookId_whenInsert_shouldEmitError() {
 
-        Set<Author> tags = Set.of(new Author() {
+        Set<BookAuthor> tags = Set.of(new BookAuthor() {
             @Override
             public String getId() {
                 return null;
@@ -119,15 +119,15 @@ class R2dbcPostgresqlAuthorDaoTest extends AbstractDataR2dbcPostgreSQLContainerD
 
     @Test
     void givenNonExistingBookId_whenInsert_shouldEmitError() {
-        R2dbcAuthor author1 = new R2dbcAuthor();
+        R2dbcBookAuthor author1 = new R2dbcBookAuthor();
         author1.setBookId(UUID.randomUUID());
         author1.setName("name1");
 
-        R2dbcAuthor author2 = new R2dbcAuthor();
+        R2dbcBookAuthor author2 = new R2dbcBookAuthor();
         author2.setBookId(UUID.randomUUID());
         author2.setName("name2");
 
-        Set<R2dbcAuthor> tags = Set.of(author1, author2);
+        Set<R2dbcBookAuthor> tags = Set.of(author1, author2);
 
         authorDao.createAuthors(tags)
                 .as(StepVerifier::create)
@@ -141,34 +141,34 @@ class R2dbcPostgresqlAuthorDaoTest extends AbstractDataR2dbcPostgreSQLContainerD
 
     @Test
     void givenValidBookId_whenUpdate_shouldUpdate() {
-        List<R2dbcAuthor> authors = new ArrayList<>();
+        List<R2dbcBookAuthor> authors = new ArrayList<>();
         for (int i = 1; i <= 10; i++) {
-            R2dbcAuthor author = new R2dbcAuthor();
+            R2dbcBookAuthor author = new R2dbcBookAuthor();
             author.setName("name" + i);
             authors.add(author);
         }
 
         insertAuthors(authors);
 
-        R2dbcAuthor tag1 = authors.get(2);
+        R2dbcBookAuthor tag1 = authors.get(2);
         tag1.setName("value33");
 
-        R2dbcAuthor tag2 = authors.get(5);
+        R2dbcBookAuthor tag2 = authors.get(5);
         tag2.setName("value66");
 
-        R2dbcAuthor tag3 = authors.get(8);
+        R2dbcBookAuthor tag3 = authors.get(8);
         tag3.setName("value99");
 
-        Set<R2dbcAuthor> expectedAuthors = new HashSet<>(authors);
+        Set<R2dbcBookAuthor> expectedAuthors = new HashSet<>(authors);
 
-        Set<R2dbcAuthor> tagsToUpdate = new LinkedHashSet<>();
+        Set<R2dbcBookAuthor> tagsToUpdate = new LinkedHashSet<>();
         tagsToUpdate.add(tag1);
         tagsToUpdate.add(tag2);
         tagsToUpdate.add(tag3);
 
         authorDao.updateAuthors(tagsToUpdate)
                 .thenMany(entityTemplate
-                        .select(R2dbcAuthor.class)
+                        .select(R2dbcBookAuthor.class)
                         .from("authors")
                         .all())
                 .collect(Collectors.toSet())
@@ -183,7 +183,7 @@ class R2dbcPostgresqlAuthorDaoTest extends AbstractDataR2dbcPostgreSQLContainerD
 
     }
 
-    private void insertAuthors(List<R2dbcAuthor> authors) {
+    private void insertAuthors(List<R2dbcBookAuthor> authors) {
         BookDaoTestUtils
                 .insertDummyBook(entityTemplate.getDatabaseClient())
                 .doOnSuccess(book -> authors.forEach(author -> author.setBookId(book.getUuid())))
@@ -198,7 +198,7 @@ class R2dbcPostgresqlAuthorDaoTest extends AbstractDataR2dbcPostgreSQLContainerD
                 .collectList()
                 .doOnSuccess(authorIds -> {
                     Iterator<UUID> idIterator = authorIds.iterator();
-                    Iterator<R2dbcAuthor> authorIterator = authors.iterator();
+                    Iterator<R2dbcBookAuthor> authorIterator = authors.iterator();
 
                     while (idIterator.hasNext()) {
                         authorIterator
@@ -215,9 +215,9 @@ class R2dbcPostgresqlAuthorDaoTest extends AbstractDataR2dbcPostgreSQLContainerD
 
     @Test
     void givenValidBookId_whenDelete_shouldDelete() {
-        List<R2dbcAuthor> authors = new ArrayList<>();
+        List<R2dbcBookAuthor> authors = new ArrayList<>();
         for (int i = 1; i <= 5; i++) {
-            R2dbcAuthor author = new R2dbcAuthor();
+            R2dbcBookAuthor author = new R2dbcBookAuthor();
             author.setName("name" + i);
             authors.add(author);
         }

@@ -38,13 +38,13 @@ public class JacksonGetPackageResponse extends Package {
 
     @Override
     @JsonSerialize(contentAs = PackageItem.class)
-    public Set<PackageItem> getItems() {
+    public Set<? extends PackageItem> getItems() {
         return aPackage.getItems();
     }
 
     @Override
     @JsonSerialize(contentAs = PackageTag.class)
-    public Set<PackageTag> getTags() {
+    public Set<? extends PackageTag> getTags() {
         return aPackage.getTags();
     }
 

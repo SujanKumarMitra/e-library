@@ -1,7 +1,7 @@
 package com.github.sujankumarmitra.libraryservice.v1.controller.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.github.sujankumarmitra.libraryservice.v1.model.Author;
+import com.github.sujankumarmitra.libraryservice.v1.model.BookAuthor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,11 +9,11 @@ import javax.validation.constraints.NotEmpty;
 
 /**
  * @author skmitra
- * @since Dec 04/12/21, 2021
+ * @since Dec 03/12/21, 2021
  */
 @Getter
 @Setter
-public class JacksonValidUpdateAuthorRequest extends Author {
+public class JacksonValidCreateBookAuthorRequest extends BookAuthor {
 
     @JsonIgnore
     private String id;
@@ -22,4 +22,13 @@ public class JacksonValidUpdateAuthorRequest extends Author {
     @NotEmpty
     private String name;
 
+    @Override
+    public boolean equals(Object o) {
+        return super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
 }

@@ -4,13 +4,13 @@ import com.github.javafaker.Faker;
 import com.github.sujankumarmitra.libraryservice.v1.dao.AuthorDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.BookDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.BookTagDao;
-import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcAuthor;
+import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBookAuthor;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBookTag;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcMoney;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcPhysicalBook;
 import com.github.sujankumarmitra.libraryservice.v1.exception.InsufficientCopiesAvailableException;
 import com.github.sujankumarmitra.libraryservice.v1.exception.NegativeMoneyAmountException;
-import com.github.sujankumarmitra.libraryservice.v1.model.Author;
+import com.github.sujankumarmitra.libraryservice.v1.model.BookAuthor;
 import com.github.sujankumarmitra.libraryservice.v1.model.Book;
 import com.github.sujankumarmitra.libraryservice.v1.model.BookTag;
 import lombok.extern.slf4j.Slf4j;
@@ -199,11 +199,11 @@ class R2dbcPostgresqlPhysicalBookDaoTest extends AbstractDataR2dbcPostgreSQLCont
     void givenValidBookId_whenGetBook_shouldGetBook() {
         R2dbcPhysicalBook expectedBook = createBook();
 
-        Set<Author> authors = new HashSet<>();
+        Set<BookAuthor> bookAuthors = new HashSet<>();
         Set<BookTag> tags = new HashSet<>();
 
         for (int i = 0; i < 4; i++) {
-            R2dbcAuthor author = new R2dbcAuthor();
+            R2dbcBookAuthor author = new R2dbcBookAuthor();
             author.setId(UUID.randomUUID());
             author.setName(faker.book().author());
 
@@ -212,14 +212,14 @@ class R2dbcPostgresqlPhysicalBookDaoTest extends AbstractDataR2dbcPostgreSQLCont
             bookTag.setKey("key" + i);
             bookTag.setValue("value" + i);
 
-            authors.add(author);
+            bookAuthors.add(author);
             tags.add(bookTag);
         }
 
-        expectedBook.addAllAuthors(authors);
+        expectedBook.addAllAuthors(bookAuthors);
         expectedBook.addAllTags(tags);
 
-        Mockito.doReturn(Flux.fromIterable(authors))
+        Mockito.doReturn(Flux.fromIterable(bookAuthors))
                 .when(mockAuthorDao).getAuthorsByBookId(any());
 
         Mockito.doReturn(Flux.fromIterable(tags))

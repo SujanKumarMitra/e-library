@@ -55,14 +55,13 @@ public final class R2dbcPackage extends Package {
         return id;
     }
 
-
-    public <T extends PackageTag> void addAllTags(Set<T> tags) {
+    public void addAllTags(Set<? extends PackageTag> tags) {
         for (PackageTag tag : tags) {
             this.tags.add(convertToR2dbcPackageTag(tag));
         }
     }
 
-    public <T extends PackageItem> void addAllItems(Set<T> items) {
+    public void addAllItems(Set<? extends PackageItem> items) {
         for (PackageItem item : items) {
             this.items.add(convertToR2dbcPackageItem(item));
         }

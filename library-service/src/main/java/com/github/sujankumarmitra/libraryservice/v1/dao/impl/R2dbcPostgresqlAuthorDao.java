@@ -1,11 +1,11 @@
 package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 
 import com.github.sujankumarmitra.libraryservice.v1.dao.AuthorDao;
-import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcAuthor;
+import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBookAuthor;
 import com.github.sujankumarmitra.libraryservice.v1.exception.BookNotFoundException;
 import com.github.sujankumarmitra.libraryservice.v1.exception.DefaultErrorDetails;
 import com.github.sujankumarmitra.libraryservice.v1.exception.DuplicateAuthorNameException;
-import com.github.sujankumarmitra.libraryservice.v1.model.Author;
+import com.github.sujankumarmitra.libraryservice.v1.model.BookAuthor;
 import io.r2dbc.spi.R2dbcDataIntegrityViolationException;
 import io.r2dbc.spi.Result;
 import io.r2dbc.spi.Row;
@@ -64,7 +64,7 @@ public class R2dbcPostgresqlAuthorDao implements AuthorDao {
 
     @Override
     @Transactional
-    public Flux<String> createAuthors(Collection<? extends Author> authors) {
+    public Flux<String> createAuthors(Collection<? extends BookAuthor> authors) {
         return Flux.defer(() -> {
             if (authors == null) {
                 log.debug("given authors is null");
@@ -73,8 +73,8 @@ public class R2dbcPostgresqlAuthorDao implements AuthorDao {
             return databaseClient.inConnectionMany(connection -> {
                         Statement statement = connection.createStatement(INSERT_STATEMENT);
 
-                        for (Author author : authors) {
-                            String bookId = author.getBookId();
+                        for (BookAuthor bookAuthor : authors) {
+                            String bookId = bookAuthor.getBookId();
                             UUID uuid;
                             try {
                                 uuid = UUID.fromString(bookId);
@@ -84,7 +84,7 @@ public class R2dbcPostgresqlAuthorDao implements AuthorDao {
                             }
                             statement = statement
                                     .bind("$1", uuid)
-                                    .bind("$2", author.getName())
+                                    .bind("$2", bookAuthor.getName())
                                     .add();
                         }
 
@@ -98,7 +98,7 @@ public class R2dbcPostgresqlAuthorDao implements AuthorDao {
 
     @Override
     @Transactional(readOnly = true)
-    public Flux<Author> getAuthorsByBookId(String bookId) {
+    public Flux<BookAuthor> getAuthorsByBookId(String bookId) {
         return Flux.defer(() -> {
             if (bookId == null) {
                 log.debug("given bookId is null");
@@ -116,14 +116,14 @@ public class R2dbcPostgresqlAuthorDao implements AuthorDao {
                     .bind("$1", uuid)
                     .map(this::mapToR2dbcAuthor)
                     .all()
-                    .cast(Author.class);
+                    .cast(BookAuthor.class);
         });
 
     }
 
     @Override
     @Transactional
-    public Mono<Void> updateAuthors(Collection<? extends Author> authors) {
+    public Mono<Void> updateAuthors(Collection<? extends BookAuthor> authors) {
         return Mono.defer(() -> {
             if (authors == null) {
                 log.debug("given authors is null");
@@ -131,8 +131,8 @@ public class R2dbcPostgresqlAuthorDao implements AuthorDao {
             }
             return databaseClient.inConnectionMany(connection -> {
                         Statement statement = connection.createStatement(UPDATE_STATEMENT);
-                        for (Author author : authors) {
-                            String id = author.getId();
+                        for (BookAuthor bookAuthor : authors) {
+                            String id = bookAuthor.getId();
                             UUID uuid;
                             try {
                                 uuid = UUID.fromString(id);
@@ -141,7 +141,7 @@ public class R2dbcPostgresqlAuthorDao implements AuthorDao {
                                 continue;
                             }
                             statement = statement
-                                    .bind("$1", author.getName())
+                                    .bind("$1", bookAuthor.getName())
                                     .bind("$2", uuid)
                                     .add();
                         }
@@ -210,8 +210,8 @@ public class R2dbcPostgresqlAuthorDao implements AuthorDao {
         });
     }
 
-    private R2dbcAuthor mapToR2dbcAuthor(Row row) {
-        R2dbcAuthor author = new R2dbcAuthor();
+    private R2dbcBookAuthor mapToR2dbcAuthor(Row row) {
+        R2dbcBookAuthor author = new R2dbcBookAuthor();
 
         author.setId(row.get("id", UUID.class));
         author.setBookId(row.get("book_id", UUID.class));

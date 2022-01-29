@@ -1,6 +1,6 @@
 package com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity;
 
-import com.github.sujankumarmitra.libraryservice.v1.model.Author;
+import com.github.sujankumarmitra.libraryservice.v1.model.BookAuthor;
 import com.github.sujankumarmitra.libraryservice.v1.model.Book;
 import com.github.sujankumarmitra.libraryservice.v1.model.BookTag;
 import com.github.sujankumarmitra.libraryservice.v1.util.UuidUtil;
@@ -23,7 +23,7 @@ public final class R2dbcBook extends Book {
     private UUID id;
     private String libraryId;
     private String title;
-    private Set<R2dbcAuthor> authors = new HashSet<>();
+    private Set<R2dbcBookAuthor> authors = new HashSet<>();
     private String publisher;
     private String edition;
     private String coverPageImageAssetId;
@@ -59,9 +59,9 @@ public final class R2dbcBook extends Book {
         }
     }
 
-    public <T extends Author> void addAllAuthors(@NonNull Set<T> authors) {
-        for (Author author : authors) {
-            this.authors.add(convertToR2dbcAuthor(author));
+    public <T extends BookAuthor> void addAllAuthors(@NonNull Set<T> authors) {
+        for (BookAuthor bookAuthor : authors) {
+            this.authors.add(convertToR2dbcAuthor(bookAuthor));
         }
     }
 
@@ -71,10 +71,10 @@ public final class R2dbcBook extends Book {
         }
     }
 
-    private R2dbcAuthor convertToR2dbcAuthor(Author author) {
-        return author instanceof R2dbcAuthor ?
-                (R2dbcAuthor) author :
-                new R2dbcAuthor(author);
+    private R2dbcBookAuthor convertToR2dbcAuthor(BookAuthor bookAuthor) {
+        return bookAuthor instanceof R2dbcBookAuthor ?
+                (R2dbcBookAuthor) bookAuthor :
+                new R2dbcBookAuthor(bookAuthor);
     }
 
     private R2dbcBookTag convertToR2dbcBookTag(BookTag tag) {

@@ -1,6 +1,6 @@
 package com.github.sujankumarmitra.libraryservice.v1.openapi.schema;
 
-import com.github.sujankumarmitra.libraryservice.v1.model.Author;
+import com.github.sujankumarmitra.libraryservice.v1.model.BookAuthor;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.validation.constraints.NotEmpty;
@@ -10,7 +10,7 @@ import javax.validation.constraints.NotEmpty;
  * @since Nov 29/11/21, 2021
  */
 @Schema(description = "Payload to create an author of a book")
-public class CreateAuthorRequestSchema extends Author {
+public class CreateBookAuthorRequestSchema extends BookAuthor {
     @Schema(hidden = true)
     @Override
     public String getId() {

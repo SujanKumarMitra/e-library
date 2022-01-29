@@ -36,7 +36,7 @@ public class UpdateEBookRequestSchema extends EBook {
 
     @Override
     @SuppressWarnings("unchecked")
-    public Set<UpdateBookAuthorRequestSchema> getAuthors() {
+    public Set<UpdateBookBookAuthorRequestSchema> getAuthors() {
         return Collections.emptySet();
     }
 

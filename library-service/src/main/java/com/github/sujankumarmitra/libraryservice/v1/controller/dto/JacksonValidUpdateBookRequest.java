@@ -38,7 +38,7 @@ public abstract class JacksonValidUpdateBookRequest {
     @Size(min = 1)
     private String coverPageImageAssetId;
     @Size(min = 1)
-    private Set<JacksonValidUpdateAuthorRequest> authors;
+    private Set<JacksonValidUpdateBookAuthorRequest> authors;
     private Set<JacksonValidUpdateBookTagRequest> tags;
 
     public abstract JacksonBookType getType();

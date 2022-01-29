@@ -1,6 +1,6 @@
 package com.github.sujankumarmitra.libraryservice.v1.dao;
 
-import com.github.sujankumarmitra.libraryservice.v1.model.Author;
+import com.github.sujankumarmitra.libraryservice.v1.model.BookAuthor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -13,18 +13,18 @@ import java.util.List;
  */
 public interface AuthorDao {
 
-    default Mono<String> createAuthor(Author author) {
-        return createAuthors(List.of(author)).next();
+    default Mono<String> createAuthor(BookAuthor bookAuthor) {
+        return createAuthors(List.of(bookAuthor)).next();
     }
 
-    Flux<String> createAuthors(Collection<? extends Author> authors);
+    Flux<String> createAuthors(Collection<? extends BookAuthor> authors);
 
-    Flux<Author> getAuthorsByBookId(String bookId);
+    Flux<BookAuthor> getAuthorsByBookId(String bookId);
 
-    Mono<Void> updateAuthors(Collection<? extends Author> authors);
+    Mono<Void> updateAuthors(Collection<? extends BookAuthor> authors);
 
-    default Mono<Void> updateAuthor(Author author) {
-        return updateAuthors(List.of(author));
+    default Mono<Void> updateAuthor(BookAuthor bookAuthor) {
+        return updateAuthors(List.of(bookAuthor));
     }
 
     Mono<Void> deleteAuthorsByBookId(String bookId);

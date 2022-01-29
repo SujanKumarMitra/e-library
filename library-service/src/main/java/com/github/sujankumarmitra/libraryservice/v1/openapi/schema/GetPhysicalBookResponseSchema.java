@@ -35,7 +35,7 @@ public class GetPhysicalBookResponseSchema extends PhysicalBook {
     @Override
     @NotEmpty
     @SuppressWarnings("unchecked")
-    public Set<GetAuthorResponseSchema> getAuthors() {
+    public Set<GetBookAuthorResponseSchema> getAuthors() {
         return Collections.emptySet();
     }
 
