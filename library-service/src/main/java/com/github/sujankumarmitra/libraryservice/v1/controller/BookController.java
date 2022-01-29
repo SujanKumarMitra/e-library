@@ -5,8 +5,6 @@ import com.github.sujankumarmitra.libraryservice.v1.model.Book;
 import com.github.sujankumarmitra.libraryservice.v1.model.EBook;
 import com.github.sujankumarmitra.libraryservice.v1.model.PhysicalBook;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.*;
-import com.github.sujankumarmitra.libraryservice.v1.security.SecurityAnnotations.RoleLibrarian;
-import com.github.sujankumarmitra.libraryservice.v1.security.SecurityAnnotations.RoleStudent;
 import com.github.sujankumarmitra.libraryservice.v1.service.BookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -134,7 +132,6 @@ public class BookController {
             )
     )
     @GetMapping("/search")
-    @RoleStudent
     public Flux<JacksonGetBookResponse> getBooksByTitleAndAuthorStartingWith(
             @RequestParam("library_id") String libraryId,
             @RequestParam(name = "title_prefix", required = false) String titlePrefix,
@@ -232,7 +229,6 @@ public class BookController {
             summary = "Delete a book",
             description = "Librarians will invoke this API")
     @ApiAcceptedResponse
-    @RoleLibrarian
     @DeleteMapping("/{bookId}")
     public Mono<ResponseEntity<Void>> deleteBook(
             @PathVariable String bookId) {

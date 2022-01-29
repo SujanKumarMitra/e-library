@@ -20,7 +20,7 @@ import reactor.test.StepVerifier;
 
 import java.util.UUID;
 
-import static com.github.sujankumarmitra.libraryservice.v1.security.SecurityConstants.*;
+import static com.github.sujankumarmitra.libraryservice.v1.security.SecurityRoles.*;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.*;
 

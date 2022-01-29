@@ -13,7 +13,6 @@ import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.AcceptLeaseRe
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.CreateLeaseRequestRequestSchema;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.GetPendingLeaseRequestResponseSchema;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.RejectLeaseRequestRequestSchema;
-import com.github.sujankumarmitra.libraryservice.v1.security.SecurityAnnotations.RoleStudent;
 import com.github.sujankumarmitra.libraryservice.v1.service.LeaseRequestService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -91,7 +90,6 @@ public class LeaseRequestController {
                     )
             )
     )
-    @RoleStudent
     @GetMapping("/pending/self")
     public Flux<JacksonGetPendingLeaseRequestResponse> getAllPendingLeasesForCurrentUser(
             @RequestParam("library_id") String libraryId,

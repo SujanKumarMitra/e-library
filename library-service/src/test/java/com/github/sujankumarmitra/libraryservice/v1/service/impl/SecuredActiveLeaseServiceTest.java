@@ -14,8 +14,8 @@ import org.springframework.security.test.context.support.WithMockUser;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
-import static com.github.sujankumarmitra.libraryservice.v1.security.SecurityConstants.ROLE_LIBRARIAN;
-import static com.github.sujankumarmitra.libraryservice.v1.security.SecurityConstants.ROLE_STUDENT;
+import static com.github.sujankumarmitra.libraryservice.v1.security.SecurityRoles.ROLE_LIBRARIAN;
+import static com.github.sujankumarmitra.libraryservice.v1.security.SecurityRoles.ROLE_STUDENT;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 

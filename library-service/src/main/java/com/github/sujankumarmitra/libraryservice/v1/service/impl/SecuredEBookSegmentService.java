@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import static com.github.sujankumarmitra.libraryservice.v1.security.SecurityConstants.*;
+import static com.github.sujankumarmitra.libraryservice.v1.security.SecurityRoles.*;
 
 /**
  * @author skmitra

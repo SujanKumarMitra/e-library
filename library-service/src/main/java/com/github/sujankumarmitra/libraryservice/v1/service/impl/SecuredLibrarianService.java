@@ -8,7 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
-import static com.github.sujankumarmitra.libraryservice.v1.security.SecurityConstants.ROLE_ADMIN;
+import static com.github.sujankumarmitra.libraryservice.v1.security.SecurityRoles.ROLE_ADMIN;
 
 /**
  * @author skmitra

@@ -4,9 +4,9 @@ package com.github.sujankumarmitra.libraryservice.v1.security;
  * @author skmitra
  * @since Jan 26/01/22, 2022
  */
-public final class SecurityConstants {
+public final class SecurityRoles {
 
-    private SecurityConstants() {
+    private SecurityRoles() {
     }
 
     public static final String ROLE_ADMIN = "ROLE_ADMIN";

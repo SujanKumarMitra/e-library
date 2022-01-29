@@ -14,8 +14,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import static com.github.sujankumarmitra.libraryservice.v1.security.SecurityConstants.ROLE_STUDENT;
-import static com.github.sujankumarmitra.libraryservice.v1.security.SecurityConstants.ROLE_TEACHER;
+import static com.github.sujankumarmitra.libraryservice.v1.security.SecurityRoles.ROLE_STUDENT;
+import static com.github.sujankumarmitra.libraryservice.v1.security.SecurityRoles.ROLE_TEACHER;
 
 /**
  * @author skmitra
