@@ -121,41 +121,6 @@ public class R2dbcPostgresqlPackageTagDao implements PackageTagDao {
 
     @Override
     @Transactional
-    public Mono<Void> updateTags(Collection<? extends PackageTag> tags) {
-        return Mono.defer(() -> {
-            if (tags == null) {
-                log.debug("given tags is null");
-                return Mono.error(new NullPointerException("given tags is null"));
-            }
-            return databaseClient.inConnectionMany(connection -> {
-                        Statement statement = connection.createStatement(UPDATE_STATEMENT);
-                        for (PackageTag tag : tags) {
-                            String id = tag.getId();
-                            UUID uuid;
-                            try {
-                                uuid = UUID.fromString(id);
-                            } catch (Exception e) {
-                                log.debug("{} is not valid uuid, skipping update", id);
-                                continue;
-                            }
-                            statement = statement
-                                    .bind("$1", tag.getKey())
-                                    .bind("$2", tag.getValue())
-                                    .bind("$3", uuid)
-                                    .add();
-                        }
-
-                        return Flux.from(statement.execute());
-                    }).flatMap(Result::getRowsUpdated)
-                    .reduce(Integer::sum)
-                    .doOnSuccess(updateCount -> log.debug("tag update count {}", updateCount))
-                    .onErrorMap(R2dbcDataIntegrityViolationException.class, this::translateException)
-                    .then();
-        });
-    }
-
-    @Override
-    @Transactional
     public Mono<Void> deleteTagsByPackageId(String packageId) {
         return Mono.defer(() -> {
             if (packageId == null) {
@@ -176,36 +141,6 @@ public class R2dbcPostgresqlPackageTagDao implements PackageTagDao {
                     .fetch()
                     .rowsUpdated()
                     .doOnSuccess(deleteCount -> log.debug("tags delete count: {}", deleteCount))
-                    .then();
-        });
-    }
-
-    @Override
-    @Transactional
-    public Mono<Void> deleteTagById(String tagId) {
-        return Mono.defer(() -> {
-            if (tagId == null) {
-                log.debug("null tagId, returning Mono.error(NullPointerException)");
-                return Mono.error(new NullPointerException("tagId can't be null"));
-            }
-
-            UUID id;
-            try {
-                id = UUID.fromString(tagId);
-            } catch (IllegalArgumentException e) {
-                log.debug("{} is not valid uuid, returning empty Mono", tagId);
-                return Mono.empty();
-            }
-
-            return databaseClient
-                    .sql(DELETE_BY_ID_STATEMENT)
-                    .bind("$1", id)
-                    .fetch()
-                    .rowsUpdated()
-                    .doOnNext(deleteCount -> {
-                        if (deleteCount > 0) log.debug("deleted package tag with id {}", id);
-                        else log.debug("no package tag found with id {}", id);
-                    })
                     .then();
         });
     }

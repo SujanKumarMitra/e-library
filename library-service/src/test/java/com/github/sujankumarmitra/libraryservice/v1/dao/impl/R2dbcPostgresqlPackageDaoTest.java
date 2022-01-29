@@ -215,11 +215,6 @@ class R2dbcPostgresqlPackageDaoTest extends AbstractDataR2dbcPostgresqlContainer
     @Test
     void givenPackageWithMalformedId_whenUpdate_shouldEmitEmpty() {
 
-        Mockito.doReturn(Mono.empty())
-                .when(mockPackageItemDao).updateItems(any());
-        Mockito.doReturn(Mono.empty())
-                .when(mockPackageTagDao).updateTags(any());
-
         Package aPackage = new Package() {
             @Override
             public String getId() {
@@ -237,13 +232,11 @@ class R2dbcPostgresqlPackageDaoTest extends AbstractDataR2dbcPostgresqlContainer
             }
 
             @Override
-            @SuppressWarnings("unchecked")
             public Set<PackageItem> getItems() {
                 return Collections.emptySet();
             }
 
             @Override
-            @SuppressWarnings("unchecked")
             public Set<PackageTag> getTags() {
                 return Collections.emptySet();
             }

@@ -1,6 +1,6 @@
 package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 
-import com.github.sujankumarmitra.libraryservice.v1.dao.AuthorDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.BookAuthorDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.BookDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.BookTagDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBook;
@@ -41,7 +41,7 @@ public class R2dbcPostgresqlBookDao implements BookDao<Book> {
     @NonNull
     private final DatabaseClient databaseClient;
     @NonNull
-    private final AuthorDao authorDao;
+    private final BookAuthorDao bookAuthorDao;
     @NonNull
     private final BookTagDao bookTagDao;
 
@@ -84,7 +84,7 @@ public class R2dbcPostgresqlBookDao implements BookDao<Book> {
                     .one()
                     .doOnNext(bookId -> log.debug("New bookId : {}", bookId))
                     .doOnNext(bookId -> setBookIds(bookId, r2dbcBook))
-                    .flatMap(bookId -> authorDao
+                    .flatMap(bookId -> bookAuthorDao
                             .createAuthors(r2dbcBook.getAuthors())
                             .then()
                             .thenReturn(bookId))
@@ -122,7 +122,7 @@ public class R2dbcPostgresqlBookDao implements BookDao<Book> {
                     .one()
                     .doOnNext(r2dbcBook -> r2dbcBook.setId(finalId));
 
-            Mono<Set<BookAuthor>> authors = authorDao
+            Mono<Set<BookAuthor>> authors = bookAuthorDao
                     .getAuthorsByBookId(bookId)
                     .collect(Collectors.toCollection(HashSet::new));
 
@@ -167,9 +167,9 @@ public class R2dbcPostgresqlBookDao implements BookDao<Book> {
                             log.debug("Book.getAuthors() is null, no changes made to authors of bookId, {}", uuid);
                             return Mono.empty();
                         } else {
-                            return authorDao
+                            return bookAuthorDao
                                     .deleteAuthorsByBookId(id)
-                                    .thenMany(authorDao.createAuthors(book.getAuthors()))
+                                    .thenMany(bookAuthorDao.createAuthors(book.getAuthors()))
                                     .then();
                         }
                     }).then(Mono.defer(() -> {

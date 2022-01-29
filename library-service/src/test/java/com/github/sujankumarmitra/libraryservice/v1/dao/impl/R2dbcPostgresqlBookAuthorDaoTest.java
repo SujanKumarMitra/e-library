@@ -14,7 +14,6 @@ import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.github.sujankumarmitra.libraryservice.v1.util.DaoTestUtils.truncateAllTables;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -139,49 +138,6 @@ class R2dbcPostgresqlBookAuthorDaoTest extends AbstractDataR2dbcPostgresqlContai
                 .verify();
     }
 
-    @Test
-    void givenValidBookId_whenUpdate_shouldUpdate() {
-        List<R2dbcBookAuthor> authors = new ArrayList<>();
-        for (int i = 1; i <= 10; i++) {
-            R2dbcBookAuthor author = new R2dbcBookAuthor();
-            author.setName("name" + i);
-            authors.add(author);
-        }
-
-        insertAuthors(authors);
-
-        R2dbcBookAuthor tag1 = authors.get(2);
-        tag1.setName("value33");
-
-        R2dbcBookAuthor tag2 = authors.get(5);
-        tag2.setName("value66");
-
-        R2dbcBookAuthor tag3 = authors.get(8);
-        tag3.setName("value99");
-
-        Set<R2dbcBookAuthor> expectedAuthors = new HashSet<>(authors);
-
-        Set<R2dbcBookAuthor> tagsToUpdate = new LinkedHashSet<>();
-        tagsToUpdate.add(tag1);
-        tagsToUpdate.add(tag2);
-        tagsToUpdate.add(tag3);
-
-        authorDao.updateAuthors(tagsToUpdate)
-                .thenMany(entityTemplate
-                        .select(R2dbcBookAuthor.class)
-                        .from("authors")
-                        .all())
-                .collect(Collectors.toSet())
-                .as(StepVerifier::create)
-                .consumeNextWith(actualTags -> {
-                    log.info("Expected:: {}", expectedAuthors);
-                    log.info("Actual:: {}", actualTags);
-
-                    assertThat(actualTags).isEqualTo(expectedAuthors);
-                })
-                .verifyComplete();
-
-    }
 
     private void insertAuthors(List<R2dbcBookAuthor> authors) {
         BookDaoTestUtils

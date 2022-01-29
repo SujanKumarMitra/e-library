@@ -1,6 +1,6 @@
 package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 
-import com.github.sujankumarmitra.libraryservice.v1.dao.AuthorDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.BookAuthorDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.BookDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.BookTagDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.PhysicalBookDao;
@@ -48,7 +48,7 @@ public class R2dbcPostgresqlPhysicalBookDao implements PhysicalBookDao {
     @NonNull
     private final BookDao<Book> bookDao;
     @NonNull
-    private final AuthorDao authorDao;
+    private final BookAuthorDao bookAuthorDao;
     @NonNull
     private final BookTagDao tagDao;
 
@@ -113,7 +113,7 @@ public class R2dbcPostgresqlPhysicalBookDao implements PhysicalBookDao {
                     .map(row -> mapToR2dbcPhysicalBook(row, true))
                     .one();
 
-            Mono<Set<BookAuthor>> authorsMono = authorDao
+            Mono<Set<BookAuthor>> authorsMono = bookAuthorDao
                     .getAuthorsByBookId(uuid.toString())
                     .collect(Collectors.toCollection(HashSet::new));
 

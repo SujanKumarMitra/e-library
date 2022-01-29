@@ -1,7 +1,7 @@
 package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 
 import com.github.javafaker.Faker;
-import com.github.sujankumarmitra.libraryservice.v1.dao.AuthorDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.BookAuthorDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.BookDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.BookTagDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBookAuthor;
@@ -41,7 +41,7 @@ class R2dbcPostgresqlEBookDaoTest extends AbstractDataR2dbcPostgresqlContainerDe
     @Mock
     private BookDao<Book> mockBookDao;
     @Mock
-    private AuthorDao mockAuthorDao;
+    private BookAuthorDao mockBookAuthorDao;
     @Mock
     private BookTagDao mockBookTagDao;
     @SuppressWarnings("FieldMayBeFinal")
@@ -55,7 +55,7 @@ class R2dbcPostgresqlEBookDaoTest extends AbstractDataR2dbcPostgresqlContainerDe
         eBookDao = new R2dbcPostgresqlEBookDao(
                 entityTemplate.getDatabaseClient(),
                 mockBookDao,
-                mockAuthorDao,
+                mockBookAuthorDao,
                 mockBookTagDao
         );
     }
@@ -167,7 +167,7 @@ class R2dbcPostgresqlEBookDaoTest extends AbstractDataR2dbcPostgresqlContainerDe
         expectedBook.addAllTags(tags);
 
         Mockito.doReturn(Flux.fromIterable(bookAuthors))
-                .when(mockAuthorDao).getAuthorsByBookId(any());
+                .when(mockBookAuthorDao).getAuthorsByBookId(any());
 
         Mockito.doReturn(Flux.fromIterable(tags))
                 .when(mockBookTagDao).getTagsByBookId(any());
@@ -211,7 +211,7 @@ class R2dbcPostgresqlEBookDaoTest extends AbstractDataR2dbcPostgresqlContainerDe
     void givenNonExistingBook_whenGetBook_shouldEmitEmpty() {
 
         Mockito.doReturn(Flux.empty())
-                .when(mockAuthorDao).getAuthorsByBookId(any());
+                .when(mockBookAuthorDao).getAuthorsByBookId(any());
 
         Mockito.doReturn(Flux.empty())
                 .when(mockBookTagDao).getTagsByBookId(any());

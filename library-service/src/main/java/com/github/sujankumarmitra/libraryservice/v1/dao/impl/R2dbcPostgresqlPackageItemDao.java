@@ -137,56 +137,6 @@ public class R2dbcPostgresqlPackageItemDao implements PackageItemDao {
         return item;
     }
 
-
-    @Override
-    public Mono<Void> updateItems(Collection<? extends PackageItem> packageItems) {
-
-        if (packageItems == null) {
-            log.debug("given packageItems is null");
-            return Mono.error(new NullPointerException("packageItems can't be null"));
-        }
-
-        if (packageItems.isEmpty()) {
-            log.debug("empty collection, returning empty Mono");
-            return Mono.empty();
-        }
-
-        return this.databaseClient
-                .inConnectionMany(connection -> {
-                    Statement statement = connection.createStatement(UPDATE_STATEMENT);
-                    for (PackageItem item : packageItems) {
-                        String id = item.getId();
-                        String packageId = item.getPackageId();
-                        String bookId = item.getBookId();
-
-                        UUID itemUuid;
-                        UUID packageUuid;
-                        UUID bookUuid;
-
-                        try {
-                            itemUuid = UUID.fromString(id);
-                            packageUuid = UUID.fromString(packageId);
-                            bookUuid = UUID.fromString(bookId);
-                        } catch (IllegalArgumentException e) {
-                            log.debug("skipping update operation for {} as one of the id is invalid uuid ", item);
-                            continue;
-                        }
-
-                        statement = statement
-                                .bind("$1", packageUuid)
-                                .bind("$2", bookUuid)
-                                .bind("$3", itemUuid)
-                                .add();
-                    }
-                    return Flux.from(statement.execute());
-                })
-                .flatMap(Result::getRowsUpdated)
-                .reduce(Integer::sum)
-                .doOnSuccess(updateCount -> log.debug("update count {}", updateCount))
-                .onErrorMap(R2dbcDataIntegrityViolationException.class, this::translateException)
-                .then();
-    }
-
     @Override
     public Mono<Void> deleteItemsByPackageId(String packageId) {
         return Mono.defer(() -> {
@@ -207,35 +157,4 @@ public class R2dbcPostgresqlPackageItemDao implements PackageItemDao {
         });
     }
 
-    @Override
-    public Mono<Void> deleteById(String packageItemId) {
-
-        return Mono.defer(() -> {
-            if (packageItemId == null) {
-                log.debug("packageItemId is null, returning Mono.error(NullPointerException)");
-                return Mono.error(new NullPointerException("packageItemId can't be null"));
-            }
-
-            UUID id;
-
-            try {
-                id = UUID.fromString(packageItemId);
-            } catch (IllegalArgumentException ex) {
-                log.debug("{} is not valid uuid, returning empty Mono", packageItemId);
-                return Mono.empty();
-            }
-
-            return databaseClient
-                    .sql(DELETE_BY_ID_STATEMENT)
-                    .bind("$1", id)
-                    .fetch()
-                    .rowsUpdated()
-                    .doOnNext(deleteCount -> {
-                        if (deleteCount > 0) log.debug("deleted package item with id {}", id);
-                        else log.debug("no package item found with id {}", id);
-                    })
-                    .then();
-        });
-
-    }
 }

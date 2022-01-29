@@ -1,6 +1,6 @@
 package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 
-import com.github.sujankumarmitra.libraryservice.v1.dao.AuthorDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.BookAuthorDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBookAuthor;
 import com.github.sujankumarmitra.libraryservice.v1.exception.BookNotFoundException;
 import com.github.sujankumarmitra.libraryservice.v1.exception.DefaultErrorDetails;
@@ -30,13 +30,11 @@ import java.util.UUID;
 @Repository
 @AllArgsConstructor
 @Slf4j
-public class R2dbcPostgresqlAuthorDao implements AuthorDao {
+public class R2dbcPostgresqlAuthorDao implements BookAuthorDao {
 
     public static final String INSERT_STATEMENT = "INSERT INTO authors(book_id,name) VALUES ($1,$2) RETURNING id";
     public static final String SELECT_STATEMENT = "SELECT id,book_id,name FROM authors WHERE book_id=$1";
-    public static final String UPDATE_STATEMENT = "UPDATE authors SET name=$1 WHERE id=$2";
     public static final String DELETE_BY_AUTHOR_ID_STATEMENT = "DELETE FROM authors WHERE book_id=$1";
-    public static final String DELETE_BY_ID_STATEMENT = "DELETE FROM authors WHERE id=$1";
     public static final String UNIQUE_AUTHOR_CONSTRAINT_NAME = "unq_authors_book_id_name";
     public static final String FOREIGN_KEY_CONSTRAINT_NAME = "fk_authors_books";
 
@@ -123,39 +121,6 @@ public class R2dbcPostgresqlAuthorDao implements AuthorDao {
 
     @Override
     @Transactional
-    public Mono<Void> updateAuthors(Collection<? extends BookAuthor> authors) {
-        return Mono.defer(() -> {
-            if (authors == null) {
-                log.debug("given authors is null");
-                return Mono.error(new NullPointerException("given authors is null"));
-            }
-            return databaseClient.inConnectionMany(connection -> {
-                        Statement statement = connection.createStatement(UPDATE_STATEMENT);
-                        for (BookAuthor bookAuthor : authors) {
-                            String id = bookAuthor.getId();
-                            UUID uuid;
-                            try {
-                                uuid = UUID.fromString(id);
-                            } catch (IllegalArgumentException e) {
-                                log.debug("{} is not valid uuid, skipping update", id);
-                                continue;
-                            }
-                            statement = statement
-                                    .bind("$1", bookAuthor.getName())
-                                    .bind("$2", uuid)
-                                    .add();
-                        }
-
-                        return Flux.from(statement.execute());
-                    }).flatMap(Result::getRowsUpdated)
-                    .reduce(Integer::sum)
-                    .doOnSuccess(updateCount -> log.debug("author update count {}", updateCount))
-                    .then();
-        });
-    }
-
-    @Override
-    @Transactional
     public Mono<Void> deleteAuthorsByBookId(String bookId) {
         return Mono.defer(() -> {
             if (bookId == null) {
@@ -176,36 +141,6 @@ public class R2dbcPostgresqlAuthorDao implements AuthorDao {
                     .fetch()
                     .rowsUpdated()
                     .doOnSuccess(deleteCount -> log.debug("authors delete count: {}", deleteCount))
-                    .then();
-        });
-    }
-
-    @Override
-    @Transactional
-    public Mono<Void> deleteById(String authorId) {
-        return Mono.defer(() -> {
-            if (authorId == null) {
-                log.debug("authorId is null. returning Mono.error(NullPointerException)");
-                return Mono.error(new NullPointerException("authorId is null"));
-            }
-
-            UUID id;
-            try {
-                id = UUID.fromString(authorId);
-            } catch (IllegalArgumentException ex) {
-                log.debug("{} is not valid uuid, return empty Mono", authorId);
-                return Mono.empty();
-            }
-
-            return databaseClient
-                    .sql(DELETE_BY_ID_STATEMENT)
-                    .bind("$1", id)
-                    .fetch()
-                    .rowsUpdated()
-                    .doOnSuccess(deleteCount -> {
-                        if (deleteCount > 0) log.debug("deleted author with id {}", id);
-                        else log.debug("no author exists with id {}", id);
-                    })
                     .then();
         });
     }

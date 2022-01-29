@@ -173,60 +173,6 @@ class R2dbcPostgresqlBookTagDaoTest extends AbstractDataR2dbcPostgresqlContainer
                 .verify();
     }
 
-    @Test
-    void givenValidBookId_whenUpdateShouldUpdate() {
-        List<R2dbcBookTag> tags = new ArrayList<>();
-        for (int i = 1; i <= 10; i++) {
-            R2dbcBookTag tag = new R2dbcBookTag();
-            tag.setKey("key" + i);
-            tag.setValue("value" + i);
-            tags.add(tag);
-        }
-
-        insertTags(tags);
-
-        R2dbcBookTag tag1 = tags.get(2);
-        tag1.setValue("value33");
-
-        R2dbcBookTag tag2 = tags.get(5);
-        tag2.setValue("value66");
-
-        R2dbcBookTag tag3 = tags.get(8);
-        tag3.setValue("value99");
-
-        Set<R2dbcBookTag> expectedTags = new HashSet<>(tags);
-
-        Set<R2dbcBookTag> tagsToUpdate = new LinkedHashSet<>();
-        tagsToUpdate.add(tag1);
-        tagsToUpdate.add(tag2);
-        tagsToUpdate.add(tag3);
-
-        tagDao.updateTags(tagsToUpdate)
-                .thenMany(entityTemplate
-                        .getDatabaseClient()
-                        .sql("SELECT * from book_tags")
-                        .map(row -> {
-                            R2dbcBookTag bookTag = new R2dbcBookTag();
-
-                            bookTag.setId(row.get("id", UUID.class));
-                            bookTag.setBookId(row.get("book_id", UUID.class));
-                            bookTag.setKey(row.get("key", String.class));
-                            bookTag.setValue(row.get("value", String.class));
-
-                            return bookTag;
-                        })
-                        .all())
-                .collect(Collectors.toSet())
-                .as(StepVerifier::create)
-                .consumeNextWith(actualTags -> {
-                    log.info("Expected:: {}", expectedTags);
-                    log.info("Actual:: {}", actualTags);
-
-                    assertThat(actualTags).isEqualTo(expectedTags);
-                })
-                .verifyComplete();
-
-    }
 
     private void insertTags(List<R2dbcBookTag> tags) {
         BookDaoTestUtils
