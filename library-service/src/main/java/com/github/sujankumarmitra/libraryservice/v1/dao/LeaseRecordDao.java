@@ -11,11 +11,11 @@ import reactor.core.publisher.Mono;
 public interface LeaseRecordDao {
     Mono<Void> createLeaseRecord(LeaseRecord leaseRecord);
 
-    <R extends LeaseRecord> Mono<R> getLeaseRecord(String leaseRequestId);
+    Mono<LeaseRecord> getLeaseRecord(String leaseRequestId);
 
-    <R extends LeaseRecord>Flux<R> getActiveLeaseRecords(int skip, int limit);
+    Flux<LeaseRecord> getActiveLeaseRecords(String libraryId, int skip, int limit);
 
-    <R extends LeaseRecord> Flux<R> getActiveLeaseRecordsByUserId(String userId, int skip, int limit);
+    Flux<LeaseRecord> getActiveLeaseRecords(String libraryId, String userId, int skip, int limit);
 
     Mono<Void> markAsRelinquished(String leaseRequestId);
 

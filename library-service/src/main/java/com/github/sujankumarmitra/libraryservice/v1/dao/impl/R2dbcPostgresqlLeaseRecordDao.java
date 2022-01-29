@@ -4,9 +4,7 @@ import com.github.sujankumarmitra.libraryservice.v1.dao.LeaseRecordDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcLeaseRecord;
 import com.github.sujankumarmitra.libraryservice.v1.exception.LeaseRecordAlreadyExistsException;
 import com.github.sujankumarmitra.libraryservice.v1.exception.LeaseRequestNotFoundException;
-import com.github.sujankumarmitra.libraryservice.v1.model.AcceptedLease;
 import com.github.sujankumarmitra.libraryservice.v1.model.LeaseRecord;
-import com.github.sujankumarmitra.libraryservice.v1.model.LeaseStatus;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -36,9 +34,14 @@ public class R2dbcPostgresqlLeaseRecordDao implements LeaseRecordDao {
     public static final String INSERT_STATEMENT = "INSERT INTO accepted_lease_requests(lease_request_id,start_time,duration,relinquished) values($1,$2,$3,$4)";
     public static final String LEASE_REQUESTS_FOREIGN_KEY_CONSTRAINT_NAME = "fk_accepted_lease_requests_lease_requests";
     public static final String ACCEPTED_LEASE_REQUESTS_PRIMARY_KEY_CONSTRAINT_NAME = "pk_accepted_lease_requests";
+    public static final String SELECT_ACTIVE_RECORDS_STATEMENT = "SELECT alr.* FROM accepted_lease_requests alr " +
+            "WHERE alr.relinquished = FALSE AND alr.lease_request_id IN (" +
+            "SELECT DISTINCT lr.id FROM lease_requests lr WHERE lr.library_id = $1 AND lr.status = 'ACCEPTED')" +
+            "OFFSET $2 LIMIT $3";
+
     public static final String SELECT_ACTIVE_RECORDS_BY_USER_ID_STATEMENT = "SELECT alr.* FROM accepted_lease_requests alr " +
             "WHERE alr.relinquished = FALSE AND alr.lease_request_id IN (" +
-            "SELECT DISTINCT lr.id FROM lease_requests lr WHERE lr.user_id = $1 AND lr.status = $2)" +
+            "SELECT DISTINCT lr.id FROM lease_requests lr WHERE lr.user_id = $1 AND lr.library_id=$2 AND lr.status = 'ACCEPTED')" +
             "OFFSET $3 LIMIT $4";
     public static final String UPDATE_RELINQUISH_STATEMENT = "UPDATE accepted_lease_requests SET relinquished=TRUE WHERE lease_request_id=$1";
     public static final String SELECT_STALE_E_BOOK_LEASE_REQUEST_STATEMENT = "SELECT alr.lease_request_id FROM accepted_lease_requests alr " +
@@ -80,8 +83,7 @@ public class R2dbcPostgresqlLeaseRecordDao implements LeaseRecordDao {
 
     @Override
     @Transactional(readOnly = true)
-    @SuppressWarnings("unchecked")
-    public Mono<R2dbcLeaseRecord> getLeaseRecord(String leaseRequestId) {
+    public Mono<LeaseRecord> getLeaseRecord(String leaseRequestId) {
         return Mono.defer(() -> {
             UUID uuid;
             try {
@@ -94,35 +96,38 @@ public class R2dbcPostgresqlLeaseRecordDao implements LeaseRecordDao {
             return this.entityTemplate
                     .select(R2dbcLeaseRecord.class)
                     .matching(query(where("lease_request_id").is(uuid)))
-                    .one();
+                    .one()
+                    .cast(LeaseRecord.class);
         });
     }
 
     @Override
     @Transactional(readOnly = true)
-    @SuppressWarnings("unchecked")
-    public Flux<R2dbcLeaseRecord> getActiveLeaseRecords(int skip, int limit) {
+    public Flux<LeaseRecord> getActiveLeaseRecords(String libraryId, int skip, int limit) {
         return this.entityTemplate
-                .select(R2dbcLeaseRecord.class)
-                .matching(query(where("relinquished").isFalse())
-                        .offset(skip)
-                        .limit(limit))
-                .all();
+                .getDatabaseClient()
+                .sql(SELECT_ACTIVE_RECORDS_STATEMENT)
+                .bind("$1", libraryId)
+                .bind("$2", skip)
+                .bind("$3", limit)
+                .map(row -> entityTemplate.getConverter().read(R2dbcLeaseRecord.class, row))
+                .all()
+                .cast(LeaseRecord.class);
     }
 
     @Override
     @Transactional(readOnly = true)
-    @SuppressWarnings("unchecked")
-    public Flux<R2dbcLeaseRecord> getActiveLeaseRecordsByUserId(String userId, int skip, int limit) {
+    public Flux<LeaseRecord> getActiveLeaseRecords(String libraryId, String userId, int skip, int limit) {
         return this.entityTemplate
                 .getDatabaseClient()
                 .sql(SELECT_ACTIVE_RECORDS_BY_USER_ID_STATEMENT)
                 .bind("$1", userId)
-                .bind("$2", ACCEPTED.toString())
+                .bind("$2", libraryId)
                 .bind("$3", skip)
                 .bind("$4", limit)
-                .map((row, rowMetadata) -> entityTemplate.getConverter().read(R2dbcLeaseRecord.class, row, rowMetadata))
-                .all();
+                .map(row -> entityTemplate.getConverter().read(R2dbcLeaseRecord.class, row))
+                .all()
+                .cast(LeaseRecord.class);
     }
 
     @Override

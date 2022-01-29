@@ -258,10 +258,10 @@ class R2dbcPostgresqlLeaseRecordDaoTest extends AbstractDataR2dbcPostgreSQLConta
         entityTemplate
                 .getDatabaseClient()
                 .inConnection(conn -> executeSqlScript(conn, dataScript))
-                .thenMany(leaseRecordDao.getActiveLeaseRecords(0, 20))
+                .thenMany(leaseRecordDao.getActiveLeaseRecords("library1", 0, 20))
                 .as(StepVerifier::create)
                 .expectSubscription()
-                .expectNextCount(4)
+                .expectNextCount(3)
                 .expectComplete()
                 .verify();
     }
@@ -272,7 +272,7 @@ class R2dbcPostgresqlLeaseRecordDaoTest extends AbstractDataR2dbcPostgreSQLConta
         entityTemplate
                 .getDatabaseClient()
                 .inConnection(conn -> executeSqlScript(conn, dataScript))
-                .thenMany(leaseRecordDao.getActiveLeaseRecordsByUserId("qbloxland4", 0, 20))
+                .thenMany(leaseRecordDao.getActiveLeaseRecords("library2", "qbloxland4", 0, 20))
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .expectNextCount(1)

@@ -62,7 +62,8 @@ public class ActiveLeaseController {
     @GetMapping
     @RoleLibrarian
     public Flux<LeaseRecord> getActiveLeases(@RequestParam(value = "page_no", defaultValue = "0") int pageNo) {
-        return activeLeaseService.getAllActiveLeases(pageNo);
+//        TODO: take libraryId from input
+        return activeLeaseService.getAllActiveLeases("", pageNo);
     }
 
     @Operation(
@@ -81,7 +82,8 @@ public class ActiveLeaseController {
     @GetMapping("/self")
     @RoleStudent
     public Flux<LeaseRecord> getActiveLeasesForCurrentUser(@RequestParam(value = "page_no", defaultValue = "0") int pageNo, Authentication authentication) {
-        return activeLeaseService.getAllActiveLeases(authentication.getName(), pageNo);
+//        TODO: take libraryId from input
+        return activeLeaseService.getAllActiveLeases("", authentication.getName(), pageNo);
     }
 
     @Operation(
@@ -137,7 +139,7 @@ public class ActiveLeaseController {
     @PutMapping("/invalidate")
     public Mono<ResponseEntity<Void>> invalidateStaleEBookLeases() {
         return activeLeaseService
-                .invalidateStateEBookLeases()
+                .invalidateStaleEBookLeases()
                 .then(Mono.fromSupplier(() -> ResponseEntity.accepted().build()));
     }
 

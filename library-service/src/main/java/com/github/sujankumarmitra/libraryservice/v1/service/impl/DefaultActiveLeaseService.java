@@ -60,22 +60,22 @@ public class DefaultActiveLeaseService implements ActiveLeaseService {
 
 
     @Override
-    public Flux<LeaseRecord> getAllActiveLeases(int pageNo) {
+    public Flux<LeaseRecord> getAllActiveLeases(String libraryId, int pageNo) {
         int pageSize = pagingProperties.getDefaultPageSize();
 
         int skip = pageSize * pageNo;
 
         return leaseRecordDao
-                .getActiveLeaseRecords(skip, pageSize);
+                .getActiveLeaseRecords(libraryId, skip, pageSize);
     }
 
     @Override
-    public Flux<LeaseRecord> getAllActiveLeases(String userId, int pageNo) {
+    public Flux<LeaseRecord> getAllActiveLeases(String libraryId, String userId, int pageNo) {
         int pageSize = pagingProperties.getDefaultPageSize();
 
         int skip = pageSize * pageNo;
         return leaseRecordDao
-                .getActiveLeaseRecordsByUserId(userId, skip, pageSize);
+                .getActiveLeaseRecords(libraryId, userId, skip, pageSize);
     }
 
     @Override
@@ -159,7 +159,7 @@ public class DefaultActiveLeaseService implements ActiveLeaseService {
 
     @Override
     @Transactional
-    public Mono<Void> invalidateStateEBookLeases() {
+    public Mono<Void> invalidateStaleEBookLeases() {
         return leaseRecordDao
                 .getStaleEBookLeaseRecordIds()
                 .flatMap(this::relinquishActiveLease)
