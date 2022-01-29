@@ -5,7 +5,6 @@ import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiSecurityScheme;
 import com.github.sujankumarmitra.libraryservice.v1.model.Librarian;
 import com.github.sujankumarmitra.libraryservice.v1.model.impl.DefaultLibrarian;
-import com.github.sujankumarmitra.libraryservice.v1.security.SecurityAnnotations.RoleAdmin;
 import com.github.sujankumarmitra.libraryservice.v1.service.LibrarianService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,7 +22,7 @@ import static com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfigu
  * @since Dec 09/12/21, 2021
  */
 @RestController
-@RequestMapping("/api/v1/librarians")
+@RequestMapping("/api/librarians")
 @AllArgsConstructor
 @Tag(
         name = "LibrarianController",
@@ -43,8 +42,7 @@ public class LibrarianController {
     )
     @ApiAcceptedResponse
     @ApiBadRequestResponse
-    @RoleAdmin
-    @PutMapping("/{userId}/{libraryId}")
+    @PutMapping("/{libraryId}/{userId}")
     public Mono<ResponseEntity<Void>> createLibrarian(@PathVariable String userId, @PathVariable String libraryId) {
         Librarian librarian = new DefaultLibrarian(userId, libraryId);
         return librarianService
@@ -58,8 +56,7 @@ public class LibrarianController {
                     "<br> Admins can invoke this api"
     )
     @ApiAcceptedResponse
-    @RoleAdmin
-    @DeleteMapping("/{userId}/{libraryId}")
+    @DeleteMapping("/{libraryId}/{userId}")
     public Mono<ResponseEntity<Void>> deleteLibrarian(@PathVariable String userId, @PathVariable String libraryId) {
         Librarian librarian = new DefaultLibrarian(userId, libraryId);
         return librarianService

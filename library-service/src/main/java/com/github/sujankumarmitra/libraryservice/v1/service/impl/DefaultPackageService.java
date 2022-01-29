@@ -66,6 +66,11 @@ public class DefaultPackageService implements PackageService {
     }
 
     @Override
+    public Mono<Package> getPackage(String packageId) {
+        return packageDao.getPackage(packageId);
+    }
+
+    @Override
     public Mono<Void> updatePackage(Package aPackage) {
         if (aPackage.getItems() != null) {
             return handleIncorrectLibraryId(aPackage)

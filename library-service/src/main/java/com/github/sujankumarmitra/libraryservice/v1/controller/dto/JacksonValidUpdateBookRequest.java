@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 import java.util.Set;
 
@@ -27,7 +28,7 @@ public abstract class JacksonValidUpdateBookRequest {
 
     @JsonIgnore
     private String id;
-    @Size(min = 1)
+    @NotEmpty
     private String libraryId;
     @Size(min = 1)
     private String title;

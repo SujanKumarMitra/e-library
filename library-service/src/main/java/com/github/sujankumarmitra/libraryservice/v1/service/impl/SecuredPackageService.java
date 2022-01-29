@@ -56,6 +56,15 @@ public class SecuredPackageService implements PackageService {
     }
 
     @Override
+    public Mono<Package> getPackage(String packageId) {
+        return delegate
+                .getPackage(packageId)
+                .filterWhen(aPackage -> Flux.just(ROLE_STUDENT, ROLE_TEACHER, ROLE_LIBRARIAN)
+                        .map(role -> aPackage.getLibraryId() + ":" + role)
+                        .flatMap(SecurityUtil::hasAuthority));
+    }
+
+    @Override
     @PreAuthorize("hasAnyAuthority(" +
             "#aPackage.libraryId + ':" + ROLE_TEACHER + "', " +
             "#aPackage.libraryId + ':" + ROLE_LIBRARIAN + "')")
@@ -76,4 +85,5 @@ public class SecuredPackageService implements PackageService {
                 .flatMap(alwaysTrue -> delegate.deletePackage(packageId))
                 .then();
     }
+
 }

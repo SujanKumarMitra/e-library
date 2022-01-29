@@ -1,8 +1,6 @@
 package com.github.sujankumarmitra.libraryservice.v1.openapi.schema;
 
 import com.github.sujankumarmitra.libraryservice.v1.model.Package;
-import com.github.sujankumarmitra.libraryservice.v1.model.PackageItem;
-import com.github.sujankumarmitra.libraryservice.v1.model.PackageTag;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.Collections;
@@ -32,20 +30,18 @@ public class UpdatePackageRequestSchema extends Package {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     @Schema(description = "if it is null, then no changes will be made." +
             "<br>. if it is empty or filled array, then previous items will be replaced by this new items." +
             "<br>. For individual updates see `PATCH /api/v1/packages/{bookId}/items/{itemId}`")
-    public Set<PackageItem> getItems() {
+    public Set<UpdatePackageItemRequestSchema> getItems() {
         return Collections.emptySet();
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     @Schema(description = "if it is null, then no changes will be made." +
             "<br>. if it is empty or filled array, then previous tags will be replaced by this new tags." +
             "<br>. For individual updates see `PATCH /api/v1/packages/{bookId}/tags/{tagId}`")
-    public Set<PackageTag> getTags() {
+    public Set<UpdatePackageTagRequestSchema> getTags() {
         return Collections.emptySet();
     }
 }

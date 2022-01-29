@@ -28,7 +28,7 @@ import static com.github.sujankumarmitra.libraryservice.v1.security.SecurityAnno
  * @since Dec 01/12/21, 2021
  */
 @RestController
-@RequestMapping("/api/v1/lease-requests/rejected")
+@RequestMapping("/api/lease-requests/rejected")
 @AllArgsConstructor
 @Tag(
         name = "RejectedLeaseRequestController",

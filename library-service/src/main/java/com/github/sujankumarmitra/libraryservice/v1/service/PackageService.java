@@ -16,8 +16,10 @@ public interface PackageService {
 
     Flux<Package> getPackagesByName(String libraryId, String namePrefix, int pageNo);
 
+    Mono<Package> getPackage(String packageId);
+
     Mono<Void> updatePackage(Package aPackage);
 
     Mono<Void> deletePackage(String packageId);
-
+    
 }

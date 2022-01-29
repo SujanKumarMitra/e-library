@@ -89,9 +89,7 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
         return bookService
                 .getBook(request.getBookId())
                 .filter(book -> book.getLibraryId().equals(request.getLibraryId()))
-                .switchIfEmpty(Mono.error(() -> new LibraryIdMismatchException("given book does not belong to libraryId '"+ request.getLibraryId() + "'")))
-                .filter(PhysicalBook.class::isInstance)
-                .cast(PhysicalBook.class)
+                .switchIfEmpty(Mono.error(() -> new LibraryIdMismatchException("given book does not belong to libraryId '" + request.getLibraryId() + "'")))
                 .handle(this::emitErrorIfNoCopiesAvailable)
                 .map(Book::getLibraryId)
                 .flatMap(libraryId -> leaseRequestDao
@@ -133,8 +131,12 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
         }
     }
 
-    private void emitErrorIfNoCopiesAvailable(PhysicalBook book, SynchronousSink<PhysicalBook> sink) {
-        if (book.getCopiesAvailable() > 0) {
+    private void emitErrorIfNoCopiesAvailable(Book book, SynchronousSink<Book> sink) {
+        if (!(book instanceof PhysicalBook)) {
+            sink.next(book);
+            return;
+        }
+        if ((((PhysicalBook) book).getCopiesAvailable()) > 0) {
             sink.next(book);
         } else {
             sink.error(new InsufficientCopiesAvailableException(book.getId()));

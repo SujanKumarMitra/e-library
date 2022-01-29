@@ -3,12 +3,11 @@ package com.github.sujankumarmitra.libraryservice.v1.controller;
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiAcceptedResponse;
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiBadRequestResponse;
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiCreatedResponse;
+import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiNotFoundResponse;
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.*;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.CreatePackageRequestSchema;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.GetPackageResponseSchema;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.UpdatePackageRequestSchema;
-import com.github.sujankumarmitra.libraryservice.v1.security.SecurityAnnotations.RoleStudent;
-import com.github.sujankumarmitra.libraryservice.v1.security.SecurityAnnotations.RoleTeacher;
 import com.github.sujankumarmitra.libraryservice.v1.service.PackageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -36,7 +35,7 @@ import static com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfigu
  * @since Nov 29/11/21, 2021
  */
 @RestController
-@RequestMapping("/api/v1/packages")
+@RequestMapping("/api/packages")
 @AllArgsConstructor
 @Tag(
         name = "PackageController",
@@ -51,7 +50,7 @@ public class PackageController {
 
     @Operation(
             summary = "Fetch packages",
-            description = "Librarians/Teachers/Students will invoke this API to view packages")
+            description = "Librarians/Teachers/Students can invoke this API to view packages")
     @ApiResponse(
             responseCode = "200",
             content = @Content(
@@ -61,19 +60,32 @@ public class PackageController {
                     )
             )
     )
-    @RoleStudent
     @GetMapping
-    public Flux<JacksonGetPackageResponse> getPackages(@RequestParam(value = "page_no", defaultValue = "0") int pageNo) {
-//        TODO take libraryId from input
+    public Flux<JacksonGetPackageResponse> getPackages(
+            @RequestParam("library_id") String libraryId,
+            @RequestParam(value = "page_no", defaultValue = "0") int pageNo) {
         return packageService
-                .getPackages("", pageNo)
+                .getPackages(libraryId, pageNo)
                 .map(JacksonGetPackageResponse::new);
+    }
+
+    @Operation(summary = "Fetch package by id", description = "Students/Teachers/Librarians can invoke this api")
+    @ApiResponse(content = @Content(schema = @Schema(implementation = GetPackageResponseSchema.class)))
+    @GetMapping("/{packageId}")
+    @ApiNotFoundResponse
+    public Mono<ResponseEntity<JacksonGetPackageResponse>> getPackage(
+            @PathVariable String packageId) {
+        return packageService
+                .getPackage(packageId)
+                .map(JacksonGetPackageResponse::new)
+                .map(ResponseEntity::ok)
+                .switchIfEmpty(Mono.fromSupplier(() -> ResponseEntity.notFound().build()));
     }
 
 
     @Operation(
             summary = "Fetch packages by name starting with",
-            description = "Librarians/Teachers/Students will invoke this API to search by package name")
+            description = "Librarians/Teachers/Students can invoke this API to search by package name")
     @ApiResponse(
             responseCode = "200",
             content = @Content(
@@ -83,42 +95,39 @@ public class PackageController {
                     )
             )
     )
-    @RoleStudent
     @GetMapping("/search")
-    public Flux<JacksonGetPackageResponse> getPackagesByNameStartingWith(@RequestParam(value = "name_prefix") String namePrefix,
-                                                                         @RequestParam(value = "page_no", defaultValue = "0") int pageNo) {
-//        TODO: take libraryId from input
+    public Flux<JacksonGetPackageResponse> getPackagesByNameStartingWith(
+            @RequestParam("library_id") String libraryId,
+            @RequestParam(value = "name_prefix") String namePrefix,
+            @RequestParam(value = "page_no", defaultValue = "0") int pageNo) {
         return packageService
-                .getPackagesByName("", namePrefix, pageNo)
+                .getPackagesByName(libraryId, namePrefix, pageNo)
                 .map(JacksonGetPackageResponse::new);
     }
 
 
     @Operation(summary = "Create a package",
-            description = "Librarians/Teachers will invoke this API to create a package")
+            description = "Librarians/Teachers can invoke this API to create a package")
 
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
             content = @Content(schema = @Schema(implementation = CreatePackageRequestSchema.class))
     )
-    @RoleTeacher
     @ApiCreatedResponse
     @ApiBadRequestResponse
     @PostMapping
     public Mono<ResponseEntity<Void>> createPackage(@RequestBody @Valid JacksonValidCreatePackageRequest request) {
-
         return packageService
                 .createPackage(request)
                 .map(id -> ResponseEntity.created(URI.create(id)).build());
     }
 
     @Operation(summary = "Update an existing package",
-            description = "Librarians/Teachers will invoke this API to update a package")
+            description = "Librarians/Teachers can invoke this API to update a package")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
             content = @Content(
                     schema = @Schema(implementation = UpdatePackageRequestSchema.class)
             )
     )
-    @RoleTeacher
     @ApiAcceptedResponse
     @ApiBadRequestResponse
     @PatchMapping(path = "/{packageId}", consumes = {"application/merge-patch+json", "application/json"})
@@ -138,11 +147,11 @@ public class PackageController {
     }
 
     @Operation(summary = " Deletes a package",
-            description = "Librarians/Teachers will invoke this API to delete a package")
+            description = "Librarians/Teachers can invoke this API to delete a package")
     @ApiAcceptedResponse
-    @RoleTeacher
     @DeleteMapping("/{packageId}")
-    public Mono<ResponseEntity<Void>> deletePackage(@PathVariable("packageId") String packageId) {
+    public Mono<ResponseEntity<Void>> deletePackage(@PathVariable String packageId) {
+
         return packageService
                 .deletePackage(packageId)
                 .thenReturn(ResponseEntity.accepted().build());
