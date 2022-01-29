@@ -2,6 +2,7 @@ package com.github.sujankumarmitra.notificationservice.v1.security;
 
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
@@ -12,6 +13,7 @@ import reactor.core.publisher.Mono;
  * @since Sep 27/09/21, 2021
  */
 @Component
+@Primary
 @AllArgsConstructor
 public class TokenAuthenticationManager implements ReactiveAuthenticationManager {
 

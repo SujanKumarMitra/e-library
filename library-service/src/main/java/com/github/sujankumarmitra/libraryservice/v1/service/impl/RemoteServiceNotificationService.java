@@ -19,6 +19,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Service
 public class RemoteServiceNotificationService implements NotificationService {
 
+    public static final String NOTIFICATIONS_URI = "/api/notifications";
     private final WebClient webClient;
 
     public RemoteServiceNotificationService(WebClient.Builder builder,
@@ -35,7 +36,7 @@ public class RemoteServiceNotificationService implements NotificationService {
     public Mono<Void> sendNotification(Notification notification) {
         return webClient
                 .post()
-                .uri("/api/v1/notifications")
+                .uri(NOTIFICATIONS_URI)
                 .body(BodyInserters.fromValue(notification))
                 .retrieve()
                 .toBodilessEntity()

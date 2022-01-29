@@ -3,6 +3,9 @@ app:
     maxThreadCapacity: "${JOB_SCHEDULER_MAX_THREAD_CAPACITY}"
   auth:
     baseUrl: "${AUTH_BASEURL}"
+    internal-user:
+      username: "${INTERNAL_USERNAME}"
+      password: "${INTERNAL_PASSWORD}"
   kafka:
     bootstrapServers: "${KAFKA_BOOTSTRAP_SERVERS}"
     newNotificationsTopicName: "${NEW_NOTIFICATIONS_TOPIC_NAME}"
