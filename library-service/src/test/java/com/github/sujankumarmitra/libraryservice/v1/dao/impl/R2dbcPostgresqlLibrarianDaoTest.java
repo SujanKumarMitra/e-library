@@ -21,7 +21,7 @@ import static com.github.sujankumarmitra.libraryservice.v1.util.DaoTestUtils.tru
  * @since Dec 09/12/21, 2021
  */
 @Slf4j
-class R2dbcPostgresqlLibrarianDaoTest extends AbstractDataR2dbcPostgreSQLContainerDependentTest {
+class R2dbcPostgresqlLibrarianDaoTest extends AbstractDataR2dbcPostgresqlContainerDependentTest {
 
     private R2dbcPostgresqlLibrarianDao librarianDao;
     @Autowired

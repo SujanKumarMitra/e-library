@@ -28,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @since Nov 28/11/21, 2021
  */
 @Slf4j
-class R2dbcPostgresqlPackageItemDaoTest extends AbstractDataR2dbcPostgreSQLContainerDependentTest {
+class R2dbcPostgresqlPackageItemDaoTest extends AbstractDataR2dbcPostgresqlContainerDependentTest {
 
     private R2dbcPostgresqlPackageItemDao packageItemDao;
     @SuppressWarnings("FieldMayBeFinal")

@@ -36,7 +36,7 @@ import static org.mockito.ArgumentMatchers.any;
  * @since Dec 03/12/21, 2021
  */
 @Slf4j
-class R2dbcPostgresqlEBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDependentTest {
+class R2dbcPostgresqlEBookDaoTest extends AbstractDataR2dbcPostgresqlContainerDependentTest {
 
     @Mock
     private BookDao<Book> mockBookDao;

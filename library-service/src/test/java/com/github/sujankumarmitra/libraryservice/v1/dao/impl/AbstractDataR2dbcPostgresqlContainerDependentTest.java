@@ -15,7 +15,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @DataR2dbcTest
 @Testcontainers
 @DirtiesContext
-abstract class AbstractDataR2dbcPostgreSQLContainerDependentTest {
+abstract class AbstractDataR2dbcPostgresqlContainerDependentTest {
 
     @Container
     protected static final PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres");

@@ -4,9 +4,9 @@ import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.ErrorResponse;
 import com.github.sujankumarmitra.libraryservice.v1.exception.ApiOperationException;
 import com.github.sujankumarmitra.libraryservice.v1.exception.LeaseRequestNotFoundException;
-import com.github.sujankumarmitra.libraryservice.v1.model.LeaseRecord;
+import com.github.sujankumarmitra.libraryservice.v1.model.AcceptedLease;
 import com.github.sujankumarmitra.libraryservice.v1.model.Money;
-import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.GetActiveLeaseRequestResponseSchema;
+import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.GetActiveAcceptedLeaseRequestResponseSchema;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.MoneySchema;
 import com.github.sujankumarmitra.libraryservice.v1.security.SecurityAnnotations.RoleLibrarian;
 import com.github.sujankumarmitra.libraryservice.v1.security.SecurityAnnotations.RoleStudent;
@@ -55,13 +55,13 @@ public class ActiveLeaseController {
             content = @Content(
                     mediaType = MediaType.APPLICATION_JSON_VALUE,
                     array = @ArraySchema(
-                            schema = @Schema(implementation = GetActiveLeaseRequestResponseSchema.class)
+                            schema = @Schema(implementation = GetActiveAcceptedLeaseRequestResponseSchema.class)
                     )
             )
     )
     @GetMapping
     @RoleLibrarian
-    public Flux<LeaseRecord> getActiveLeases(@RequestParam(value = "page_no", defaultValue = "0") int pageNo) {
+    public Flux<AcceptedLease> getActiveLeases(@RequestParam(value = "page_no", defaultValue = "0") int pageNo) {
 //        TODO: take libraryId from input
         return activeLeaseService.getAllActiveLeases("", pageNo);
     }
@@ -75,13 +75,13 @@ public class ActiveLeaseController {
             content = @Content(
                     mediaType = MediaType.APPLICATION_JSON_VALUE,
                     array = @ArraySchema(
-                            schema = @Schema(implementation = GetActiveLeaseRequestResponseSchema.class)
+                            schema = @Schema(implementation = GetActiveAcceptedLeaseRequestResponseSchema.class)
                     )
             )
     )
     @GetMapping("/self")
     @RoleStudent
-    public Flux<LeaseRecord> getActiveLeasesForCurrentUser(@RequestParam(value = "page_no", defaultValue = "0") int pageNo, Authentication authentication) {
+    public Flux<AcceptedLease> getActiveLeasesForCurrentUser(@RequestParam(value = "page_no", defaultValue = "0") int pageNo, Authentication authentication) {
 //        TODO: take libraryId from input
         return activeLeaseService.getAllActiveLeases("", authentication.getName(), pageNo);
     }

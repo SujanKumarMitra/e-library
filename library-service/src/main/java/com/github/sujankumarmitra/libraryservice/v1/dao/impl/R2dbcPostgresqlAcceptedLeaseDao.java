@@ -1,10 +1,10 @@
 package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 
-import com.github.sujankumarmitra.libraryservice.v1.dao.LeaseRecordDao;
-import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcLeaseRecord;
+import com.github.sujankumarmitra.libraryservice.v1.dao.AcceptedLeaseDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcAcceptedLease;
 import com.github.sujankumarmitra.libraryservice.v1.exception.LeaseRecordAlreadyExistsException;
 import com.github.sujankumarmitra.libraryservice.v1.exception.LeaseRequestNotFoundException;
-import com.github.sujankumarmitra.libraryservice.v1.model.LeaseRecord;
+import com.github.sujankumarmitra.libraryservice.v1.model.AcceptedLease;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +29,7 @@ import static org.springframework.data.relational.core.query.Query.query;
 @Repository
 @AllArgsConstructor
 @Slf4j
-public class R2dbcPostgresqlLeaseRecordDao implements LeaseRecordDao {
+public class R2dbcPostgresqlAcceptedLeaseDao implements AcceptedLeaseDao {
 
     public static final String INSERT_STATEMENT = "INSERT INTO accepted_lease_requests(lease_request_id,start_time,duration,relinquished) values($1,$2,$3,$4)";
     public static final String LEASE_REQUESTS_FOREIGN_KEY_CONSTRAINT_NAME = "fk_accepted_lease_requests_lease_requests";
@@ -54,7 +54,7 @@ public class R2dbcPostgresqlLeaseRecordDao implements LeaseRecordDao {
 
     @Override
     @Transactional
-    public Mono<Void> createLeaseRecord(@NonNull LeaseRecord leaseRecord) {
+    public Mono<Void> createLeaseRecord(@NonNull AcceptedLease leaseRecord) {
         return Mono.defer(() -> {
             String leaseRequestId = leaseRecord.getLeaseRequestId();
 
@@ -83,7 +83,7 @@ public class R2dbcPostgresqlLeaseRecordDao implements LeaseRecordDao {
 
     @Override
     @Transactional(readOnly = true)
-    public Mono<LeaseRecord> getLeaseRecord(String leaseRequestId) {
+    public Mono<AcceptedLease> getLeaseRecord(String leaseRequestId) {
         return Mono.defer(() -> {
             UUID uuid;
             try {
@@ -94,30 +94,30 @@ public class R2dbcPostgresqlLeaseRecordDao implements LeaseRecordDao {
             }
 
             return this.entityTemplate
-                    .select(R2dbcLeaseRecord.class)
+                    .select(R2dbcAcceptedLease.class)
                     .matching(query(where("lease_request_id").is(uuid)))
                     .one()
-                    .cast(LeaseRecord.class);
+                    .cast(AcceptedLease.class);
         });
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Flux<LeaseRecord> getActiveLeaseRecords(String libraryId, int skip, int limit) {
+    public Flux<AcceptedLease> getActiveLeaseRecords(String libraryId, int skip, int limit) {
         return this.entityTemplate
                 .getDatabaseClient()
                 .sql(SELECT_ACTIVE_RECORDS_STATEMENT)
                 .bind("$1", libraryId)
                 .bind("$2", skip)
                 .bind("$3", limit)
-                .map(row -> entityTemplate.getConverter().read(R2dbcLeaseRecord.class, row))
+                .map(row -> entityTemplate.getConverter().read(R2dbcAcceptedLease.class, row))
                 .all()
-                .cast(LeaseRecord.class);
+                .cast(AcceptedLease.class);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Flux<LeaseRecord> getActiveLeaseRecords(String libraryId, String userId, int skip, int limit) {
+    public Flux<AcceptedLease> getActiveLeaseRecords(String libraryId, String userId, int skip, int limit) {
         return this.entityTemplate
                 .getDatabaseClient()
                 .sql(SELECT_ACTIVE_RECORDS_BY_USER_ID_STATEMENT)
@@ -125,9 +125,9 @@ public class R2dbcPostgresqlLeaseRecordDao implements LeaseRecordDao {
                 .bind("$2", libraryId)
                 .bind("$3", skip)
                 .bind("$4", limit)
-                .map(row -> entityTemplate.getConverter().read(R2dbcLeaseRecord.class, row))
+                .map(row -> entityTemplate.getConverter().read(R2dbcAcceptedLease.class, row))
                 .all()
-                .cast(LeaseRecord.class);
+                .cast(AcceptedLease.class);
     }
 
     @Override

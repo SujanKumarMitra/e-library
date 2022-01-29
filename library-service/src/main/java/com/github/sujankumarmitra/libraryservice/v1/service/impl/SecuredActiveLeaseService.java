@@ -1,7 +1,7 @@
 package com.github.sujankumarmitra.libraryservice.v1.service.impl;
 
 import com.github.sujankumarmitra.libraryservice.v1.dao.LeaseRequestDao;
-import com.github.sujankumarmitra.libraryservice.v1.model.LeaseRecord;
+import com.github.sujankumarmitra.libraryservice.v1.model.AcceptedLease;
 import com.github.sujankumarmitra.libraryservice.v1.model.LeaseRequest;
 import com.github.sujankumarmitra.libraryservice.v1.model.Money;
 import com.github.sujankumarmitra.libraryservice.v1.service.ActiveLeaseService;
@@ -33,7 +33,7 @@ public class SecuredActiveLeaseService implements ActiveLeaseService {
 
     @Override
     @PreAuthorize("hasAuthority(#libraryId + ':" + ROLE_LIBRARIAN + "')")
-    public Flux<LeaseRecord> getAllActiveLeases(String libraryId, int pageNo) {
+    public Flux<AcceptedLease> getAllActiveLeases(String libraryId, int pageNo) {
         return delegate.getAllActiveLeases(libraryId, pageNo);
     }
 
@@ -42,7 +42,7 @@ public class SecuredActiveLeaseService implements ActiveLeaseService {
             "(authentication.name==#userId && hasAnyAuthority(" +
             "#libraryId + ':" + ROLE_STUDENT + "', " +
             "#libraryId + ':" + ROLE_TEACHER + "'))")
-    public Flux<LeaseRecord> getAllActiveLeases(String libraryId, String userId, int pageNo) {
+    public Flux<AcceptedLease> getAllActiveLeases(String libraryId, String userId, int pageNo) {
         return delegate.getAllActiveLeases(libraryId, userId, pageNo);
     }
 

@@ -1,6 +1,6 @@
 package com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity;
 
-import com.github.sujankumarmitra.libraryservice.v1.model.LeaseRecord;
+import com.github.sujankumarmitra.libraryservice.v1.model.AcceptedLease;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
@@ -18,7 +18,7 @@ import static com.github.sujankumarmitra.libraryservice.v1.util.StringUtil.nulla
 @Getter
 @Setter
 @Table("accepted_lease_requests")
-public final class R2dbcLeaseRecord extends LeaseRecord {
+public final class R2dbcAcceptedLease extends AcceptedLease {
     @Id
     @Column("lease_request_id")
     private UUID leaseRequestId;

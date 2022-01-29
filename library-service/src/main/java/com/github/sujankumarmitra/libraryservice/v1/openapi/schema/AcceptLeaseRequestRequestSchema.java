@@ -42,4 +42,10 @@ public class AcceptLeaseRequestRequestSchema extends AcceptedLease {
         return 0L;
     }
 
+    @Override
+    @Schema(hidden = true)
+    public Boolean isRelinquished() {
+        return null;
+    }
+
 }

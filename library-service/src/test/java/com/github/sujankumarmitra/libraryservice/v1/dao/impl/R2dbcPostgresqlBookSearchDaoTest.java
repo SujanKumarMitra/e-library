@@ -17,7 +17,7 @@ import static org.springframework.r2dbc.connection.init.ScriptUtils.executeSqlSc
  * @since Dec 09/12/21, 2021
  */
 @Slf4j
-class R2dbcPostgresqlBookSearchDaoTest extends AbstractDataR2dbcPostgreSQLContainerDependentTest {
+class R2dbcPostgresqlBookSearchDaoTest extends AbstractDataR2dbcPostgresqlContainerDependentTest {
 
     @Autowired
     private R2dbcEntityTemplate entityTemplate;

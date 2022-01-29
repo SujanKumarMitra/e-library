@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
  */
 // TODO write tests
 @Slf4j
-class R2dbcPostgresqlEBookSegmentDaoTest extends AbstractDataR2dbcPostgreSQLContainerDependentTest {
+class R2dbcPostgresqlEBookSegmentDaoTest extends AbstractDataR2dbcPostgresqlContainerDependentTest {
 
     @Test
     void givenValidEbookId_whenGetSegments_shouldGetSegments() {

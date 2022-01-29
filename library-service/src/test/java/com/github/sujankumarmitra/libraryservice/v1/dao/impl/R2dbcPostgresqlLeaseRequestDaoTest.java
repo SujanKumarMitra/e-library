@@ -30,7 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @since Dec 07/12/21, 2021
  */
 @Slf4j
-class R2dbcPostgresqlLeaseRequestDaoTest extends AbstractDataR2dbcPostgreSQLContainerDependentTest {
+class R2dbcPostgresqlLeaseRequestDaoTest extends AbstractDataR2dbcPostgresqlContainerDependentTest {
 
     private R2dbcPostgresqlLeaseRequestDao leaseRequestDao;
     @Autowired

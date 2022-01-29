@@ -1,6 +1,6 @@
 package com.github.sujankumarmitra.libraryservice.v1.openapi.schema;
 
-import com.github.sujankumarmitra.libraryservice.v1.model.LeaseRecord;
+import com.github.sujankumarmitra.libraryservice.v1.model.AcceptedLease;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.validation.constraints.NotEmpty;
@@ -11,7 +11,7 @@ import static java.lang.Boolean.FALSE;
  * @author skmitra
  * @since Dec 02/12/21, 2021
  */
-public class GetActiveLeaseRequestResponseSchema extends LeaseRecord {
+public class GetActiveAcceptedLeaseRequestResponseSchema extends AcceptedLease {
     @Override
     @Schema(description = "the id of lease request")
     @NotEmpty

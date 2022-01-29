@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @since Nov 23/11/21, 2021
  */
 @Slf4j
-class R2dbcPostgresqlPackageTagDaoTest extends AbstractDataR2dbcPostgreSQLContainerDependentTest {
+class R2dbcPostgresqlPackageTagDaoTest extends AbstractDataR2dbcPostgresqlContainerDependentTest {
 
     private R2dbcPostgresqlPackageTagDao tagDao = null;
     @Autowired

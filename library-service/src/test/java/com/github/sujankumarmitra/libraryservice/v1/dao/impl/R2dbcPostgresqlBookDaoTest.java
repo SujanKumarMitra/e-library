@@ -36,7 +36,7 @@ import static org.springframework.r2dbc.connection.init.ScriptUtils.executeSqlSc
  * @since Nov 22/11/21, 2021
  */
 @Slf4j
-class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDependentTest {
+class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgresqlContainerDependentTest {
 
     private R2dbcPostgresqlBookDao bookDao;
     @Mock

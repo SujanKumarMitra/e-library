@@ -29,6 +29,7 @@ import java.time.Duration;
 import java.util.UUID;
 
 import static com.github.sujankumarmitra.libraryservice.v1.model.LeaseStatus.PENDING;
+import static java.lang.Boolean.FALSE;
 import static org.mockito.ArgumentMatchers.any;
 
 /**
@@ -218,6 +219,7 @@ class DefaultBookServiceTest {
         acceptedLease.setLeaseRequestId(validLeaseRequestId.toString());
         acceptedLease.setStartTimeInEpochMilliseconds(System.currentTimeMillis());
         acceptedLease.setDurationInMilliseconds(System.currentTimeMillis() + Duration.ofDays(180).toMillis());
+        acceptedLease.setRelinquished(FALSE);
         return acceptedLease;
     }
 }

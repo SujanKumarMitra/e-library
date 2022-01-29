@@ -3,14 +3,14 @@ package com.github.sujankumarmitra.libraryservice.v1.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.sujankumarmitra.libraryservice.v1.config.PagingProperties;
-import com.github.sujankumarmitra.libraryservice.v1.dao.LeaseRecordDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.AcceptedLeaseDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.LeaseRequestDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.LibrarianDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.RejectedLeaseDao;
-import com.github.sujankumarmitra.libraryservice.v1.exception.*;
 import com.github.sujankumarmitra.libraryservice.v1.exception.InternalError;
+import com.github.sujankumarmitra.libraryservice.v1.exception.*;
 import com.github.sujankumarmitra.libraryservice.v1.model.*;
-import com.github.sujankumarmitra.libraryservice.v1.model.impl.DefaultLeaseRecord;
+import com.github.sujankumarmitra.libraryservice.v1.model.impl.DefaultAcceptedLease;
 import com.github.sujankumarmitra.libraryservice.v1.model.impl.DefaultNotification;
 import com.github.sujankumarmitra.libraryservice.v1.service.BookService;
 import com.github.sujankumarmitra.libraryservice.v1.service.LeaseRequestService;
@@ -42,7 +42,7 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
     @NonNull
     private final LeaseRequestDao leaseRequestDao;
     @NonNull
-    private final LeaseRecordDao leaseRecordDao;
+    private final AcceptedLeaseDao acceptedLeaseDao;
     @NonNull
     private final RejectedLeaseDao rejectedLeaseDao;
     @NonNull
@@ -162,7 +162,7 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
      *              Set {@link LeaseRequest#getStatus()} to {@link LeaseStatus#ACCEPTED}
      *          </li>
      *          <li>
-     *              Create {@link LeaseRecord}
+     *              Create {@link AcceptedLease}
      *          </li>
      *          <li>
      *              Send notification to {@link LeaseRequest#getUserId()} about {@link LeaseStatus#ACCEPTED} (Optional, error signal should not be propagated)
@@ -182,7 +182,7 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
 
         return getValidLeaseRequest(leaseRequestId)
                 .flatMap(leaseRequest -> {
-                    Mono<Void> createRecordMono = leaseRecordDao.createLeaseRecord(buildLeaseRecord(acceptedLease));
+                    Mono<Void> createRecordMono = acceptedLeaseDao.createLeaseRecord(buildLeaseRecord(acceptedLease));
                     Mono<Void> updateStatusMono = leaseRequestDao.setLeaseStatus(leaseRequestId, ACCEPTED);
                     Mono<Void> sendNotificationMono = sendNotificationForLeaseRequestHandling(leaseRequest, ACCEPTED);
                     Mono<Void> handleLeaseAcceptMono = bookService.onLeaseAccept(acceptedLease);
@@ -243,8 +243,8 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
                 .handle(this::emitErrorIfNotInPendingState);
     }
 
-    private LeaseRecord buildLeaseRecord(AcceptedLease acceptedLease) {
-        return new DefaultLeaseRecord(
+    private AcceptedLease buildLeaseRecord(AcceptedLease acceptedLease) {
+        return new DefaultAcceptedLease(
                 acceptedLease.getLeaseRequestId(),
                 acceptedLease.getStartTimeInEpochMilliseconds(),
                 acceptedLease.getDurationInMilliseconds(),

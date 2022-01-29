@@ -1,7 +1,7 @@
 package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBook;
-import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcLeaseRecord;
+import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcAcceptedLease;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcLeaseRequest;
 import com.github.sujankumarmitra.libraryservice.v1.exception.LeaseRecordAlreadyExistsException;
 import com.github.sujankumarmitra.libraryservice.v1.exception.LeaseRequestNotFoundException;
@@ -35,15 +35,15 @@ import static org.springframework.r2dbc.connection.init.ScriptUtils.executeSqlSc
  * @since Dec 07/12/21, 2021
  */
 @Slf4j
-class R2dbcPostgresqlLeaseRecordDaoTest extends AbstractDataR2dbcPostgreSQLContainerDependentTest {
+class R2dbcPostgresqlAcceptedLeaseDaoTest extends AbstractDataR2dbcPostgresqlContainerDependentTest {
 
-    private R2dbcPostgresqlLeaseRecordDao leaseRecordDao;
+    private R2dbcPostgresqlAcceptedLeaseDao leaseRecordDao;
     @Autowired
     private R2dbcEntityTemplate entityTemplate;
 
     @BeforeEach
     void setUp() {
-        leaseRecordDao = new R2dbcPostgresqlLeaseRecordDao(entityTemplate);
+        leaseRecordDao = new R2dbcPostgresqlAcceptedLeaseDao(entityTemplate);
     }
 
     @AfterEach
@@ -55,7 +55,7 @@ class R2dbcPostgresqlLeaseRecordDaoTest extends AbstractDataR2dbcPostgreSQLConta
     @Test
     void givenValidLeaseRecord_whenCreate_shouldCreate() {
 
-        R2dbcLeaseRecord leaseRecord = new R2dbcLeaseRecord();
+        R2dbcAcceptedLease leaseRecord = new R2dbcAcceptedLease();
 
         leaseRecord.setStartTimeInEpochMilliseconds(System.currentTimeMillis());
         leaseRecord.setRelinquished(FALSE);
@@ -67,7 +67,7 @@ class R2dbcPostgresqlLeaseRecordDaoTest extends AbstractDataR2dbcPostgreSQLConta
                 .doOnNext(leaseRecord::setLeaseRequestId)
                 .then(leaseRecordDao.createLeaseRecord(leaseRecord))
                 .then(entityTemplate
-                        .select(R2dbcLeaseRecord.class)
+                        .select(R2dbcAcceptedLease.class)
                         .from("accepted_lease_requests")
                         .first())
                 .as(StepVerifier::create)
@@ -86,7 +86,7 @@ class R2dbcPostgresqlLeaseRecordDaoTest extends AbstractDataR2dbcPostgreSQLConta
     @Test
     void givenInvalidLeaseRequestId_whenCreate_shouldEmitError() {
 
-        R2dbcLeaseRecord leaseRecord = new R2dbcLeaseRecord();
+        R2dbcAcceptedLease leaseRecord = new R2dbcAcceptedLease();
 
         leaseRecord.setLeaseRequestId(UUID.randomUUID());
         leaseRecord.setStartTimeInEpochMilliseconds(System.currentTimeMillis());
@@ -107,7 +107,7 @@ class R2dbcPostgresqlLeaseRecordDaoTest extends AbstractDataR2dbcPostgreSQLConta
     @Test
     void givenExistingLeaseRecordWithLeaseRequestId_whenCreate_shouldEmitError() {
 
-        R2dbcLeaseRecord leaseRecord = new R2dbcLeaseRecord();
+        R2dbcAcceptedLease leaseRecord = new R2dbcAcceptedLease();
 
         leaseRecord.setStartTimeInEpochMilliseconds(System.currentTimeMillis());
         leaseRecord.setRelinquished(FALSE);
@@ -119,7 +119,7 @@ class R2dbcPostgresqlLeaseRecordDaoTest extends AbstractDataR2dbcPostgreSQLConta
                 .doOnNext(leaseRecord::setLeaseRequestId)
                 .then(Mono.defer(() -> entityTemplate
                         .getDatabaseClient()
-                        .sql(R2dbcPostgresqlLeaseRecordDao.INSERT_STATEMENT)
+                        .sql(R2dbcPostgresqlAcceptedLeaseDao.INSERT_STATEMENT)
                         .bind("$1", leaseRecord.getLeaseRequestUuid())
                         .bind("$2", leaseRecord.getStartTimeInEpochMilliseconds())
                         .bind("$3", leaseRecord.getDurationInMilliseconds())
@@ -139,7 +139,7 @@ class R2dbcPostgresqlLeaseRecordDaoTest extends AbstractDataR2dbcPostgreSQLConta
 
     @Test
     void givenValidLeaseRequestId_whenGetLeaseRecord_shouldGetRecord() {
-        R2dbcLeaseRecord leaseRecord = new R2dbcLeaseRecord();
+        R2dbcAcceptedLease leaseRecord = new R2dbcAcceptedLease();
 
         leaseRecord.setRelinquished(FALSE);
         leaseRecord.setStartTimeInEpochMilliseconds(System.currentTimeMillis());
@@ -152,7 +152,7 @@ class R2dbcPostgresqlLeaseRecordDaoTest extends AbstractDataR2dbcPostgreSQLConta
                 .doOnNext(leaseRecord::setLeaseRequestId)
                 .then(Mono.defer(() -> entityTemplate
                         .getDatabaseClient()
-                        .sql(R2dbcPostgresqlLeaseRecordDao.INSERT_STATEMENT)
+                        .sql(R2dbcPostgresqlAcceptedLeaseDao.INSERT_STATEMENT)
                         .bind("$1", leaseRecord.getLeaseRequestUuid())
                         .bind("$2", leaseRecord.getStartTimeInEpochMilliseconds())
                         .bind("$3", leaseRecord.getDurationInMilliseconds())
@@ -195,7 +195,7 @@ class R2dbcPostgresqlLeaseRecordDaoTest extends AbstractDataR2dbcPostgreSQLConta
 
     @Test
     void givenValidLeaseRequestId_whenMarkAsRelinquished_shouldRelinquish() {
-        R2dbcLeaseRecord leaseRecord = new R2dbcLeaseRecord();
+        R2dbcAcceptedLease leaseRecord = new R2dbcAcceptedLease();
 
         leaseRecord.setRelinquished(FALSE);
         leaseRecord.setStartTimeInEpochMilliseconds(System.currentTimeMillis());
@@ -208,7 +208,7 @@ class R2dbcPostgresqlLeaseRecordDaoTest extends AbstractDataR2dbcPostgreSQLConta
                 .doOnNext(leaseRecord::setLeaseRequestId)
                 .then(Mono.defer(() -> entityTemplate
                         .getDatabaseClient()
-                        .sql(R2dbcPostgresqlLeaseRecordDao.INSERT_STATEMENT)
+                        .sql(R2dbcPostgresqlAcceptedLeaseDao.INSERT_STATEMENT)
                         .bind("$1", leaseRecord.getLeaseRequestUuid())
                         .bind("$2", leaseRecord.getStartTimeInEpochMilliseconds())
                         .bind("$3", leaseRecord.getDurationInMilliseconds())
@@ -218,7 +218,7 @@ class R2dbcPostgresqlLeaseRecordDaoTest extends AbstractDataR2dbcPostgreSQLConta
                         .then()))
                 .doOnSuccess(v -> leaseRecord.setRelinquished(TRUE))
                 .then(Mono.defer(() -> leaseRecordDao.markAsRelinquished(leaseRecord.getLeaseRequestId())))
-                .then(entityTemplate.select(R2dbcLeaseRecord.class).one())
+                .then(entityTemplate.select(R2dbcAcceptedLease.class).one())
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .consumeNextWith(actualLeaseRecord -> {

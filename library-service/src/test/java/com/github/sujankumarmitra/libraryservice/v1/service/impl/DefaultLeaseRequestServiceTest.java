@@ -3,7 +3,7 @@ package com.github.sujankumarmitra.libraryservice.v1.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.sujankumarmitra.libraryservice.v1.config.DefaultPagingProperties;
 import com.github.sujankumarmitra.libraryservice.v1.config.PagingProperties;
-import com.github.sujankumarmitra.libraryservice.v1.dao.LeaseRecordDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.AcceptedLeaseDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.LeaseRequestDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.LibrarianDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.RejectedLeaseDao;
@@ -41,7 +41,7 @@ class DefaultLeaseRequestServiceTest {
     @Mock
     private LeaseRequestDao leaseRequestDao;
     @Mock
-    private LeaseRecordDao leaseRecordDao;
+    private AcceptedLeaseDao acceptedLeaseDao;
     @Mock
     private RejectedLeaseDao rejectedLeaseDao;
     @Mock
@@ -58,7 +58,7 @@ class DefaultLeaseRequestServiceTest {
     void setUp() {
         leaseRequestService = new DefaultLeaseRequestService(
                 leaseRequestDao,
-                leaseRecordDao,
+                acceptedLeaseDao,
                 rejectedLeaseDao,
                 librarianDao,
                 bookService,
@@ -88,7 +88,7 @@ class DefaultLeaseRequestServiceTest {
                 .when(bookService).onLeaseAccept(any());
 
         Mockito.doReturn(Mono.empty())
-                .when(leaseRecordDao).createLeaseRecord(any());
+                .when(acceptedLeaseDao).createLeaseRecord(any());
 
         Mockito.doReturn(Mono.empty())
                 .when(leaseRequestDao).setLeaseStatus(validLeaseRequestId.toString(), ACCEPTED);
@@ -131,7 +131,7 @@ class DefaultLeaseRequestServiceTest {
                 .when(bookService).onLeaseAccept(any());
 
         Mockito.doReturn(Mono.empty())
-                .when(leaseRecordDao).createLeaseRecord(any());
+                .when(acceptedLeaseDao).createLeaseRecord(any());
 
         Mockito.doReturn(Mono.empty())
                 .when(leaseRequestDao).setLeaseStatus(validLeaseRequestId.toString(), ACCEPTED);
