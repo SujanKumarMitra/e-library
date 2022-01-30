@@ -31,32 +31,32 @@ public class SecuredEBookSegmentService implements EBookSegmentService {
 
     @Override
     public Flux<EBookSegment> getSegmentsByEBookId(String ebookId, int pageNo) {
-        return userHasAuthorities(ebookId)
+        return userHasAuthorities(ebookId, ROLE_STUDENT, ROLE_TEACHER, ROLE_LIBRARIAN)
                 .thenMany(segmentService.getSegmentsByEBookId(ebookId, pageNo));
     }
 
     @Override
     public Mono<EBookSegment> getSegmentByBookIdAndIndex(String ebookId, int index) {
-        return userHasAuthorities(ebookId)
+        return userHasAuthorities(ebookId, ROLE_STUDENT, ROLE_TEACHER, ROLE_LIBRARIAN)
                 .then(segmentService.getSegmentByBookIdAndIndex(ebookId, index));
     }
 
     @Override
     public Mono<String> createSegment(EBookSegment ebookSegment) {
-        return userHasAuthorities(ebookSegment.getBookId())
+        return userHasAuthorities(ebookSegment.getBookId(), ROLE_LIBRARIAN)
                 .then(segmentService.createSegment(ebookSegment));
     }
 
     @Override
     public Mono<Void> deleteSegmentsByBookId(String ebookId) {
-        return userHasAuthorities(ebookId)
+        return userHasAuthorities(ebookId, ROLE_LIBRARIAN)
                 .then(segmentService.deleteSegmentsByBookId(ebookId));
     }
 
-    private Mono<Void> userHasAuthorities(String ebookId) {
+    private Mono<Void> userHasAuthorities(String ebookId, String... roles) {
         return ebookDao.getBook(ebookId)
                 .map(Book::getLibraryId)
-                .flatMapMany(libraryId -> Flux.just(ROLE_STUDENT, ROLE_TEACHER, ROLE_LIBRARIAN)
+                .flatMapMany(libraryId -> Flux.just(roles)
                         .map(role -> libraryId + ":" + role))
                 .filterWhen(SecurityUtil::hasAuthority)
                 .switchIfEmpty(Mono.error(() -> new AccessDeniedException("Denied")))
