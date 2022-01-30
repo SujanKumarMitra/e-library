@@ -12,7 +12,9 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author skmitra
@@ -28,9 +30,9 @@ public class ApachePdfBoxPdfFileSplitter implements PdfFileSplitter {
     private final EBookProcessorProperties processorProperties;
 
     @Override
-    public Path splitPdfFile(Path pdfFilePath) throws IOException {
+    public List<Path> splitPdfFile(Path pdfFilePath) throws IOException {
         PDDocument document = PDDocument.load(pdfFilePath.toFile(), MEM_USAGE_SETTING);
-        Path splitBasePath = Files.createTempDirectory("");
+        List<Path> splits = new ArrayList<>();
         int maxSplitSize = processorProperties.getMaxSegmentSize();
 
         Iterator<PDPage> pageIterator = document.getPages().iterator();
@@ -41,13 +43,14 @@ public class ApachePdfBoxPdfFileSplitter implements PdfFileSplitter {
                     pdfSplit.addPage(pageIterator.next());
                     splitSize--;
                 }
-                Path basePath = Files.createTempFile(splitBasePath, "", "");
+                Path basePath = Files.createTempFile("", "");
                 pdfSplit.save(basePath.toFile());
+                splits.add(basePath);
             }
         }
 
         document.close();
-        return splitBasePath;
+        return splits;
     }
 
 

@@ -22,15 +22,14 @@ import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Stream;
+import java.util.List;
 
 import static com.github.sujankumarmitra.ebookprocessor.v1.model.AccessLevel.PRIVATE;
 import static com.github.sujankumarmitra.ebookprocessor.v1.model.EBookFormat.PDF;
 import static com.github.sujankumarmitra.ebookprocessor.v1.model.ProcessingState.*;
 import static java.nio.file.Files.deleteIfExists;
+import static org.springframework.http.MediaType.APPLICATION_PDF_VALUE;
 
 /**
  * @author skmitra
@@ -59,22 +58,18 @@ public class PdfEBookProcessor implements EBookProcessor {
     public void process(EbookProcessDetails processDetails) {
         String processId = processDetails.getProcessId();
         Path bookPath = processDetails.getBookPath();
-        String bookId = processDetails.getBookId();
+        EBook eBook = processDetails.getEBook();
         AuthenticationToken authToken = processDetails.getAuthToken();
 
-        AtomicReference<Path> splitBaseDirRef = new AtomicReference<>();
-
         Mono.fromRunnable(() -> setStatusAsProcessing(processId))
-                .then(deleteExistingEBookSegments(bookId))
-                .then(createPdfSplit(bookPath))
-                .doOnNext(splitBaseDirRef::set)
-                .flatMapMany(this::splitsToFlux)
+                .then(deleteExistingEBookSegments(eBook))
+                .thenMany(createPdfSplit(bookPath))
                 .doOnTerminate(() -> deleteFile(bookPath))
                 .index()
-                .concatMap(tuple2 -> saveAsset(tuple2, bookId))
+                .concatMap(tuple2 -> saveAsset(tuple2, eBook)
+                        .doOnTerminate(() -> deleteFile(tuple2.getT2())))
                 .doOnComplete(() -> log.info("Created assets for pdf segments"))
-                .doOnComplete(() -> deleteFile(splitBaseDirRef.get()))
-                .map(tuple2 -> new DefaultEBookSegment(bookId, tuple2.getT1().intValue(), tuple2.getT2()))
+                .map(tuple2 -> new DefaultEBookSegment(eBook.getId(), tuple2.getT1().intValue(), tuple2.getT2()))
                 .cast(EBookSegment.class)
                 .concatMap(this::saveToLibrary)
                 .doOnDiscard(EBookSegment.class, this::deleteSavedAsset)
@@ -86,11 +81,11 @@ public class PdfEBookProcessor implements EBookProcessor {
         //@formatter:on
     }
 
-    private Mono<Tuple2<Long, String>> saveAsset(Tuple2<Long, Path> indexedPath, String bookId) {
+    private Mono<Tuple2<Long, String>> saveAsset(Tuple2<Long, Path> indexedPath, EBook book) {
         long index = indexedPath.getT1();
         Path segmentPath = indexedPath.getT2();
 
-        Asset asset = new DefaultAsset(bookId + "_" + index, PRIVATE);
+        Asset asset = new DefaultAsset(book.getId() + "_" + index, book.getLibraryId(), APPLICATION_PDF_VALUE, PRIVATE);
         return assetServiceClient
                 .createAsset(asset)
                 .flatMap(assetId -> assetServiceClient
@@ -109,37 +104,28 @@ public class PdfEBookProcessor implements EBookProcessor {
                 .doOnNext(segmentId -> log.debug("Created EBookSegment in library with id {}", segmentId));
     }
 
-    private Mono<Void> deleteExistingEBookSegments(String bookId) {
+    private Mono<Void> deleteExistingEBookSegments(EBook eBook) {
         return libraryServiceClient
-                .deleteEBookSegments(bookId)
+                .deleteEBookSegments(eBook.getId())
                 .publishOn(WORKER)
-                .doOnSuccess(s -> log.info("deleted existing ebook segments of bookId {} in library", bookId));
+                .doOnSuccess(s -> log.info("deleted existing ebook segments of bookId {} in library", eBook.getId()));
     }
 
     private void deleteSavedAsset(EBookSegment segment) {
         // Delete saved asset as pipeline broke
     }
 
-    public Mono<Path> createPdfSplit(Path bookPath) {
-        return Mono.create(sink -> {
+    public Flux<Path> createPdfSplit(Path bookPath) {
+        return Flux.defer(() -> {
             try {
-                Path splitBasePath = pdfFileSplitter.splitPdfFile(bookPath);
-                sink.success(splitBasePath);
+                List<Path> splits = pdfFileSplitter.splitPdfFile(bookPath);
+                log.info("Created total {} PDF splits for bookPath {}", splits.size(), bookPath);
+                return Flux.fromIterable(splits);
             } catch (IOException e) {
                 log.warn("Error occurred while splitting pdf file", e);
-                sink.error(e);
+                return Flux.error(e);
             }
         });
-    }
-
-    private Flux<Path> splitsToFlux(Path splitBasePath) {
-        try {
-            Stream<Path> pathStream = Files.walk(splitBasePath, 1).skip(1);
-            return Flux.fromStream(pathStream);
-        } catch (IOException e) {
-            log.warn("Error occurred while walking over file path");
-            return Flux.error(e);
-        }
     }
 
     private void onSaveEBookSegmentError(String processId, Throwable err) {
