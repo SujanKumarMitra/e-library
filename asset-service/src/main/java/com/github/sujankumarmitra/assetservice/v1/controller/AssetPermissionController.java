@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
@@ -23,7 +22,7 @@ import static org.springframework.http.ResponseEntity.notFound;
  * @since Sep 26/09/21, 2021
  */
 @RestController
-@RequestMapping("/api/v1/assets")
+@RequestMapping("/api/assets")
 @AllArgsConstructor
 @Tag(
         name = "AssetPermissionController",
@@ -44,7 +43,6 @@ public class AssetPermissionController {
     @ApiNotFoundResponse
     @ApiBadRequestResponse
     @PatchMapping("/{assetId}/permissions")
-    @PreAuthorize("hasAuthority('WRITE_ASSET')")
     public Mono<ResponseEntity<Void>> grantPermission(@PathVariable String assetId,
                                                       @RequestBody @Valid GrantPermissionRequest permission) {
         permission.setAssetId(assetId);

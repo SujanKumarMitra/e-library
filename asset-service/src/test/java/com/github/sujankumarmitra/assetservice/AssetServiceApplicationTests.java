@@ -1,13 +1,11 @@
 package com.github.sujankumarmitra.assetservice;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
-@SpringBootTest
-@Disabled // disabled until full dev is complete
-class AssetServiceApplicationTests {
+class AssetServiceApplicationTests extends AbstractSystemTest {
 
     @Test
     void contextLoads() {

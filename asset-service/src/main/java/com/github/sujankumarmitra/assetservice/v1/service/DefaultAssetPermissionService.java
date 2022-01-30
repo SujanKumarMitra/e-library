@@ -38,7 +38,7 @@ public class DefaultAssetPermissionService implements AssetPermissionService {
 
         return assetDao.findOne(assetId)
                 .switchIfEmpty(Mono.error(() -> new AssetNotFoundException(assetId)))
-                .map(asset -> isPublicAssetOrSubjectIdIsOwner(asset, subjectId))
+                .map(this::isPublicAsset)
                 .filter(Boolean::booleanValue)
                 .switchIfEmpty(permissionDao
                         .findOne(assetId, subjectId)
@@ -47,9 +47,8 @@ public class DefaultAssetPermissionService implements AssetPermissionService {
 
     }
 
-    private boolean isPublicAssetOrSubjectIdIsOwner(Asset asset, String subjectId) {
-        return asset.getAccessLevel() == PUBLIC ||
-                asset.getOwnerId().equals(subjectId);
+    private boolean isPublicAsset(Asset asset) {
+        return asset.getAccessLevel() == PUBLIC;
     }
 
     private boolean checkPermission(long currentTimestamp, AssetPermission permission) {

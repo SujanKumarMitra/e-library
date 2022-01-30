@@ -3,7 +3,8 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE IF NOT EXISTS assets(
     id uuid DEFAULT uuid_generate_v4(),
     name text,
-    owner_id text,
+    library_id text,
+    mime_type text,
     access_level text,
     CONSTRAINT pk_assets PRIMARY KEY (id),
     CONSTRAINT chk_assets_access_level CHECK(access_level IN ('PUBLIC', 'PRIVATE'))

@@ -13,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.MediaType;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -23,6 +24,7 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.System.currentTimeMillis;
 import static java.time.Duration.ofDays;
+import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 
 /**
  * @author skmitra
@@ -58,7 +60,8 @@ class DefaultAssetPermissionServiceTest {
                         .builder()
                         .id(VALID_ASSET_ID)
                         .name("name")
-                        .ownerId("not_same_with_subject_id")
+                        .libraryId("not_same_with_subject_id")
+                        .mimeType(TEXT_PLAIN_VALUE)
                         .accessLevel(PRIVATE)
                         .build()))
                 .when(assetDao).findOne(VALID_ASSET_ID);
@@ -86,7 +89,8 @@ class DefaultAssetPermissionServiceTest {
                         .builder()
                         .id(VALID_ASSET_ID)
                         .name("name")
-                        .ownerId("not_same_with_subject_id")
+                        .mimeType(TEXT_PLAIN_VALUE)
+                        .libraryId("not_same_with_subject_id")
                         .accessLevel(PRIVATE)
                         .build()))
                 .when(assetDao).findOne(VALID_ASSET_ID);
@@ -112,8 +116,9 @@ class DefaultAssetPermissionServiceTest {
         Mockito.doReturn(Mono.just(DefaultAsset
                         .builder()
                         .id(VALID_ASSET_ID)
+                        .mimeType(TEXT_PLAIN_VALUE)
                         .name("name")
-                        .ownerId("not_same_with_subject_id")
+                        .libraryId("not_same_with_subject_id")
                         .accessLevel(PRIVATE)
                         .build()))
                 .when(assetDao).findOne(VALID_ASSET_ID);
@@ -132,32 +137,10 @@ class DefaultAssetPermissionServiceTest {
         Mockito.doReturn(Mono.just(DefaultAsset
                         .builder()
                         .id(VALID_ASSET_ID)
+                        .mimeType(TEXT_PLAIN_VALUE)
                         .name("name")
-                        .ownerId("not_same_with_subject_id")
+                        .libraryId("not_same_with_subject_id")
                         .accessLevel(PUBLIC)
-                        .build()))
-                .when(assetDao).findOne(VALID_ASSET_ID);
-
-        Mockito.doReturn(Mono.empty())
-                .when(permissionDao)
-                .findOne(VALID_ASSET_ID, VALID_SUBJECT_ID);
-
-        Mono<Boolean> hasPermission = serviceUnderTest.hasPermission(VALID_ASSET_ID, VALID_SUBJECT_ID);
-
-        StepVerifier
-                .create(hasPermission)
-                .expectNext(TRUE)
-                .verifyComplete();
-    }
-
-    @Test
-    void givenValidAsset_whenCheckPermissionWithSubjectIdAsOwnerId_shouldEmitTrue() {
-        Mockito.doReturn(Mono.just(DefaultAsset
-                        .builder()
-                        .id(VALID_ASSET_ID)
-                        .name("name")
-                        .ownerId(VALID_SUBJECT_ID)
-                        .accessLevel(PRIVATE)
                         .build()))
                 .when(assetDao).findOne(VALID_ASSET_ID);
 

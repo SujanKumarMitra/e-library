@@ -3,6 +3,9 @@ package com.github.sujankumarmitra.assetservice.v1.config;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.validation.annotation.Validated;
+
+import javax.validation.constraints.NotEmpty;
 
 
 /**
@@ -10,8 +13,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @since Sep 26/09/21, 2021
  */
 @Data
-@ConfigurationProperties
+@Validated
+@ConfigurationProperties("app.storage")
 public class DefaultAssetStorageProperties extends AssetStorageProperties {
-    @Value("${app.storage.baseDir}")
+    @NotEmpty
     private String baseDir;
 }

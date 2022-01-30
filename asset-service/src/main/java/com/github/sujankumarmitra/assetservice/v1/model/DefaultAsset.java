@@ -17,7 +17,9 @@ public class DefaultAsset extends Asset {
     @NonNull
     private String name;
     @NonNull
-    private String ownerId;
+    private String libraryId;
+    @NonNull
+    private String mimeType;
     @NonNull
     private AccessLevel accessLevel;
 

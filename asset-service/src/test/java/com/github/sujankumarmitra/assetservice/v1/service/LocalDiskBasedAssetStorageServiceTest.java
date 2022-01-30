@@ -30,6 +30,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.nio.file.StandardOpenOption.READ;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.core.io.buffer.DataBufferUtils.readInputStream;
+import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 import static reactor.core.publisher.Mono.just;
 
 /**
@@ -70,7 +71,7 @@ class LocalDiskBasedAssetStorageServiceTest {
 
     private void mockAssetService() {
         mockAssetDao = Mockito.mock(AssetDao.class);
-        Mockito.doReturn(just(new DefaultAsset(VALID_ASSET_ID, "hello.txt", "owner", PUBLIC)))
+        Mockito.doReturn(just(new DefaultAsset(VALID_ASSET_ID, "hello.txt", "owner", TEXT_PLAIN_VALUE, PUBLIC)))
                 .when(mockAssetDao)
                 .findOne(VALID_ASSET_ID);
     }
@@ -92,7 +93,6 @@ class LocalDiskBasedAssetStorageServiceTest {
                 .expectComplete()
                 .verify();
 
-        StringBuilder sb = new StringBuilder();
         Scanner scanner = new Scanner(new File("/tmp/" + VALID_ASSET_ID));
 
         assertThat(scanner.next()).isEqualTo("Hello");
@@ -190,7 +190,7 @@ class LocalDiskBasedAssetStorageServiceTest {
 
     @Test
     void givenValidAssetIdButNoAssociatedFile_whenRetrieveAsset_shouldEmitError() {
-        Mockito.doReturn(Mono.just(new DefaultAsset(VALID_ASSET_ID, "somename","owner", PUBLIC)))
+        Mockito.doReturn(Mono.just(new DefaultAsset(VALID_ASSET_ID, "somename", "owner", TEXT_PLAIN_VALUE, PUBLIC)))
                 .when(mockAssetDao).findOne(VALID_ASSET_ID);
 
         Mono<StoredAsset> storedAsset = serviceUnderTest.retrieveAsset(VALID_ASSET_ID);

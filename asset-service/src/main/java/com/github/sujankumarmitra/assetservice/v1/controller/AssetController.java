@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -26,7 +25,7 @@ import static org.springframework.http.ResponseEntity.created;
  * @since Sep 26/09/21, 2021
  */
 @RestController
-@RequestMapping("/api/v1/assets")
+@RequestMapping("/api/assets")
 @AllArgsConstructor
 @Tag(
         name = "AssetController",
@@ -46,11 +45,9 @@ public class AssetController {
     )
     @ApiCreatedResponse
     @ApiBadRequestResponse
-    @PreAuthorize("hasAuthority('WRITE_ASSET')")
     public Mono<ResponseEntity<Void>> createAsset(Authentication authenticatedUser,
                                                   @RequestBody @Valid CreateAssetRequest request) {
 
-        request.setOwnerId(authenticatedUser.getName());
         return assetService
                 .createAsset(request)
                 .map(Asset::getId)
@@ -64,7 +61,6 @@ public class AssetController {
                     "<br>Scopes required: WRITE_ASSET"
     )
     @ApiAcceptedResponse
-    @PreAuthorize("hasAuthority('WRITE_ASSET')")
     public Mono<ResponseEntity<Void>> deleteAsset(@PathVariable String assetId) {
         return assetService
                 .deleteAsset(assetId)

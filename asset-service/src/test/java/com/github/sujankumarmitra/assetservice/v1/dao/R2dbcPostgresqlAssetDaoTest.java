@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
+import org.springframework.http.MediaType;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -17,6 +18,7 @@ import java.util.UUID;
 import static com.github.sujankumarmitra.assetservice.v1.model.AccessLevel.PRIVATE;
 import static com.github.sujankumarmitra.assetservice.v1.model.AccessLevel.PUBLIC;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 
 /**
  * @author skmitra
@@ -47,7 +49,7 @@ class R2dbcPostgresqlAssetDaoTest extends AbstractDataR2dbcPostgreSQLContainerDe
 
     @Test
     void givenValidAssetName_whenInsert_shouldInsertAsset() {
-        CreateAssetRequest expectedAsset = new CreateAssetRequest(null, "assetName", "owner", PUBLIC);
+        CreateAssetRequest expectedAsset = new CreateAssetRequest(null, "assetName", "owner", TEXT_PLAIN_VALUE, PUBLIC);
 
         assetDao.insert(expectedAsset)
                 .doOnNext(actualAsset -> expectedAsset.setId(actualAsset.getId()))
@@ -71,7 +73,8 @@ class R2dbcPostgresqlAssetDaoTest extends AbstractDataR2dbcPostgreSQLContainerDe
                 .builder()
                 .id("")
                 .name("name")
-                .ownerId("owner")
+                .libraryId("owner")
+                .mimeType(TEXT_PLAIN_VALUE)
                 .accessLevel(PRIVATE)
                 .build();
 
@@ -79,8 +82,9 @@ class R2dbcPostgresqlAssetDaoTest extends AbstractDataR2dbcPostgreSQLContainerDe
                 .getDatabaseClient()
                 .sql(R2dbcPostgresqlAssetDao.INSERT_STATEMENT)
                 .bind("$1", expectedAsset.getName())
-                .bind("$2", expectedAsset.getOwnerId())
-                .bind("$3", expectedAsset.getAccessLevel().toString())
+                .bind("$2", expectedAsset.getLibraryId())
+                .bind("$3", TEXT_PLAIN_VALUE)
+                .bind("$4", expectedAsset.getAccessLevel().toString())
                 .map(row -> row.get("id", UUID.class))
                 .one()
                 .map(Objects::toString)
@@ -123,7 +127,8 @@ class R2dbcPostgresqlAssetDaoTest extends AbstractDataR2dbcPostgreSQLContainerDe
                 .builder()
                 .id("")
                 .name("name")
-                .ownerId("owner")
+                .libraryId("owner")
+                .mimeType(TEXT_PLAIN_VALUE)
                 .accessLevel(PRIVATE)
                 .build();
 
@@ -131,8 +136,9 @@ class R2dbcPostgresqlAssetDaoTest extends AbstractDataR2dbcPostgreSQLContainerDe
                 .getDatabaseClient()
                 .sql(R2dbcPostgresqlAssetDao.INSERT_STATEMENT)
                 .bind("$1", expectedAsset.getName())
-                .bind("$2", expectedAsset.getOwnerId())
-                .bind("$3", expectedAsset.getAccessLevel().toString())
+                .bind("$2", expectedAsset.getLibraryId())
+                .bind("$3", TEXT_PLAIN_VALUE)
+                .bind("$4", expectedAsset.getAccessLevel().toString())
                 .map(row -> row.get("id", UUID.class))
                 .one()
                 .map(Objects::toString)
