@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
-import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
@@ -29,7 +28,9 @@ import static org.springframework.security.web.server.util.matcher.ServerWebExch
 public class SecurityConfiguration {
 
     @NonNull
-    private ReactiveAuthenticationManager tokenAuthenticationManager;
+    private TokenAuthenticationManager tokenAuthenticationManager;
+    @NonNull
+    private InternalAuthenticationManager internalAuthenticationManager;
     @NonNull
     private ServerAuthenticationConverter tokenAuthenticationConverter;
     @NonNull
@@ -48,8 +49,6 @@ public class SecurityConfiguration {
         return httpSecurity
                 .securityMatcher(pathMatchers("/api/**"))
                 .authorizeExchange()
-                    .pathMatchers("/api/v1/socket", "/api/v1/sse")
-                        .hasAuthority("NOTIFICATION_CONSUME")
                     .anyExchange()
                         .authenticated()
                 .and()
@@ -63,6 +62,27 @@ public class SecurityConfiguration {
                 .and()
                 .build();
 //        @formatter:on
+    }
+
+    @Bean
+    @Order(HIGHEST_PRECEDENCE)
+    public SecurityWebFilterChain internalFilterChain(ServerHttpSecurity httpSecurity) {
+//        @formatter:off
+        return httpSecurity
+                .securityMatcher(pathMatchers("/api/internal/**"))
+                .authenticationManager(internalAuthenticationManager)
+                    .httpBasic()
+                .and()
+                    .formLogin().disable()
+                    .csrf().disable()
+                    .logout().disable()
+                .authorizeExchange()
+                .anyExchange()
+                .authenticated()
+                .and()
+                .build();
+//        @formatter:off
+
     }
 
     @Bean

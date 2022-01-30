@@ -17,7 +17,7 @@ import static org.springframework.r2dbc.connection.init.ScriptUtils.executeSqlSc
  * @since Dec 09/12/21, 2021
  */
 @Slf4j
-class R2dbcPostgresqlBookSearchDaoTest extends AbstractDataR2dbcPostgreSQLContainerDependentTest {
+class R2dbcPostgresqlBookSearchDaoTest extends AbstractDataR2dbcPostgresqlContainerDependentTest {
 
     @Autowired
     private R2dbcEntityTemplate entityTemplate;
@@ -41,10 +41,10 @@ class R2dbcPostgresqlBookSearchDaoTest extends AbstractDataR2dbcPostgreSQLContai
     @Test
     void givenSetOfBooks_whenGetBookIds_shouldGetBookIds() {
         bookSearchDao
-                .getBookIds(0,10)
+                .getBookIds("library1", 0, 10)
                 .as(StepVerifier::create)
                 .expectSubscription()
-                .expectNextCount(5L)
+                .expectNextCount(2L)
                 .expectComplete()
                 .verify();
     }
@@ -52,10 +52,10 @@ class R2dbcPostgresqlBookSearchDaoTest extends AbstractDataR2dbcPostgreSQLContai
     @Test
     void givenSetOfBooks_whenGetBookIdsByTitleAndAuthor_shouldGetBookIds() {
         bookSearchDao
-                .getBookIdsByTitleAndAuthorStartingWith("Lad","Fat",0,10)
+                .getBookIdsByTitleAndAuthorStartingWith("library1", "Lad", "Fat", 0, 10)
                 .as(StepVerifier::create)
                 .expectSubscription()
-                .expectNextCount(2L)
+                .expectNextCount(1L)
                 .expectComplete()
                 .verify();
     }

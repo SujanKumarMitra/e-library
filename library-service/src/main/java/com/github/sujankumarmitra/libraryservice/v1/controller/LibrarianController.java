@@ -5,7 +5,6 @@ import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.
 import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiSecurityScheme;
 import com.github.sujankumarmitra.libraryservice.v1.model.Librarian;
 import com.github.sujankumarmitra.libraryservice.v1.model.impl.DefaultLibrarian;
-import com.github.sujankumarmitra.libraryservice.v1.security.SecurityAnnotations.RoleAdmin;
 import com.github.sujankumarmitra.libraryservice.v1.service.LibrarianService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,7 +22,7 @@ import static com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfigu
  * @since Dec 09/12/21, 2021
  */
 @RestController
-@RequestMapping("/api/v1/librarian")
+@RequestMapping("/api/librarians")
 @AllArgsConstructor
 @Tag(
         name = "LibrarianController",
@@ -43,10 +42,9 @@ public class LibrarianController {
     )
     @ApiAcceptedResponse
     @ApiBadRequestResponse
-    @RoleAdmin
-    @PutMapping("/{librarianId}")
-    public Mono<ResponseEntity<Void>> createLibrarian(@PathVariable String librarianId) {
-        Librarian librarian = new DefaultLibrarian(librarianId);
+    @PutMapping("/{libraryId}/{userId}")
+    public Mono<ResponseEntity<Void>> createLibrarian(@PathVariable String userId, @PathVariable String libraryId) {
+        Librarian librarian = new DefaultLibrarian(userId, libraryId);
         return librarianService
                 .addLibrarian(librarian)
                 .then(Mono.fromSupplier(() -> ResponseEntity.accepted().build()));
@@ -58,11 +56,11 @@ public class LibrarianController {
                     "<br> Admins can invoke this api"
     )
     @ApiAcceptedResponse
-    @RoleAdmin
-    @DeleteMapping("/{librarianId}")
-    public Mono<ResponseEntity<Void>> deleteLibrarian(@PathVariable String librarianId) {
+    @DeleteMapping("/{libraryId}/{userId}")
+    public Mono<ResponseEntity<Void>> deleteLibrarian(@PathVariable String userId, @PathVariable String libraryId) {
+        Librarian librarian = new DefaultLibrarian(userId, libraryId);
         return librarianService
-                .deleteLibrarian(librarianId)
+                .deleteLibrarian(librarian)
                 .then(Mono.fromSupplier(() -> ResponseEntity.accepted().build()));
     }
 

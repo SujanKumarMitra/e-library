@@ -13,8 +13,6 @@ import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.AcceptLeaseRe
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.CreateLeaseRequestRequestSchema;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.GetPendingLeaseRequestResponseSchema;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.RejectLeaseRequestRequestSchema;
-import com.github.sujankumarmitra.libraryservice.v1.security.SecurityAnnotations.RoleLibrarian;
-import com.github.sujankumarmitra.libraryservice.v1.security.SecurityAnnotations.RoleStudent;
 import com.github.sujankumarmitra.libraryservice.v1.service.LeaseRequestService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -45,7 +43,7 @@ import static org.springframework.http.ResponseEntity.accepted;
  * @since Dec 01/12/21, 2021
  */
 @RestController
-@RequestMapping("/api/v1/lease-requests")
+@RequestMapping("/api/lease-requests")
 @AllArgsConstructor
 @Tag(
         name = "LeaseRequestController",
@@ -60,7 +58,7 @@ public class LeaseRequestController {
 
     @Operation(
             summary = "Fetch all pending lease requests",
-            description = "Librarians will invoke this API to fetch all pending lease requests"
+            description = "Librarians can invoke this API to fetch all pending lease requests"
     )
     @ApiResponse(
             responseCode = "200",
@@ -71,18 +69,18 @@ public class LeaseRequestController {
                     )
             )
     )
-    @RoleLibrarian
     @GetMapping("/pending")
-    public Flux<JacksonGetPendingLeaseRequestResponse> getPendingLeases(@RequestParam(name = "page_no", defaultValue = "0") int pageNo) {
+    public Flux<JacksonGetPendingLeaseRequestResponse> getPendingLeases(
+            @RequestParam("library_id") String libraryId,
+            @RequestParam(name = "page_no", defaultValue = "0") int pageNo) {
         return leaseRequestService
-                .getPendingLeaseRequests(pageNo)
+                .getPendingLeaseRequests(libraryId, pageNo)
                 .map(JacksonGetPendingLeaseRequestResponse::new);
     }
 
     @Operation(
             summary = "Fetch all pending lease requests for currently authenticated user",
-            description = "Students will invoke this API to see their currently pending lease requests" +
-                    "<br> Student id is taken from JWT sub claim")
+            description = "Students/Teachers can invoke this API to see their currently pending lease requests")
     @ApiResponse(
             responseCode = "200",
             content = @Content(
@@ -92,18 +90,18 @@ public class LeaseRequestController {
                     )
             )
     )
-    @RoleStudent
     @GetMapping("/pending/self")
-    public Flux<JacksonGetPendingLeaseRequestResponse> getAllPendingLeasesForCurrentUser(@RequestParam(name = "page_no", defaultValue = "0") int pageNo, Authentication authentication) {
+    public Flux<JacksonGetPendingLeaseRequestResponse> getAllPendingLeasesForCurrentUser(
+            @RequestParam("library_id") String libraryId,
+            @RequestParam(name = "page_no", defaultValue = "0") int pageNo, Authentication authentication) {
         return leaseRequestService
-                .getPendingLeaseRequests(authentication.getName(), pageNo)
+                .getPendingLeaseRequests(libraryId, authentication.getName(), pageNo)
                 .map(JacksonGetPendingLeaseRequestResponse::new);
     }
 
     @Operation(
             summary = "Create a lease request",
-            description = "Students will invoke this api to create a lease request" +
-                    "<br> Student id is taken from JWT sub claim")
+            description = "Students will invoke this api to create a lease request")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
             content = @Content(schema = @Schema(implementation = CreateLeaseRequestRequestSchema.class)
             )
@@ -112,8 +110,9 @@ public class LeaseRequestController {
     @ApiBadRequestResponse
     @ApiConflictResponse
     @PostMapping
-    @RoleStudent
-    public Mono<ResponseEntity<Object>> createLeaseRequest(@RequestBody JacksonValidCreateLeaseRequest request, Authentication authentication) {
+    public Mono<ResponseEntity<Object>> createLeaseRequest(
+            @RequestBody @Valid JacksonValidCreateLeaseRequest request,
+            Authentication authentication) {
         request.setUserId(authentication.getName());
         request.setStatus(PENDING);
         request.setTimestamp(System.currentTimeMillis());
@@ -139,10 +138,10 @@ public class LeaseRequestController {
     @ApiBadRequestResponse
     @ApiAcceptedResponse
     @ApiConflictResponse
-    @RoleLibrarian
-    @PatchMapping("/{leaseRequestId}")
-    public Mono<ResponseEntity<Object>> handleLeaseRequest(@PathVariable String leaseRequestId,
-                                                           @RequestBody @Valid JacksonValidHandleLeaseRequestRequest request) {
+    @PostMapping("/{leaseRequestId}")
+    public Mono<ResponseEntity<Object>> handleLeaseRequest(
+            @PathVariable String leaseRequestId,
+            @RequestBody @Valid JacksonValidHandleLeaseRequestRequest request) {
 
         request.setLeaseRequestId(leaseRequestId);
         LeaseStatus status = request.getStatus();
@@ -171,9 +170,8 @@ public class LeaseRequestController {
 
     @Operation(
             summary = "Cancel a pending lease request",
-            description = "Students will invoke this API to cancel a lease request.")
+            description = "Students/Teachers can invoke this API to cancel a lease request.")
     @ApiAcceptedResponse
-    @RoleStudent
     @DeleteMapping("/{leaseRequestId}")
     public Mono<ResponseEntity<Void>> cancelLeaseRequest(@PathVariable String leaseRequestId) {
 

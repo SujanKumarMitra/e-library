@@ -18,7 +18,9 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import reactor.util.function.Tuples;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.UUID;
 
 import static com.github.sujankumarmitra.libraryservice.v1.util.DaoTestUtils.truncateAllTables;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,7 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @since Nov 28/11/21, 2021
  */
 @Slf4j
-class R2dbcPostgresqlPackageItemDaoTest extends AbstractDataR2dbcPostgreSQLContainerDependentTest {
+class R2dbcPostgresqlPackageItemDaoTest extends AbstractDataR2dbcPostgresqlContainerDependentTest {
 
     private R2dbcPostgresqlPackageItemDao packageItemDao;
     @SuppressWarnings("FieldMayBeFinal")
@@ -215,93 +217,6 @@ class R2dbcPostgresqlPackageItemDaoTest extends AbstractDataR2dbcPostgreSQLConta
                 .expectSubscription()
                 .expectNextCount(0L)
                 .verifyComplete();
-    }
-
-    @Test
-    void givenValidPackageId_whenUpdate_shouldUpdate() {
-        R2dbcPackage aPackage = PackageDaoTestUtils
-                .insertDummyPackage(entityTemplate.getDatabaseClient())
-                .block();
-
-        List<R2dbcBook> books = new ArrayList<>();
-
-        for (int i = 1; i <= 2; i++) {
-            BookDaoTestUtils
-                    .insertDummyBook(entityTemplate.getDatabaseClient())
-                    .doOnSuccess(books::add)
-                    .block();
-        }
-
-        R2dbcPackageItem previousItem = new R2dbcPackageItem();
-        previousItem.setPackageId(Objects.requireNonNull(aPackage).getUuid());
-        previousItem.setBookId(books.get(0).getUuid());
-
-        entityTemplate
-                .getDatabaseClient()
-                .sql(R2dbcPostgresqlPackageItemDao.INSERT_STATEMENT)
-                .bind("$1", previousItem.getPackageUuid())
-                .bind("$2", previousItem.getBookUuid())
-                .map(row -> row.get("id",UUID.class))
-                .one()
-                .doOnSuccess(previousItem::setId)
-                .block();
-
-
-        previousItem.setBookId(books.get(1).getUuid());
-
-        Mono.just(previousItem)
-                .map(Collections::singleton)
-                .flatMap(packageItemDao::updateItems)
-                .then(entityTemplate
-                        .select(R2dbcPackageItem.class)
-                        .from("package_items")
-                        .one())
-                .as(StepVerifier::create)
-                .expectSubscription()
-                .consumeNextWith(actualItem -> {
-                    log.info("Expected {}", previousItem);
-                    log.info("Actual {}", actualItem);
-
-                    assertThat(actualItem).isEqualTo(previousItem);
-                })
-                .verifyComplete();
-
-    }
-
-    @Test
-    void givenNonExistingPackageId_whenUpdate_shouldEmitPackageNotFoundException() {
-        R2dbcPackage aPackage = PackageDaoTestUtils
-                .insertDummyPackage(entityTemplate.getDatabaseClient())
-                .block();
-
-        R2dbcBook book =BookDaoTestUtils
-                .insertDummyBook(entityTemplate.getDatabaseClient())
-                .block();
-
-        R2dbcPackageItem previousItem = new R2dbcPackageItem();
-        previousItem.setPackageId(Objects.requireNonNull(aPackage).getUuid());
-        previousItem.setBookId(Objects.requireNonNull(book).getUuid());
-
-        entityTemplate
-                .getDatabaseClient()
-                .sql(R2dbcPostgresqlPackageItemDao.INSERT_STATEMENT)
-                .bind("$1", previousItem.getPackageUuid())
-                .bind("$2", previousItem.getBookUuid())
-                .map(row -> row.get("id",UUID.class))
-                .one()
-                .doOnSuccess(previousItem::setId)
-                .block();
-
-
-        previousItem.setPackageId(UUID.randomUUID());
-
-        Mono.just(previousItem)
-                .map(Collections::singleton)
-                .flatMap(packageItemDao::updateItems)
-                .as(StepVerifier::create)
-                .expectSubscription()
-                .expectError(PackageNotFoundException.class)
-                .verify();
     }
 
     @Test

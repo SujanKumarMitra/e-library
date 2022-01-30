@@ -1,6 +1,9 @@
 package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 
-import com.github.sujankumarmitra.libraryservice.v1.dao.*;
+import com.github.sujankumarmitra.libraryservice.v1.dao.BookAuthorDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.BookDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.BookTagDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.EBookDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcEBook;
 import com.github.sujankumarmitra.libraryservice.v1.model.*;
 import io.r2dbc.spi.Row;
@@ -28,21 +31,18 @@ import java.util.stream.Collectors;
 public class R2dbcPostgresqlEBookDao implements EBookDao {
 
     public static final String INSERT_STATEMENT = "INSERT INTO ebooks(book_id, format) VALUES ($1,$2)";
-    public static final String JOINED_SELECT_STATEMENT = "SELECT b.id, b.title, b.publisher, b.edition, b.cover_page_image_asset_id, eb.format FROM books b INNER JOIN ebooks eb ON (eb.book_id=b.id AND eb.book_id=$1)";
+    public static final String JOINED_SELECT_STATEMENT = "SELECT b.id, b.library_id, b.title, b.publisher, b.edition, b.cover_page_image_asset_id, eb.format FROM books b INNER JOIN ebooks eb ON (eb.book_id=b.id AND eb.book_id=$1)";
     public static final String SELECT_STATEMENT = "SELECT eb.book_id, eb.format FROM ebooks eb WHERE eb.book_id=$1";
     public static final String UPDATE_STATEMENT = "UPDATE ebooks SET format=$1 WHERE book_id=$2";
-    public static final String DELETE_STATEMENT = "DELETE FROM ebooks WHERE book_id=$1";
 
     @NonNull
     private final DatabaseClient databaseClient;
     @NonNull
     private final BookDao<Book> bookDao;
     @NonNull
-    private final AuthorDao authorDao;
+    private final BookAuthorDao bookAuthorDao;
     @NonNull
     private final BookTagDao tagDao;
-    @NonNull
-    private final EBookSegmentDao segmentDao;
 
     @Override
     @Transactional
@@ -92,7 +92,7 @@ public class R2dbcPostgresqlEBookDao implements EBookDao {
                     .map(row -> mapToR2dbcEBook(row, true))
                     .one();
 
-            Mono<Set<Author>> authorsMono = authorDao
+            Mono<Set<BookAuthor>> authorsMono = bookAuthorDao
                     .getAuthorsByBookId(uuid.toString())
                     .collect(Collectors.toCollection(HashSet::new));
 
@@ -107,12 +107,12 @@ public class R2dbcPostgresqlEBookDao implements EBookDao {
 
     }
 
-    private R2dbcEBook assembleEBook(Tuple3<R2dbcEBook, Set<Author>, Set<BookTag>> tuple3) {
+    private R2dbcEBook assembleEBook(Tuple3<R2dbcEBook, Set<BookAuthor>, Set<BookTag>> tuple3) {
         R2dbcEBook book = tuple3.getT1();
-        Set<Author> authors = tuple3.getT2();
+        Set<BookAuthor> bookAuthors = tuple3.getT2();
         Set<BookTag> tags = tuple3.getT3();
 
-        book.addAllAuthors(authors);
+        book.addAllAuthors(bookAuthors);
         book.addAllTags(tags);
 
         return book;
@@ -123,6 +123,7 @@ public class R2dbcPostgresqlEBookDao implements EBookDao {
 
         if (joinStatement) {
             book.setId(row.get("id", UUID.class));
+            book.setLibraryId(row.get("library_id", String.class));
             book.setTitle(row.get("title", String.class));
             book.setPublisher(row.get("publisher", String.class));
             book.setEdition(row.get("edition", String.class));

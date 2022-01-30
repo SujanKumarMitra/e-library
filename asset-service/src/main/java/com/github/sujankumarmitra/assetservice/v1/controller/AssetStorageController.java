@@ -4,10 +4,8 @@ import com.github.sujankumarmitra.assetservice.v1.controller.dto.ErrorResponse;
 import com.github.sujankumarmitra.assetservice.v1.exception.AssetNeverStoredException;
 import com.github.sujankumarmitra.assetservice.v1.exception.AssetNotFoundException;
 import com.github.sujankumarmitra.assetservice.v1.model.StoredAsset;
-import com.github.sujankumarmitra.assetservice.v1.service.AssetPermissionService;
 import com.github.sujankumarmitra.assetservice.v1.service.AssetStorageService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -17,22 +15,19 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import static com.github.sujankumarmitra.assetservice.v1.config.OpenApiConfiguration.*;
-import static java.lang.String.format;
 import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.PRECONDITION_REQUIRED;
-import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
 import static org.springframework.http.ResponseEntity.*;
 
 /**
@@ -40,7 +35,7 @@ import static org.springframework.http.ResponseEntity.*;
  * @since Sep 24/09/21, 2021
  */
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/assets/{assetId}")
 @AllArgsConstructor
 @Tag(
         name = "AssetStorageController",
@@ -50,20 +45,17 @@ import static org.springframework.http.ResponseEntity.*;
 @ApiSecurityScheme
 public class AssetStorageController {
 
-    public static final String CONTENT_DISPOSITION_FORMAT = "attachment; filename=\"%s\"";
+    public static final String INLINE = "inline";
     @NonNull
     private final AssetStorageService assetStorageService;
-    @NonNull
-    private final AssetPermissionService assetPermissionService;
 
     @Operation(
             summary = "Upload a binary object to a associated Asset",
-            description = "Scopes required=WRITE_ASSET"
+            description = "Librarians can access this api"
     )
     @RequestBody(
             description = "a stream of bytes",
             content = @Content(
-                    mediaType = APPLICATION_OCTET_STREAM_VALUE,
                     schema = @Schema(
                             description = "a stream of bytes",
                             implementation = byte[].class,
@@ -76,8 +68,7 @@ public class AssetStorageController {
             description = "Server has successfully handled the request"
     )
     @ApiNotFoundResponse
-    @PutMapping(value = "/assets/{assetId}", consumes = {APPLICATION_OCTET_STREAM_VALUE})
-    @PreAuthorize("hasAuthority('WRITE_ASSET')")
+    @PutMapping(value = "/store", consumes = {MediaType.ALL_VALUE, MediaType.APPLICATION_OCTET_STREAM_VALUE})
     public Mono<ResponseEntity<Void>> storeAsset(@PathVariable String assetId, ServerWebExchange exchange) {
         Flux<DataBuffer> dataBuffers = exchange.getRequest().getBody();
 
@@ -87,18 +78,10 @@ public class AssetStorageController {
 
     }
 
-    @Operation(
-            summary = "Download the binary object to a associated Asset"
-    )
+    @Operation(summary = "Download the binary object to a associated Asset")
     @ApiResponse(
             responseCode = "200",
             description = "Server has successfully handled the request",
-            headers = {
-                    @Header(
-                            name = "Content-Disposition",
-                            description = "value=attachment; filename={assetName}"
-                    )
-            },
             content = {
                     @Content(
                             schema = @Schema(
@@ -116,15 +99,12 @@ public class AssetStorageController {
             content = @Content(schema = @Schema)
     )
     @ApiNotFoundResponse
-    @GetMapping("/assets/{assetId}")
-    public Mono<ResponseEntity<InputStreamSource>> retrieveAsset(Authentication authenticatedUser,
-                                                                 @PathVariable String assetId) {
-        return assetPermissionService
-                .hasPermission(assetId, authenticatedUser.getName())
-                .filter(Boolean::booleanValue)
-                .switchIfEmpty(Mono.error(new AccessDeniedException("You don't have permission to access this resource")))
-                .flatMap(trueVal -> assetStorageService.retrieveAsset(assetId))
-                .map(this::toResponseEntity);
+    @GetMapping("/store")
+    public Mono<ResponseEntity<InputStreamSource>> retrieveAsset(
+            @PathVariable String assetId,
+            @RequestParam(value = "Set-Content-Disposition", defaultValue = INLINE) String contentDisposition) {
+        return assetStorageService.retrieveAsset(assetId)
+                .map(storedAsset -> toResponseEntity(storedAsset, contentDisposition));
     }
 
 
@@ -143,12 +123,11 @@ public class AssetStorageController {
         return Mono.just(notFound().build());
     }
 
-    private ResponseEntity<InputStreamSource> toResponseEntity(StoredAsset storedAsset) {
-        String assetName = storedAsset.getAsset().getName();
+    private ResponseEntity<InputStreamSource> toResponseEntity(StoredAsset storedAsset, String contentDisposition) {
         InputStreamSource streamSource = storedAsset.getInputStreamSource();
         return ok()
-                .header(CONTENT_DISPOSITION, format(CONTENT_DISPOSITION_FORMAT, assetName))
-                .header(CONTENT_TYPE, APPLICATION_OCTET_STREAM_VALUE)
+                .header(CONTENT_DISPOSITION, contentDisposition)
+                .header(CONTENT_TYPE, storedAsset.getAsset().getMimeType())
                 .body(streamSource);
     }
 }

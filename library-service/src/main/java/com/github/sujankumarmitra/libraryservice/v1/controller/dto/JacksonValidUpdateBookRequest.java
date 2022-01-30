@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 import java.util.Set;
 
@@ -27,6 +28,8 @@ public abstract class JacksonValidUpdateBookRequest {
 
     @JsonIgnore
     private String id;
+    @NotEmpty
+    private String libraryId;
     @Size(min = 1)
     private String title;
     @Size(min = 1)
@@ -36,7 +39,7 @@ public abstract class JacksonValidUpdateBookRequest {
     @Size(min = 1)
     private String coverPageImageAssetId;
     @Size(min = 1)
-    private Set<JacksonValidUpdateAuthorRequest> authors;
+    private Set<JacksonValidUpdateBookAuthorRequest> authors;
     private Set<JacksonValidUpdateBookTagRequest> tags;
 
     public abstract JacksonBookType getType();

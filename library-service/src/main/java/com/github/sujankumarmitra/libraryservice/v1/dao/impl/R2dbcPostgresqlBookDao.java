@@ -1,10 +1,10 @@
 package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 
-import com.github.sujankumarmitra.libraryservice.v1.dao.AuthorDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.BookAuthorDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.BookDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.BookTagDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBook;
-import com.github.sujankumarmitra.libraryservice.v1.model.Author;
+import com.github.sujankumarmitra.libraryservice.v1.model.BookAuthor;
 import com.github.sujankumarmitra.libraryservice.v1.model.Book;
 import com.github.sujankumarmitra.libraryservice.v1.model.BookTag;
 import io.r2dbc.spi.Row;
@@ -33,24 +33,24 @@ import java.util.stream.Collectors;
 @Slf4j
 public class R2dbcPostgresqlBookDao implements BookDao<Book> {
 
-    public static final String INSERT_STATEMENT = "INSERT INTO books (title,publisher,edition,cover_page_image_asset_id) values ($1,$2,$3,$4) RETURNING id";
+    public static final String INSERT_STATEMENT = "INSERT INTO books (library_id,title,publisher,edition,cover_page_image_asset_id) values ($1,$2,$3,$4,$5) RETURNING id";
     public static final String DELETE_STATEMENT = "DELETE FROM books WHERE id=$1";
-    public static final String SELECT_STATEMENT = "SELECT title,publisher,edition,cover_page_image_asset_id FROM books WHERE id=$1";
-    public static final String UPDATE_STATEMENT = "UPDATE books SET title=$1, publisher=$2, edition=$3, cover_page_image_asset_id=$4 WHERE id=$5";
+    public static final String SELECT_STATEMENT = "SELECT library_id,title,publisher,edition,cover_page_image_asset_id FROM books WHERE id=$1";
+    public static final String UPDATE_STATEMENT = "UPDATE books SET library_id = $1, title=$2, publisher=$3, edition=$4, cover_page_image_asset_id=$5 WHERE id=$6";
 
     @NonNull
     private final DatabaseClient databaseClient;
     @NonNull
-    private final AuthorDao authorDao;
+    private final BookAuthorDao bookAuthorDao;
     @NonNull
     private final BookTagDao bookTagDao;
 
-    private R2dbcBook assembleResult(Tuple3<R2dbcBook, Set<Author>, Set<BookTag>> tuple3) {
+    private R2dbcBook assembleResult(Tuple3<R2dbcBook, Set<BookAuthor>, Set<BookTag>> tuple3) {
         R2dbcBook book = tuple3.getT1();
-        Set<Author> authors = tuple3.getT2();
+        Set<BookAuthor> bookAuthors = tuple3.getT2();
         Set<BookTag> tags = tuple3.getT3();
 
-        book.addAllAuthors(authors);
+        book.addAllAuthors(bookAuthors);
         book.addAllTags(tags);
 
         return book;
@@ -69,21 +69,22 @@ public class R2dbcPostgresqlBookDao implements BookDao<Book> {
             GenericExecuteSpec executeSpec = this.databaseClient.sql(INSERT_STATEMENT);
 
             executeSpec = executeSpec
-                    .bind("$1", r2dbcBook.getTitle())
-                    .bind("$2", r2dbcBook.getPublisher())
-                    .bind("$3", r2dbcBook.getEdition());
+                    .bind("$1", r2dbcBook.getLibraryId())
+                    .bind("$2", r2dbcBook.getTitle())
+                    .bind("$3", r2dbcBook.getPublisher())
+                    .bind("$4", r2dbcBook.getEdition());
 
             if (r2dbcBook.getCoverPageImageAssetId() == null) {
-                executeSpec = executeSpec.bindNull("$4", String.class);
+                executeSpec = executeSpec.bindNull("$5", String.class);
             } else {
-                executeSpec = executeSpec.bind("$4", r2dbcBook.getCoverPageImageAssetId());
+                executeSpec = executeSpec.bind("$5", r2dbcBook.getCoverPageImageAssetId());
             }
             return executeSpec
                     .map(row -> row.get("id", UUID.class))
                     .one()
                     .doOnNext(bookId -> log.debug("New bookId : {}", bookId))
                     .doOnNext(bookId -> setBookIds(bookId, r2dbcBook))
-                    .flatMap(bookId -> authorDao
+                    .flatMap(bookId -> bookAuthorDao
                             .createAuthors(r2dbcBook.getAuthors())
                             .then()
                             .thenReturn(bookId))
@@ -121,7 +122,7 @@ public class R2dbcPostgresqlBookDao implements BookDao<Book> {
                     .one()
                     .doOnNext(r2dbcBook -> r2dbcBook.setId(finalId));
 
-            Mono<Set<Author>> authors = authorDao
+            Mono<Set<BookAuthor>> authors = bookAuthorDao
                     .getAuthorsByBookId(bookId)
                     .collect(Collectors.toCollection(HashSet::new));
 
@@ -166,9 +167,9 @@ public class R2dbcPostgresqlBookDao implements BookDao<Book> {
                             log.debug("Book.getAuthors() is null, no changes made to authors of bookId, {}", uuid);
                             return Mono.empty();
                         } else {
-                            return authorDao
+                            return bookAuthorDao
                                     .deleteAuthorsByBookId(id)
-                                    .thenMany(authorDao.createAuthors(book.getAuthors()))
+                                    .thenMany(bookAuthorDao.createAuthors(book.getAuthors()))
                                     .then();
                         }
                     }).then(Mono.defer(() -> {
@@ -189,23 +190,28 @@ public class R2dbcPostgresqlBookDao implements BookDao<Book> {
         log.debug("Saving updates to db");
         GenericExecuteSpec executeSpec = this.databaseClient
                 .sql(UPDATE_STATEMENT)
-                .bind("$1", book.getTitle())
-                .bind("$2", book.getPublisher())
-                .bind("$3", book.getEdition());
+                .bind("$1", book.getLibraryId())
+                .bind("$2", book.getTitle())
+                .bind("$3", book.getPublisher())
+                .bind("$4", book.getEdition());
 
         if (book.getCoverPageImageAssetId() == null)
-            executeSpec = executeSpec.bindNull("$4", String.class);
+            executeSpec = executeSpec.bindNull("$5", String.class);
         else
-            executeSpec = executeSpec.bind("$4", book.getCoverPageImageAssetId());
+            executeSpec = executeSpec.bind("$5", book.getCoverPageImageAssetId());
 
         return executeSpec
-                .bind("$5", book.getUuid())
+                .bind("$6", book.getUuid())
                 .fetch()
                 .rowsUpdated()
                 .then();
     }
 
     private R2dbcBook applyUpdates(Book oldBook, R2dbcBook newBook) {
+
+        if (oldBook.getLibraryId() != null)
+            newBook.setLibraryId(oldBook.getLibraryId());
+
         if (oldBook.getTitle() != null)
             newBook.setTitle(oldBook.getTitle());
 
@@ -235,6 +241,7 @@ public class R2dbcPostgresqlBookDao implements BookDao<Book> {
     private R2dbcBook mapToR2dbcBook(Row row, RowMetadata rowMetadata) {
         R2dbcBook book = new R2dbcBook();
 
+        book.setLibraryId(row.get("library_id", String.class));
         book.setTitle(row.get("title", String.class));
         book.setEdition(row.get("edition", String.class));
         book.setPublisher(row.get("publisher", String.class));

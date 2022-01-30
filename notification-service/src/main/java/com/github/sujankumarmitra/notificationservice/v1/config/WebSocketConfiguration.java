@@ -30,7 +30,7 @@ public class WebSocketConfiguration {
     public HandlerMapping webSocketHandlerMapping(NotificationWebSocketHandler handler) {
         SimpleUrlHandlerMapping mapping = new SimpleUrlHandlerMapping();
         mapping.setOrder(Ordered.HIGHEST_PRECEDENCE);
-        mapping.setUrlMap(Map.of("/api/v1/socket", handler));
+        mapping.setUrlMap(Map.of("/api/socket", handler));
         return mapping;
     }
 
@@ -40,7 +40,7 @@ public class WebSocketConfiguration {
                         .name("NotificationWebSocketController")
                         .description("Controller for receiving Notifications over WebSocket protocol")
                 ).getPaths()
-                .addPathItem("/api/v1/socket",
+                .addPathItem("/api/socket",
                         new PathItem()
                                 .get(new Operation()
                                         .addParametersItem(new Parameter()

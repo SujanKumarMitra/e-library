@@ -2,6 +2,7 @@ package com.github.sujankumarmitra.ebookprocessor.v1.service.impl.pdf;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 
 /**
  * @author skmitra
@@ -9,5 +10,5 @@ import java.nio.file.Path;
  */
 public interface PdfFileSplitter {
 
-    Path splitPdfFile(Path pdfFilePath) throws IOException;
+    List<Path> splitPdfFile(Path pdfFilePath) throws IOException;
 }

@@ -27,19 +27,34 @@ public class JacksonGetPackageResponse extends Package {
     }
 
     @Override
+    public String getLibraryId() {
+        return aPackage.getLibraryId();
+    }
+
+    @Override
     public String getName() {
         return aPackage.getName();
     }
 
     @Override
     @JsonSerialize(contentAs = PackageItem.class)
-    public Set<PackageItem> getItems() {
+    public Set<? extends PackageItem> getItems() {
         return aPackage.getItems();
     }
 
     @Override
     @JsonSerialize(contentAs = PackageTag.class)
-    public Set<PackageTag> getTags() {
+    public Set<? extends PackageTag> getTags() {
         return aPackage.getTags();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 }

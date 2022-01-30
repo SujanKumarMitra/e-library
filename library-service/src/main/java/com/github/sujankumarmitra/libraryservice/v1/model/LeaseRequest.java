@@ -10,6 +10,8 @@ public abstract class LeaseRequest {
 
     public abstract String getId();
 
+    public abstract String getLibraryId();
+
     public abstract String getBookId();
 
     public abstract String getUserId();
@@ -25,6 +27,7 @@ public abstract class LeaseRequest {
         if (!(o instanceof LeaseRequest)) return false;
         LeaseRequest that = (LeaseRequest) o;
         return Objects.equals(getId(), that.getId()) &&
+                Objects.equals(getLibraryId(), that.getLibraryId()) &&
                 Objects.equals(getBookId(), that.getBookId()) &&
                 Objects.equals(getUserId(), that.getUserId()) &&
                 getStatus() == that.getStatus() &&
@@ -33,14 +36,20 @@ public abstract class LeaseRequest {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getBookId(), getUserId(), getStatus(), getTimestamp());
+        return Objects.hash(getId(),
+                getLibraryId(),
+                getBookId(),
+                getUserId(),
+                getStatus(),
+                getTimestamp());
     }
 
     @Override
     public String toString() {
         return "LeaseRequest{" +
                 "id=" + getId() +
-                ", bookId=" + getBookId() +
+                ", libraryId='" + getLibraryId() + '\'' +
+                ", bookId='" + getBookId() + '\'' +
                 ", userId='" + getUserId() + '\'' +
                 ", status=" + getStatus() +
                 ", timestamp=" + getTimestamp() +

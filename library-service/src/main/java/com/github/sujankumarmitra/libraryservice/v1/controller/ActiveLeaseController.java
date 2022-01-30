@@ -4,12 +4,10 @@ import com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.
 import com.github.sujankumarmitra.libraryservice.v1.controller.dto.ErrorResponse;
 import com.github.sujankumarmitra.libraryservice.v1.exception.ApiOperationException;
 import com.github.sujankumarmitra.libraryservice.v1.exception.LeaseRequestNotFoundException;
-import com.github.sujankumarmitra.libraryservice.v1.model.LeaseRecord;
+import com.github.sujankumarmitra.libraryservice.v1.model.AcceptedLease;
 import com.github.sujankumarmitra.libraryservice.v1.model.Money;
-import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.GetActiveLeaseRequestResponseSchema;
+import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.GetActiveAcceptedLeaseRequestResponseSchema;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.MoneySchema;
-import com.github.sujankumarmitra.libraryservice.v1.security.SecurityAnnotations.RoleLibrarian;
-import com.github.sujankumarmitra.libraryservice.v1.security.SecurityAnnotations.RoleStudent;
 import com.github.sujankumarmitra.libraryservice.v1.service.ActiveLeaseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -34,7 +32,7 @@ import static org.springframework.http.HttpStatus.CONFLICT;
  * @since Dec 02/12/21, 2021
  */
 @RestController
-@RequestMapping("/api/v1/lease-requests/active")
+@RequestMapping("/api/lease-requests/active")
 @AllArgsConstructor
 @Tag(
         name = "ActiveLeaseController",
@@ -49,39 +47,42 @@ public class ActiveLeaseController {
 
     @Operation(
             summary = "Fetch all active leases",
-            description = "Librarian will invoke this api to see all currently active leases")
+            description = "Librarian can invoke this api to see all currently active leases")
     @ApiResponse(
             responseCode = "200",
             content = @Content(
                     mediaType = MediaType.APPLICATION_JSON_VALUE,
                     array = @ArraySchema(
-                            schema = @Schema(implementation = GetActiveLeaseRequestResponseSchema.class)
+                            schema = @Schema(implementation = GetActiveAcceptedLeaseRequestResponseSchema.class)
                     )
             )
     )
     @GetMapping
-    @RoleLibrarian
-    public Flux<LeaseRecord> getActiveLeases(@RequestParam(value = "page_no", defaultValue = "0") int pageNo) {
-        return activeLeaseService.getAllActiveLeases(pageNo);
+    public Flux<AcceptedLease> getActiveLeases(
+            @RequestParam("library_id") String libraryId,
+            @RequestParam(value = "page_no", defaultValue = "0") int pageNo) {
+        return activeLeaseService.getAllActiveLeases(libraryId, pageNo);
     }
 
     @Operation(
             summary = "Fetch active leases for currently authenticated user",
-            description = " Students will invoke this api to see their currently active leases." +
-                    "<br> StudentId is taken from JWT \"sub\" claim")
+            description = " Students can invoke this api to see their currently active leases.")
     @ApiResponse(
             responseCode = "200",
             content = @Content(
                     mediaType = MediaType.APPLICATION_JSON_VALUE,
                     array = @ArraySchema(
-                            schema = @Schema(implementation = GetActiveLeaseRequestResponseSchema.class)
+                            schema = @Schema(implementation = GetActiveAcceptedLeaseRequestResponseSchema.class)
                     )
             )
     )
     @GetMapping("/self")
-    @RoleStudent
-    public Flux<LeaseRecord> getActiveLeasesForCurrentUser(@RequestParam(value = "page_no", defaultValue = "0") int pageNo, Authentication authentication) {
-        return activeLeaseService.getAllActiveLeases(authentication.getName(), pageNo);
+    public Flux<AcceptedLease> getActiveLeasesForCurrentUser(
+            @RequestParam("library_id") String libraryId,
+            @RequestParam(value = "page_no", defaultValue = "0") int pageNo,
+            Authentication authentication) {
+        return activeLeaseService
+                .getAllActiveLeases(libraryId, authentication.getName(), pageNo);
     }
 
     @Operation(
@@ -96,7 +97,6 @@ public class ActiveLeaseController {
                     schema = @Schema(implementation = MoneySchema.class)
             )
     )
-    @RoleLibrarian
     @GetMapping("/{leaseRequestId}/fine")
     public Mono<ResponseEntity<Money>> getFineForActiveLease(@PathVariable String leaseRequestId) {
         return activeLeaseService
@@ -115,7 +115,6 @@ public class ActiveLeaseController {
                     "becomes greater than leaseEndTime")
     @ApiAcceptedResponse
     @ApiConflictResponse
-    @RoleLibrarian
     @PatchMapping("/{leaseRequestId}/relinquish")
     public Mono<ResponseEntity<Object>> relinquishActiveLease(@PathVariable String leaseRequestId) {
         return activeLeaseService
@@ -123,22 +122,6 @@ public class ActiveLeaseController {
                 .then(Mono.fromSupplier(() -> ResponseEntity.accepted().build()))
                 .onErrorResume(ApiOperationException.class,
                         err -> Mono.fromSupplier(() -> ResponseEntity.status(CONFLICT).body(new ErrorResponse(err.getErrors()))));
-    }
-
-    @Operation(
-            summary = "Trigger system to invalidate expired ebook leases",
-            description = "The system is expected to automatically relinquish active ebook leases, once they expire." +
-                    "<br> But, sometimes this operation might take some time to activate, due to multiple reasons like scheduler delay, clock drift etc." +
-                    "<br> So, <b>Librarians</b> can manually trigger relinquishing of expired ebook leases." +
-                    "<br><b> Note: auto relinquishment of leases only occurs for ebooks, not for physical books"
-    )
-    @ApiAcceptedResponse
-    @RoleLibrarian
-    @PutMapping("/invalidate")
-    public Mono<ResponseEntity<Void>> invalidateStaleEBookLeases() {
-        return activeLeaseService
-                .invalidateStateEBookLeases()
-                .then(Mono.fromSupplier(() -> ResponseEntity.accepted().build()));
     }
 
 

@@ -26,6 +26,8 @@ import static reactor.core.publisher.Mono.just;
  */
 @Service
 public class RemoteServiceAssetServiceClient implements AssetServiceClient {
+    public static final String STORE_ASSET_URI = "/api/assets/{assetId}/store";
+    public static final String CREATE_ASSET_URI = "/api/assets";
     @NonNull
     private final WebClient client;
 
@@ -42,7 +44,7 @@ public class RemoteServiceAssetServiceClient implements AssetServiceClient {
     public Mono<String> createAsset(Asset asset) {
         return client
                 .post()
-                .uri("/api/v1/assets")
+                .uri(CREATE_ASSET_URI)
                 .body(fromPublisher(just(asset), Asset.class))
                 .retrieve()
                 .onStatus(HttpStatus::is4xxClientError,
@@ -56,7 +58,7 @@ public class RemoteServiceAssetServiceClient implements AssetServiceClient {
     public Mono<Void> storeAsset(String assetId, Path objectPath) {
         return client
                 .put()
-                .uri("/api/v1/assets/{assetId}", assetId)
+                .uri(STORE_ASSET_URI, assetId)
                 .body(fromResource(new FileSystemResource(objectPath)))
                 .retrieve()
                 .onStatus(HttpStatus::is4xxClientError,

@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @since Nov 23/11/21, 2021
  */
 @Slf4j
-class R2dbcPostgresqlPackageTagDaoTest extends AbstractDataR2dbcPostgreSQLContainerDependentTest {
+class R2dbcPostgresqlPackageTagDaoTest extends AbstractDataR2dbcPostgresqlContainerDependentTest {
 
     private R2dbcPostgresqlPackageTagDao tagDao = null;
     @Autowired
@@ -171,51 +171,6 @@ class R2dbcPostgresqlPackageTagDaoTest extends AbstractDataR2dbcPostgreSQLContai
                     log.info("Exception errors:: {}", ((PackageNotFoundException) th).getErrors());
                 })
                 .verify();
-    }
-
-    @Test
-    void givenValidPackageId_whenUpdateShouldUpdate() {
-        List<R2dbcPackageTag> tags = new ArrayList<>();
-        for (int i = 1; i <= 10; i++) {
-            R2dbcPackageTag tag = new R2dbcPackageTag();
-            tag.setKey("key" + i);
-            tag.setValue("value" + i);
-            tags.add(tag);
-        }
-
-        insertTags(tags);
-
-        R2dbcPackageTag tag1 = tags.get(2);
-        tag1.setValue("value33");
-
-        R2dbcPackageTag tag2 = tags.get(5);
-        tag2.setValue("value66");
-
-        R2dbcPackageTag tag3 = tags.get(8);
-        tag3.setValue("value99");
-
-        Set<R2dbcPackageTag> expectedTags = new HashSet<>(tags);
-
-        Set<R2dbcPackageTag> tagsToUpdate = new LinkedHashSet<>();
-        tagsToUpdate.add(tag1);
-        tagsToUpdate.add(tag2);
-        tagsToUpdate.add(tag3);
-
-        tagDao.updateTags(tagsToUpdate)
-                .thenMany(entityTemplate
-                        .select(R2dbcPackageTag.class)
-                        .from("package_tags")
-                        .all())
-                .collect(Collectors.toSet())
-                .as(StepVerifier::create)
-                .consumeNextWith(actualTags -> {
-                    log.info("Expected:: {}", expectedTags);
-                    log.info("Actual:: {}", actualTags);
-
-                    assertThat(actualTags).isEqualTo(expectedTags);
-                })
-                .verifyComplete();
-
     }
 
     private void insertTags(List<R2dbcPackageTag> tags) {

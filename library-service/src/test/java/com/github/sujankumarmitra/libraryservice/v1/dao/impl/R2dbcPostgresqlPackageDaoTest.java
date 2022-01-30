@@ -34,7 +34,7 @@ import static org.springframework.r2dbc.connection.init.ScriptUtils.executeSqlSc
  * @since Nov 26/11/21, 2021
  */
 @Slf4j
-class R2dbcPostgresqlPackageDaoTest extends AbstractDataR2dbcPostgreSQLContainerDependentTest {
+class R2dbcPostgresqlPackageDaoTest extends AbstractDataR2dbcPostgresqlContainerDependentTest {
 
     private R2dbcPostgresqlPackageDao packageDao;
     @Mock
@@ -61,6 +61,8 @@ class R2dbcPostgresqlPackageDaoTest extends AbstractDataR2dbcPostgreSQLContainer
     @Test
     void givenValidPackage_whenCreate_shouldCreate() {
         R2dbcPackage r2dbcPackage = new R2dbcPackage();
+
+        r2dbcPackage.setLibraryId("library_id");
         r2dbcPackage.setName("package_name");
 
         Mockito.doReturn(Flux.empty())
@@ -90,6 +92,7 @@ class R2dbcPostgresqlPackageDaoTest extends AbstractDataR2dbcPostgreSQLContainer
         PackageDaoTestUtils
                 .insertDummyPackage(this.entityTemplate.getDatabaseClient())
                 .doOnSuccess(insertedPackage -> expectedPackage.setId(insertedPackage.getUuid()))
+                .doOnSuccess(insertedPackage -> expectedPackage.setLibraryId(insertedPackage.getLibraryId()))
                 .doOnSuccess(insertedPackage -> expectedPackage.setName(insertedPackage.getName()))
                 .map(Package::getId)
                 .flatMap(packageDao::getPackage)
@@ -157,6 +160,7 @@ class R2dbcPostgresqlPackageDaoTest extends AbstractDataR2dbcPostgreSQLContainer
         PackageDaoTestUtils
                 .insertDummyPackage(entityTemplate.getDatabaseClient())
                 .doOnSuccess(insertedPackage -> expectedPackage.setId(insertedPackage.getUuid()))
+                .doOnSuccess(insertedPackage -> expectedPackage.setLibraryId(insertedPackage.getLibraryId()))
                 .doOnSuccess(insertedPackage -> expectedPackage.setName(insertedPackage.getName()))
                 .doOnSuccess(that -> expectedPackage.setName("updated_name"))
                 .thenReturn(expectedPackage)
@@ -211,15 +215,15 @@ class R2dbcPostgresqlPackageDaoTest extends AbstractDataR2dbcPostgreSQLContainer
     @Test
     void givenPackageWithMalformedId_whenUpdate_shouldEmitEmpty() {
 
-        Mockito.doReturn(Mono.empty())
-                .when(mockPackageItemDao).updateItems(any());
-        Mockito.doReturn(Mono.empty())
-                .when(mockPackageTagDao).updateTags(any());
-
         Package aPackage = new Package() {
             @Override
             public String getId() {
                 return "malformed";
+            }
+
+            @Override
+            public String getLibraryId() {
+                return "library_id";
             }
 
             @Override
@@ -228,13 +232,11 @@ class R2dbcPostgresqlPackageDaoTest extends AbstractDataR2dbcPostgreSQLContainer
             }
 
             @Override
-            @SuppressWarnings("unchecked")
             public Set<PackageItem> getItems() {
                 return Collections.emptySet();
             }
 
             @Override
-            @SuppressWarnings("unchecked")
             public Set<PackageTag> getTags() {
                 return Collections.emptySet();
             }
@@ -311,6 +313,45 @@ class R2dbcPostgresqlPackageDaoTest extends AbstractDataR2dbcPostgreSQLContainer
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .expectNext(0)
+                .expectComplete()
+                .verify();
+    }
+
+    @Test
+    void givenSetOfPackages_whenGetPackages_shouldGetPackages() {
+
+        Mockito.doReturn(Flux.empty())
+                        .when(mockPackageItemDao).getItemsByPackageId(any());
+        Mockito.doReturn(Flux.empty())
+                .when(mockPackageTagDao).getTagsByPackageId(any());
+
+        entityTemplate
+                .getDatabaseClient()
+                .inConnection(conn -> executeSqlScript(conn, new ClassPathResource("sample_data.sql")))
+                .thenMany(packageDao.getPackages("library1", 0, 10))
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectNextCount(2L)
+                .expectComplete()
+                .verify();
+
+
+    }
+
+    @Test
+    void givenSetOfPackages_whenGetPackagesByName_shouldGetPackages() {
+        Mockito.doReturn(Flux.empty())
+                .when(mockPackageItemDao).getItemsByPackageId(any());
+        Mockito.doReturn(Flux.empty())
+                .when(mockPackageTagDao).getTagsByPackageId(any());
+
+        entityTemplate
+                .getDatabaseClient()
+                .inConnection(conn -> executeSqlScript(conn, new ClassPathResource("sample_data.sql")))
+                .thenMany(packageDao.getPackagesByNameStartingWith("library1", "I", 0, 10))
+                .as(StepVerifier::create)
+                .expectSubscription()
+                .expectNextCount(1L)
                 .expectComplete()
                 .verify();
     }

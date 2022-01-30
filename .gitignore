@@ -1,2 +1,5 @@
 .idea/
 **/target/**
+e-learning-system-api/
+react-frontend/
+.env

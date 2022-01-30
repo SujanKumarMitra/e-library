@@ -17,13 +17,14 @@ import java.util.UUID;
 public class BookDaoTestUtils {
 
 
-    private static Faker faker = new Faker();
+    private static final Faker faker = new Faker();
 
     private BookDaoTestUtils() {
     }
 
     public static Mono<R2dbcBook> insertDummyBook(@NonNull ConnectionAccessor connAccessor) {
         R2dbcBook book = new R2dbcBook();
+        book.setLibraryId(faker.idNumber().valid());
         book.setTitle(faker.book().title());
         book.setPublisher(faker.book().publisher());
         book.setEdition(faker.idNumber().valid());
@@ -32,9 +33,10 @@ public class BookDaoTestUtils {
         return connAccessor.inConnectionMany(conn ->
                         Flux.from(conn.createStatement(R2dbcPostgresqlBookDao.INSERT_STATEMENT)
                                 .bind("$1", book.getTitle())
-                                .bind("$2", book.getPublisher())
-                                .bind("$3", book.getEdition())
-                                .bind("$4", book.getCoverPageImageAssetId())
+                                .bind("$2", book.getTitle())
+                                .bind("$3", book.getPublisher())
+                                .bind("$4", book.getEdition())
+                                .bind("$5", book.getCoverPageImageAssetId())
                                 .execute()))
                 .flatMap(result -> result.map((row, __) -> row.get("id", UUID.class)))
                 .next()

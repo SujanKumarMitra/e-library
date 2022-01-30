@@ -9,8 +9,8 @@ import reactor.core.publisher.Mono;
  */
 public interface RejectedLeaseDao {
 
-    <R extends RejectedLease> Mono<R> getRejectedLease(String leaseRequestId);
+    Mono<RejectedLease> getRejectedLease(String leaseRequestId);
 
-    <R extends RejectedLease> Mono<Void> createRejectedLease(R rejectedLease);
+    Mono<Void> createRejectedLease(RejectedLease rejectedLease);
 
 }

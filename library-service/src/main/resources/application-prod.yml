@@ -7,9 +7,14 @@ app:
     createAssetPermissionsTopicName: "${CREATE_ASSET_PERMISSIONS_TOPIC}"
   auth:
     baseUrl: "${AUTH_BASEURL}"
+    internal-user:
+      username: "${INTERNAL_USERNAME}"
+      password: "${INTERNAL_PASSWORD}"
   remoteServices:
     - id: "asset-service"
       baseUrl: "${ASSET_SERVICE_BASEURL}"
+    - id: "notification-service"
+      baseUrl: "${NOTIFICATION_SERVICE_BASEURL}"
 spring:
   r2dbc:
     url: "${DB_URL}"

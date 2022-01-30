@@ -22,6 +22,12 @@ public class GetPhysicalBookResponseSchema extends PhysicalBook {
 
     @Override
     @NotEmpty
+    public String getLibraryId() {
+        return null;
+    }
+
+    @Override
+    @NotEmpty
     public String getTitle() {
         return null;
     }
@@ -29,7 +35,7 @@ public class GetPhysicalBookResponseSchema extends PhysicalBook {
     @Override
     @NotEmpty
     @SuppressWarnings("unchecked")
-    public Set<GetAuthorResponseSchema> getAuthors() {
+    public Set<GetBookAuthorResponseSchema> getAuthors() {
         return Collections.emptySet();
     }
 

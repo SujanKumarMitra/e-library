@@ -14,9 +14,9 @@ public interface BookService {
 
     Mono<String> createBook(EBook book);
 
-    Flux<Book> getBooks(int pageNo);
+    Flux<Book> getBooks(String libraryId, int pageNo);
 
-    Flux<Book>  getBooksByTitleAndAuthor(String titlePrefix, String authorPrefix, int pageNo);
+    Flux<Book>  getBooksByTitleAndAuthor(String libraryId, String titlePrefix, String authorPrefix, int pageNo);
 
     Mono<Book> getBook(String bookId);
 

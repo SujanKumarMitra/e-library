@@ -25,13 +25,18 @@ public class UpdateEBookRequestSchema extends EBook {
     }
 
     @Override
+    public String getLibraryId() {
+        return null;
+    }
+
+    @Override
     public String getTitle() {
         return null;
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public Set<UpdateBookAuthorRequestSchema> getAuthors() {
+    public Set<UpdateBookBookAuthorRequestSchema> getAuthors() {
         return Collections.emptySet();
     }
 

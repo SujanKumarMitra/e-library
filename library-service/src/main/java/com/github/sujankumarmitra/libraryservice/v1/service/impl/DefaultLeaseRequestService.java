@@ -3,16 +3,14 @@ package com.github.sujankumarmitra.libraryservice.v1.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.sujankumarmitra.libraryservice.v1.config.PagingProperties;
-import com.github.sujankumarmitra.libraryservice.v1.dao.LeaseRecordDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.AcceptedLeaseDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.LeaseRequestDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.LibrarianDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.RejectedLeaseDao;
-import com.github.sujankumarmitra.libraryservice.v1.exception.InsufficientCopiesAvailableException;
 import com.github.sujankumarmitra.libraryservice.v1.exception.InternalError;
-import com.github.sujankumarmitra.libraryservice.v1.exception.LeaseRequestAlreadyHandledException;
-import com.github.sujankumarmitra.libraryservice.v1.exception.LeaseRequestNotFoundException;
+import com.github.sujankumarmitra.libraryservice.v1.exception.*;
 import com.github.sujankumarmitra.libraryservice.v1.model.*;
-import com.github.sujankumarmitra.libraryservice.v1.model.impl.DefaultLeaseRecord;
+import com.github.sujankumarmitra.libraryservice.v1.model.impl.DefaultAcceptedLease;
 import com.github.sujankumarmitra.libraryservice.v1.model.impl.DefaultNotification;
 import com.github.sujankumarmitra.libraryservice.v1.service.BookService;
 import com.github.sujankumarmitra.libraryservice.v1.service.LeaseRequestService;
@@ -44,7 +42,7 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
     @NonNull
     private final LeaseRequestDao leaseRequestDao;
     @NonNull
-    private final LeaseRecordDao leaseRecordDao;
+    private final AcceptedLeaseDao acceptedLeaseDao;
     @NonNull
     private final RejectedLeaseDao rejectedLeaseDao;
     @NonNull
@@ -59,19 +57,19 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
     private final PagingProperties pagingProperties;
 
     @Override
-    public Flux<LeaseRequest> getPendingLeaseRequests(int pageNo) {
+    public Flux<LeaseRequest> getPendingLeaseRequests(String libraryId, int pageNo) {
         int pageSize = pagingProperties.getDefaultPageSize();
         int skip = pageNo * pageSize;
 
-        return leaseRequestDao.getPendingLeaseRequests(skip, pageSize);
+        return leaseRequestDao.getPendingLeaseRequests(libraryId, skip, pageSize);
     }
 
     @Override
-    public Flux<LeaseRequest> getPendingLeaseRequests(@NonNull String userId, int pageNo) {
+    public Flux<LeaseRequest> getPendingLeaseRequests(String libraryId, @NonNull String userId, int pageNo) {
         int pageSize = pagingProperties.getDefaultPageSize();
         int skip = pageNo * pageSize;
 
-        return leaseRequestDao.getPendingLeaseRequests(userId, skip, pageSize);
+        return leaseRequestDao.getPendingLeaseRequests(libraryId, userId, skip, pageSize);
     }
 
     @Override
@@ -90,20 +88,21 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
     public Mono<String> createLeaseRequest(@NonNull LeaseRequest request) {
         return bookService
                 .getBook(request.getBookId())
-                .filter(PhysicalBook.class::isInstance)
-                .cast(PhysicalBook.class)
+                .filter(book -> book.getLibraryId().equals(request.getLibraryId()))
+                .switchIfEmpty(Mono.error(() -> new LibraryIdMismatchException("given book does not belong to libraryId '" + request.getLibraryId() + "'")))
                 .handle(this::emitErrorIfNoCopiesAvailable)
-                .then(leaseRequestDao.createLeaseRequest(request))
-                .flatMap(leaseRequestId -> this
-                        .sendNotificationForNewLeaseRequest(leaseRequestId)
-                        .thenReturn(leaseRequestId));
+                .map(Book::getLibraryId)
+                .flatMap(libraryId -> leaseRequestDao
+                        .createLeaseRequest(request)
+                        .flatMap(leaseRequestId -> sendNotificationForNewLeaseRequest(leaseRequestId, libraryId)
+                                .thenReturn(leaseRequestId)));
     }
 
-    private Mono<Void> sendNotificationForNewLeaseRequest(String leaseRequestId) {
+    private Mono<Void> sendNotificationForNewLeaseRequest(String leaseRequestId, String libraryId) {
 
         return librarianDao
-                .getLibrarians()
-                .map(Librarian::getId)
+                .getLibrarians(libraryId)
+                .map(Librarian::getUserId)
                 .map(librarianId -> {
                     DefaultNotification notification = new DefaultNotification();
 
@@ -113,7 +112,7 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
 
                     return notification;
                 })
-                .flatMap(notification -> Mono.fromRunnable(() -> sendNotification(notification)))
+                .flatMap(this::sendNotification)
                 .then();
 
     }
@@ -132,9 +131,13 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
         }
     }
 
-    private void emitErrorIfNoCopiesAvailable(PhysicalBook book, SynchronousSink<Void> sink) {
-        if (book.getCopiesAvailable() > 0) {
-            sink.complete();
+    private void emitErrorIfNoCopiesAvailable(Book book, SynchronousSink<Book> sink) {
+        if (!(book instanceof PhysicalBook)) {
+            sink.next(book);
+            return;
+        }
+        if ((((PhysicalBook) book).getCopiesAvailable()) > 0) {
+            sink.next(book);
         } else {
             sink.error(new InsufficientCopiesAvailableException(book.getId()));
         }
@@ -161,7 +164,7 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
      *              Set {@link LeaseRequest#getStatus()} to {@link LeaseStatus#ACCEPTED}
      *          </li>
      *          <li>
-     *              Create {@link LeaseRecord}
+     *              Create {@link AcceptedLease}
      *          </li>
      *          <li>
      *              Send notification to {@link LeaseRequest#getUserId()} about {@link LeaseStatus#ACCEPTED} (Optional, error signal should not be propagated)
@@ -181,7 +184,7 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
 
         return getValidLeaseRequest(leaseRequestId)
                 .flatMap(leaseRequest -> {
-                    Mono<Void> createRecordMono = leaseRecordDao.createLeaseRecord(buildLeaseRecord(acceptedLease));
+                    Mono<Void> createRecordMono = acceptedLeaseDao.createLeaseRecord(buildLeaseRecord(acceptedLease));
                     Mono<Void> updateStatusMono = leaseRequestDao.setLeaseStatus(leaseRequestId, ACCEPTED);
                     Mono<Void> sendNotificationMono = sendNotificationForLeaseRequestHandling(leaseRequest, ACCEPTED);
                     Mono<Void> handleLeaseAcceptMono = bookService.onLeaseAccept(acceptedLease);
@@ -242,8 +245,8 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
                 .handle(this::emitErrorIfNotInPendingState);
     }
 
-    private LeaseRecord buildLeaseRecord(AcceptedLease acceptedLease) {
-        return new DefaultLeaseRecord(
+    private AcceptedLease buildLeaseRecord(AcceptedLease acceptedLease) {
+        return new DefaultAcceptedLease(
                 acceptedLease.getLeaseRequestId(),
                 acceptedLease.getStartTimeInEpochMilliseconds(),
                 acceptedLease.getDurationInMilliseconds(),
@@ -266,7 +269,7 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
         notification.setCreatedAt(System.currentTimeMillis());
         notification.setPayload(createPayload(status, request.getId()));
 
-        return Mono.fromRunnable(() -> sendNotification(notification));
+        return sendNotification(notification);
     }
 
     private String createPayload(LeaseStatus status, String leaseRequestId) {
@@ -283,13 +286,12 @@ public class DefaultLeaseRequestService implements LeaseRequestService {
         }
     }
 
-    private void sendNotification(Notification notification) {
-        notificationService
+    private Mono<Void> sendNotification(Notification notification) {
+        return notificationService
                 .sendNotification(notification)
-                .subscribe(s -> {
-                        },
-                        err -> log.warn("Error in sending Notification :: {}", err.getMessage()),
-                        () -> log.info("Successfully sent notification"));
+                .doOnSuccess(aVoid -> log.info("Successfully sent notification"))
+                .doOnError(err -> log.warn("Error in sending Notification :: {}", err.getMessage()))
+                .onErrorResume(th -> Mono.empty());
     }
 
 }

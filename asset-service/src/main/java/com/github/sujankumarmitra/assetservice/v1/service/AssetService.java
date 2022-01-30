@@ -1,6 +1,7 @@
 package com.github.sujankumarmitra.assetservice.v1.service;
 
 import com.github.sujankumarmitra.assetservice.v1.model.Asset;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
@@ -14,4 +15,6 @@ public interface AssetService {
     Mono<Void> deleteAsset(String assetId);
 
     Mono<Asset> getAsset(String assetId);
+
+    Flux<Asset> getAssets(String libraryId);
 }

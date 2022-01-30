@@ -1,12 +1,12 @@
 package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 
 import com.github.javafaker.Faker;
-import com.github.sujankumarmitra.libraryservice.v1.dao.AuthorDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.BookAuthorDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.BookTagDao;
-import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcAuthor;
+import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBookAuthor;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBook;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBookTag;
-import com.github.sujankumarmitra.libraryservice.v1.model.Author;
+import com.github.sujankumarmitra.libraryservice.v1.model.BookAuthor;
 import com.github.sujankumarmitra.libraryservice.v1.model.Book;
 import com.github.sujankumarmitra.libraryservice.v1.model.BookTag;
 import lombok.extern.slf4j.Slf4j;
@@ -36,13 +36,13 @@ import static org.springframework.r2dbc.connection.init.ScriptUtils.executeSqlSc
  * @since Nov 22/11/21, 2021
  */
 @Slf4j
-class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDependentTest {
+class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgresqlContainerDependentTest {
 
     private R2dbcPostgresqlBookDao bookDao;
     @Mock
     private BookTagDao mockBookTagDao = null;
     @Mock
-    private AuthorDao mockAuthorDao = null;
+    private BookAuthorDao mockBookAuthorDao = null;
     @Autowired
     private R2dbcEntityTemplate entityTemplate = null;
 
@@ -51,27 +51,21 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
     @BeforeEach
     void setUp() {
         Mockito.doReturn(Flux.empty())
-                .when(mockAuthorDao).createAuthors(anySet());
+                .when(mockBookAuthorDao).createAuthors(anySet());
 
         Mockito.doReturn(Flux.empty())
                 .when(mockBookTagDao).createTags(anySet());
 
         Mockito.doReturn(Mono.empty())
-                .when(mockAuthorDao).updateAuthors(anySet());
-
-        Mockito.doReturn(Mono.empty())
-                .when(mockBookTagDao).updateTags(anySet());
-
-        Mockito.doReturn(Mono.empty())
                 .when(mockBookTagDao).deleteTagsByBookId(any());
 
         Mockito.doReturn(Mono.empty())
-                .when(mockAuthorDao).deleteAuthorsByBookId(any());
+                .when(mockBookAuthorDao).deleteAuthorsByBookId(any());
 
 
         bookDao = new R2dbcPostgresqlBookDao(
                 entityTemplate.getDatabaseClient(),
-                mockAuthorDao,
+                mockBookAuthorDao,
                 mockBookTagDao);
     }
 
@@ -112,10 +106,11 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
         entityTemplate
                 .getDatabaseClient()
                 .sql(R2dbcPostgresqlBookDao.INSERT_STATEMENT)
-                .bind("$1", book.getTitle())
-                .bind("$2", book.getPublisher())
-                .bind("$3", book.getEdition())
-                .bindNull("$4", String.class)
+                .bind("$1", book.getLibraryId())
+                .bind("$2", book.getTitle())
+                .bind("$3", book.getPublisher())
+                .bind("$4", book.getEdition())
+                .bindNull("$5", String.class)
                 .map(row -> row.get("id", UUID.class))
                 .one()
                 .doOnNext(book::setId)
@@ -132,15 +127,15 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
         String expectedPublisher = book.getPublisher();
         String expectedEdition = book.getEdition();
 
-        R2dbcAuthor author1 = new R2dbcAuthor();
+        R2dbcBookAuthor author1 = new R2dbcBookAuthor();
         author1.setBookId(book.getUuid());
         author1.setName(faker.book().author());
 
-        R2dbcAuthor author2 = new R2dbcAuthor();
+        R2dbcBookAuthor author2 = new R2dbcBookAuthor();
         author1.setBookId(book.getUuid());
         author1.setName(faker.book().author());
 
-        Set<R2dbcAuthor> expectedAuthors = Set.of(author1, author2);
+        Set<R2dbcBookAuthor> expectedAuthors = Set.of(author1, author2);
 
         R2dbcBookTag tag1 = new R2dbcBookTag();
         tag1.setBookId(book.getUuid());
@@ -159,8 +154,8 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
         book.getTags().addAll(expectedTags);
 
 
-        Mockito.doReturn(Flux.fromIterable(expectedAuthors).cast(Author.class))
-                .when(mockAuthorDao).getAuthorsByBookId(any());
+        Mockito.doReturn(Flux.fromIterable(expectedAuthors).cast(BookAuthor.class))
+                .when(mockBookAuthorDao).getAuthorsByBookId(any());
 
         Mockito.doReturn(Flux.fromIterable(expectedTags).cast(BookTag.class))
                 .when(mockBookTagDao).getTagsByBookId(any());
@@ -193,10 +188,11 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
         entityTemplate
                 .getDatabaseClient()
                 .sql(R2dbcPostgresqlBookDao.INSERT_STATEMENT)
-                .bind("$1", book.getTitle())
-                .bind("$2", book.getPublisher())
-                .bind("$3", book.getEdition())
-                .bind("$4", book.getCoverPageImageAssetId())
+                .bind("$1", book.getLibraryId())
+                .bind("$2", book.getTitle())
+                .bind("$3", book.getPublisher())
+                .bind("$4", book.getEdition())
+                .bind("$5", book.getCoverPageImageAssetId())
                 .map(row -> row.get("id", UUID.class))
                 .one()
                 .doOnNext(book::setId)
@@ -214,15 +210,15 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
         String expectedEdition = book.getEdition();
         String expectedCoverPageImageId = book.getCoverPageImageAssetId();
 
-        R2dbcAuthor author1 = new R2dbcAuthor();
+        R2dbcBookAuthor author1 = new R2dbcBookAuthor();
         author1.setBookId(book.getUuid());
         author1.setName(faker.book().author());
 
-        R2dbcAuthor author2 = new R2dbcAuthor();
+        R2dbcBookAuthor author2 = new R2dbcBookAuthor();
         author1.setBookId(book.getUuid());
         author1.setName(faker.book().author());
 
-        Set<R2dbcAuthor> expectedAuthors = Set.of(author1, author2);
+        Set<R2dbcBookAuthor> expectedAuthors = Set.of(author1, author2);
 
         R2dbcBookTag tag1 = new R2dbcBookTag();
         tag1.setBookId(book.getUuid());
@@ -241,8 +237,8 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
         book.getTags().addAll(expectedTags);
 
 
-        Mockito.doReturn(Flux.fromIterable(expectedAuthors).cast(Author.class))
-                .when(mockAuthorDao).getAuthorsByBookId(any());
+        Mockito.doReturn(Flux.fromIterable(expectedAuthors).cast(BookAuthor.class))
+                .when(mockBookAuthorDao).getAuthorsByBookId(any());
 
         Mockito.doReturn(Flux.fromIterable(expectedTags).cast(BookTag.class))
                 .when(mockBookTagDao).getTagsByBookId(any());
@@ -270,7 +266,7 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
     @Test
     void givenInvalidBookId_whenSelect_shouldEmitNothing() {
         Mockito.doReturn(Flux.empty())
-                .when(mockAuthorDao).getAuthorsByBookId(any());
+                .when(mockBookAuthorDao).getAuthorsByBookId(any());
 
         Mockito.doReturn(Flux.empty())
                 .when(mockBookTagDao).getTagsByBookId(any());
@@ -285,7 +281,7 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
     @Test
     void givenMalformedBookId_whenSelect_shouldEmitNothing() {
         Mockito.doReturn(Flux.empty())
-                .when(mockAuthorDao).getAuthorsByBookId(any());
+                .when(mockBookAuthorDao).getAuthorsByBookId(any());
 
         Mockito.doReturn(Flux.empty())
                 .when(mockBookTagDao).getTagsByBookId(any());
@@ -305,10 +301,11 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
         entityTemplate
                 .getDatabaseClient()
                 .sql(R2dbcPostgresqlBookDao.INSERT_STATEMENT)
-                .bind("$1", book.getTitle())
-                .bind("$2", book.getPublisher())
-                .bind("$3", book.getEdition())
-                .bind("$4", book.getCoverPageImageAssetId())
+                .bind("$1", book.getLibraryId())
+                .bind("$2", book.getTitle())
+                .bind("$3", book.getPublisher())
+                .bind("$4", book.getEdition())
+                .bind("$5", book.getCoverPageImageAssetId())
                 .fetch()
                 .one()
                 .map(map -> map.get("id"))
@@ -383,10 +380,11 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
     void givenValidBookId_whenDelete_shouldDelete() {
         entityTemplate.getDatabaseClient()
                 .sql(R2dbcPostgresqlBookDao.INSERT_STATEMENT)
-                .bind("$1", faker.book().title())
-                .bind("$2", faker.book().publisher())
-                .bind("$3", "1st")
-                .bind("$4", faker.idNumber().valid())
+                .bind("$1", faker.idNumber().valid())
+                .bind("$2", faker.book().title())
+                .bind("$3", faker.book().publisher())
+                .bind("$4", "1st")
+                .bind("$5", faker.idNumber().valid())
                 .fetch()
                 .one()
                 .map(map -> map.get("id"))
@@ -473,6 +471,8 @@ class R2dbcPostgresqlBookDaoTest extends AbstractDataR2dbcPostgreSQLContainerDep
     private R2dbcBook getBook() {
 
         R2dbcBook book = new R2dbcBook();
+
+        book.setLibraryId(faker.idNumber().valid());
         book.setTitle(faker.book().title());
         book.setPublisher(faker.book().publisher());
         book.setEdition("1st");

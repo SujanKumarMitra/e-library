@@ -34,6 +34,7 @@ public abstract class PhysicalBook extends Book {
     public String toString() {
         return "PhysicalBook{" +
                 "id='" + getId() + '\'' +
+                ", libraryId='" + getLibraryId() + '\'' +
                 ", title='" + getTitle() + '\'' +
                 ", authors=" + getAuthors() +
                 ", publisher='" + getPublisher() + '\'' +

@@ -12,7 +12,9 @@ public abstract class Asset {
 
     public abstract String getName();
 
-    public abstract String getOwnerId();
+    public abstract String getLibraryId();
+
+    public abstract String getMimeType();
 
     public abstract AccessLevel getAccessLevel();
 
@@ -24,13 +26,18 @@ public abstract class Asset {
         Asset asset = (Asset) o;
         return getId().equals(asset.getId()) &&
                 getName().equals(asset.getName()) &&
-                Objects.equals(getOwnerId(), asset.getOwnerId()) &&
+                Objects.equals(getLibraryId(), asset.getLibraryId()) &&
+                Objects.equals(getMimeType(), asset.getMimeType()) &&
                 getAccessLevel() == asset.getAccessLevel();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getName(), getOwnerId(), getAccessLevel());
+        return Objects.hash(getId(),
+                getName(),
+                getLibraryId(),
+                getMimeType(),
+                getAccessLevel());
     }
 
     @Override
@@ -38,7 +45,8 @@ public abstract class Asset {
         return "Asset{" +
                 "id='" + getId() + '\'' +
                 ", name='" + getName() + '\'' +
-                ", ownerId='" + getOwnerId() + '\'' +
+                ", libraryId='" + getLibraryId() + '\'' +
+                ", mimeType='" + getMimeType() + '\'' +
                 ", accessLevel=" + getAccessLevel() +
                 '}';
     }

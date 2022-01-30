@@ -12,7 +12,7 @@ public abstract class EbookProcessDetails {
 
     public abstract String getProcessId();
 
-    public abstract String getBookId();
+    public abstract EBook getEBook();
 
     public abstract Path getBookPath();
 
@@ -22,7 +22,7 @@ public abstract class EbookProcessDetails {
     public String toString() {
         return "EbookProcessDetails{" +
                 "processId='" + getProcessId() + '\'' +
-                ", bookId='" + getBookId() + '\'' +
+                ", bookId='" + getEBook() + '\'' +
                 ", bookLocation=" + getBookPath() +
                 ", authToken=" + getAuthToken() +
                 '}';

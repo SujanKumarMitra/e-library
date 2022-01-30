@@ -17,6 +17,8 @@ import lombok.Setter;
 @NoArgsConstructor
 public class DefaultAsset extends Asset {
     private String name;
+    private String libraryId;
+    private String mimeType;
     private AccessLevel accessLevel;
 
     @Override

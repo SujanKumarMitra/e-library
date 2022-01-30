@@ -10,6 +10,10 @@ public abstract class Asset {
 
     public abstract String getName();
 
+    public abstract String getLibraryId();
+
+    public abstract String getMimeType();
+
     public abstract AccessLevel getAccessLevel();
 
     @Override
@@ -19,6 +23,8 @@ public abstract class Asset {
 
         Asset asset = (Asset) o;
         return getName().equals(asset.getName()) &&
+                Objects.equals(getLibraryId(), asset.getLibraryId()) &&
+                Objects.equals(getMimeType(), asset.getMimeType()) &&
                 getAccessLevel() == asset.getAccessLevel();
     }
 

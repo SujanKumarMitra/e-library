@@ -18,6 +18,7 @@ import java.util.UUID;
 import static com.github.sujankumarmitra.assetservice.v1.model.AccessLevel.PUBLIC;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 
 /**
  * @author skmitra
@@ -42,11 +43,11 @@ class DefaultAssetServiceTest {
 
         Mockito.doAnswer(answer -> {
             Asset assetToSave = answer.getArgument(0);
-            return Mono.just(new DefaultAsset(UUID.randomUUID().toString(), assetToSave.getName() ,assetToSave.getOwnerId(), assetToSave.getAccessLevel()));
+            return Mono.just(new DefaultAsset(UUID.randomUUID().toString(), assetToSave.getName(), assetToSave.getLibraryId(), TEXT_PLAIN_VALUE, assetToSave.getAccessLevel()));
         }).when(assetDao).insert(any());
 
 
-        Mono<Asset> createdAsset = serviceUnderTest.createAsset(new AssetImpl(null, "some_name", "owner", PUBLIC));
+        Mono<Asset> createdAsset = serviceUnderTest.createAsset(new AssetImpl(null, "some_name", "owner", TEXT_PLAIN_VALUE, PUBLIC));
 
         StepVerifier.create(createdAsset)
                 .consumeNextWith(asset -> assertNotNull(asset.getId()))
@@ -75,7 +76,8 @@ class DefaultAssetServiceTest {
     private static class AssetImpl extends Asset {
         private String id;
         private String name;
-        private String ownerId;
+        private String libraryId;
+        private String mimeType;
         private AccessLevel accessLevel;
     }
 }

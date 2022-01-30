@@ -1,6 +1,6 @@
 package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 
-import com.github.sujankumarmitra.libraryservice.v1.dao.AuthorDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.BookAuthorDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.BookDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.BookTagDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.PhysicalBookDao;
@@ -36,10 +36,9 @@ import java.util.stream.Collectors;
 public class R2dbcPostgresqlPhysicalBookDao implements PhysicalBookDao {
 
     public static final String INSERT_STATEMENT = "INSERT INTO physical_books(book_id, copies_available, fine_amount, fine_currency_code) VALUES ($1,$2,$3,$4)";
-    public static final String JOINED_SELECT_STATEMENT = "SELECT b.id, b.title, b.publisher, b.edition, b.cover_page_image_asset_id, pb.copies_available, pb.fine_amount, pb.fine_currency_code FROM books b INNER JOIN physical_books pb ON (pb.book_id=b.id AND pb.book_id=$1)";
+    public static final String JOINED_SELECT_STATEMENT = "SELECT b.id, b.library_id, b.title, b.publisher, b.edition, b.cover_page_image_asset_id, pb.copies_available, pb.fine_amount, pb.fine_currency_code FROM books b INNER JOIN physical_books pb ON (pb.book_id=b.id AND pb.book_id=$1)";
     public static final String SELECT_STATEMENT = "SELECT pb.book_id, pb.copies_available, pb.fine_amount, pb.fine_currency_code FROM physical_books pb WHERE pb.book_id=$1";
     public static final String UPDATE_STATEMENT = "UPDATE physical_books SET copies_available=$1, fine_amount=$2, fine_currency_code=$3 WHERE book_id=$4";
-    public static final String DELETE_STATEMENT = "DELETE FROM physical_books WHERE book_id=$1";
     public static final String DECREMENT_COPIES_AVAILABLE_STATEMENT = "UPDATE physical_books SET copies_available=copies_available-1 WHERE book_id=$1";
     public static final String INCREMENT_COPIES_AVAILABLE_STATEMENT = "UPDATE physical_books SET copies_available=copies_available+1 WHERE book_id=$1";
     public static final String POSITIVE_COPIES_AVAILABLE_CONSTRAINT_NAME = "chk_physical_book_copies_positive";
@@ -49,7 +48,7 @@ public class R2dbcPostgresqlPhysicalBookDao implements PhysicalBookDao {
     @NonNull
     private final BookDao<Book> bookDao;
     @NonNull
-    private final AuthorDao authorDao;
+    private final BookAuthorDao bookAuthorDao;
     @NonNull
     private final BookTagDao tagDao;
 
@@ -114,7 +113,7 @@ public class R2dbcPostgresqlPhysicalBookDao implements PhysicalBookDao {
                     .map(row -> mapToR2dbcPhysicalBook(row, true))
                     .one();
 
-            Mono<Set<Author>> authorsMono = authorDao
+            Mono<Set<BookAuthor>> authorsMono = bookAuthorDao
                     .getAuthorsByBookId(uuid.toString())
                     .collect(Collectors.toCollection(HashSet::new));
 
@@ -129,12 +128,12 @@ public class R2dbcPostgresqlPhysicalBookDao implements PhysicalBookDao {
 
     }
 
-    private R2dbcPhysicalBook assemblePhysicalBook(Tuple3<R2dbcPhysicalBook, Set<Author>, Set<BookTag>> tuple3) {
+    private R2dbcPhysicalBook assemblePhysicalBook(Tuple3<R2dbcPhysicalBook, Set<BookAuthor>, Set<BookTag>> tuple3) {
         R2dbcPhysicalBook book = tuple3.getT1();
-        Set<Author> authors = tuple3.getT2();
+        Set<BookAuthor> bookAuthors = tuple3.getT2();
         Set<BookTag> tags = tuple3.getT3();
 
-        book.addAllAuthors(authors);
+        book.addAllAuthors(bookAuthors);
         book.addAllTags(tags);
 
         return book;
@@ -149,6 +148,7 @@ public class R2dbcPostgresqlPhysicalBookDao implements PhysicalBookDao {
 
         if (joinStatement) {
             book.setId(row.get("id", UUID.class));
+            book.setLibraryId(row.get("library_id", String.class));
             book.setTitle(row.get("title", String.class));
             book.setPublisher(row.get("publisher", String.class));
             book.setEdition(row.get("edition", String.class));

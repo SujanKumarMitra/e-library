@@ -26,9 +26,7 @@ import reactor.core.publisher.Mono;
 import java.net.URI;
 
 import static com.github.sujankumarmitra.ebookprocessor.v1.config.OpenApiConfiguration.*;
-import static com.github.sujankumarmitra.ebookprocessor.v1.security.SecurityAnnotations.*;
-import static com.github.sujankumarmitra.ebookprocessor.v1.security.SecurityAnnotations.EBookProcessStatusScope;
-import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
 
 /**
@@ -36,7 +34,7 @@ import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
  * @since Dec 11/12/21, 2021
  */
 @RestController
-@RequestMapping("/api/v1/process")
+@RequestMapping("/api/process")
 @AllArgsConstructor
 @Tag(
         name = "EBookProcessorController",
@@ -71,8 +69,7 @@ public class EBookProcessorController {
             }
     )
     @ApiCreatedResponse
-    @ApiConflictResponse
-    @ProcessEBookScope
+    @ApiNotFoundResponse
     @PutMapping("/{ebookId}")
     public Mono<ResponseEntity<Object>> processEbook(@PathVariable String ebookId,
                                                      ServerHttpRequest request,
@@ -87,7 +84,7 @@ public class EBookProcessorController {
                 .map(id -> ResponseEntity.created(URI.create(id)).build())
                 .onErrorResume(EBookNotFoundException.class,
                         err -> Mono.fromSupplier(() ->
-                                ResponseEntity.status(CONFLICT).body(new ErrorResponse(err.getErrors()))));
+                                ResponseEntity.status(NOT_FOUND).body(new ErrorResponse(err.getErrors()))));
     }
 
     @Operation(
@@ -100,7 +97,6 @@ public class EBookProcessorController {
             content = @Content(schema = @Schema(implementation = GetProcessingStatusResponseSchema.class))
     )
     @GetMapping("/{processId}")
-    @EBookProcessStatusScope
     @ApiNotFoundResponse
     public Mono<ResponseEntity<EBookProcessingStatus>> getProcessingStatus(@PathVariable String processId) {
         return processingStatusService

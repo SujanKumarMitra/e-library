@@ -36,11 +36,11 @@ class DefaultLibrarianServiceTest {
     @Test
     void givenDaoWhichThrowsExceptionWhenCreateLibrarian_whenSaveLibrarian_shouldSwallowErrorSignal() {
 
-        Librarian librarian = new DefaultLibrarian(UUID.randomUUID().toString());
+        Librarian librarian =
+                new DefaultLibrarian(UUID.randomUUID().toString(), "library_id");
 
-        Mockito.doReturn(Mono.error(new LibrarianAlreadyExistsException(librarian.getId())))
+        Mockito.doReturn(Mono.error(new LibrarianAlreadyExistsException(librarian.getUserId())))
                 .when(librarianDao).createLibrarian(librarian);
-
 
         librarianService
                 .addLibrarian(librarian)

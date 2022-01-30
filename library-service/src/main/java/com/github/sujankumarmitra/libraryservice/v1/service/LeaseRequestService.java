@@ -11,9 +11,9 @@ import reactor.core.publisher.Mono;
  * @since Dec 06/12/21, 2021
  */
 public interface LeaseRequestService {
-    Flux<LeaseRequest> getPendingLeaseRequests(int pageNo);
+    Flux<LeaseRequest> getPendingLeaseRequests(String libraryId, int pageNo);
 
-    Flux<LeaseRequest> getPendingLeaseRequests(String userId, int pageNo);
+    Flux<LeaseRequest> getPendingLeaseRequests(String libraryId, String userId, int pageNo);
 
     Mono<Void> cancelLeaseRequest(String leaseRequestId);
 

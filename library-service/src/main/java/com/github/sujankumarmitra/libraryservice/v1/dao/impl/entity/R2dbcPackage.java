@@ -4,6 +4,7 @@ import com.github.sujankumarmitra.libraryservice.v1.exception.BookNotFoundExcept
 import com.github.sujankumarmitra.libraryservice.v1.model.Package;
 import com.github.sujankumarmitra.libraryservice.v1.model.PackageItem;
 import com.github.sujankumarmitra.libraryservice.v1.model.PackageTag;
+import com.github.sujankumarmitra.libraryservice.v1.util.UuidUtil;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -21,6 +22,7 @@ import java.util.UUID;
 public final class R2dbcPackage extends Package {
 
     private UUID id;
+    private String libraryId;
     private String name;
     private Set<R2dbcPackageItem> items = new HashSet<>();
     private Set<R2dbcPackageTag> tags = new HashSet<>();
@@ -29,7 +31,8 @@ public final class R2dbcPackage extends Package {
     }
 
     public R2dbcPackage(@NonNull Package aPackage) {
-        this.id = aPackage.getId() == null ? null : UUID.fromString(aPackage.getId());
+        this.id = UuidUtil.nullableUuid(aPackage.getId());
+        this.libraryId = aPackage.getLibraryId();
         this.name = aPackage.getName();
         if (aPackage.getItems() != null) {
             for (PackageItem packageItem : aPackage.getItems()) {
@@ -52,14 +55,13 @@ public final class R2dbcPackage extends Package {
         return id;
     }
 
-
-    public <T extends PackageTag> void addAllTags(Set<T> tags) {
+    public void addAllTags(Set<? extends PackageTag> tags) {
         for (PackageTag tag : tags) {
             this.tags.add(convertToR2dbcPackageTag(tag));
         }
     }
 
-    public <T extends PackageItem> void addAllItems(Set<T> items) {
+    public void addAllItems(Set<? extends PackageItem> items) {
         for (PackageItem item : items) {
             this.items.add(convertToR2dbcPackageItem(item));
         }

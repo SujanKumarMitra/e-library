@@ -32,7 +32,7 @@ public class R2dbcPostgresqlRejectedLeaseDao implements RejectedLeaseDao {
     private final R2dbcEntityTemplate entityTemplate;
 
     @Override
-    public Mono<R2dbcRejectedLease> getRejectedLease(@NonNull String leaseRequestId) {
+    public Mono<RejectedLease> getRejectedLease(@NonNull String leaseRequestId) {
         return Mono.defer(() -> {
             UUID id;
             try {
@@ -45,7 +45,8 @@ public class R2dbcPostgresqlRejectedLeaseDao implements RejectedLeaseDao {
             return entityTemplate
                     .select(R2dbcRejectedLease.class)
                     .matching(query(where("lease_request_id").is(id)))
-                    .first();
+                    .first()
+                    .cast(RejectedLease.class);
         });
     }
 

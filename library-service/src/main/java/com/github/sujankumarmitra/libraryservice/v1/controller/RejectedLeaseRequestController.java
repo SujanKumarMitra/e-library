@@ -21,14 +21,13 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 import static com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.ApiSecurityScheme;
-import static com.github.sujankumarmitra.libraryservice.v1.security.SecurityAnnotations.RoleStudent;
 
 /**
  * @author skmitra
  * @since Dec 01/12/21, 2021
  */
 @RestController
-@RequestMapping("/api/v1/lease-requests/rejected")
+@RequestMapping("/api/lease-requests/rejected")
 @AllArgsConstructor
 @Tag(
         name = "RejectedLeaseRequestController",
@@ -51,7 +50,6 @@ public class RejectedLeaseRequestController {
                     schema = @Schema(implementation = GetRejectedLeaseRequestResponseSchema.class)
             )
     )
-    @RoleStudent
     @ApiNotFoundResponse
     @GetMapping("/{leaseRequestId}")
     public Mono<ResponseEntity<JacksonRejectedLease>> getRejectedLeaseById(@PathVariable String leaseRequestId) {

@@ -17,7 +17,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
@@ -35,7 +34,7 @@ import static org.springframework.http.ResponseEntity.*;
  */
 @RestController
 @AllArgsConstructor
-@RequestMapping("/api/v1/notifications")
+@RequestMapping("/api/notifications")
 @Tag(
         name = "NotificationHttpController",
         description = "Controller for creating and acknowledging notifications"
@@ -66,7 +65,6 @@ public class NotificationController {
             )
     )
     @ApiBadRequestResponse
-    @PreAuthorize("hasAuthority('NOTIFICATION_PRODUCE')")
     public Mono<ResponseEntity<Void>> createNotification(@RequestBody @Valid CreateNotificationRequest request) {
         return notificationService.createNotification(request)
                 .map(notificationId -> created(create(notificationId)).build());
@@ -84,7 +82,6 @@ public class NotificationController {
             description = "Notification not found with given id",
             content = @Content(schema = @Schema)
     )
-    @PreAuthorize("hasAuthority('NOTIFICATION_CONSUME')")
     public Mono<ResponseEntity<NotificationDto>> getNotification(Authentication authentication, @PathVariable String notificationId) {
         return notificationDao
                 .findOne(notificationId, authentication.getName())
@@ -94,7 +91,6 @@ public class NotificationController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('NOTIFICATION_CONSUME')")
     @Operation(
             summary = "Fetch notifications for a consumer",
             description = "Scopes required: NOTIFICATION_CONSUME"
@@ -120,7 +116,6 @@ public class NotificationController {
     @ApiResponse(responseCode = "200", description = "Server acknowledged the request")
     @ApiResponse(responseCode = "404", description = "Notification not found with given id")
     @PatchMapping("/{notificationId}/ack")
-    @PreAuthorize("hasAuthority('NOTIFICATION_CONSUME')")
     public Mono<ResponseEntity<Void>> acknowledgeNotification(Authentication authentication, @PathVariable String notificationId) {
         return notificationDao
                 .setAcknowledged(notificationId, authentication.getName())

@@ -8,8 +8,8 @@ import reactor.core.publisher.Flux;
  */
 public interface BookSearchDao {
 
-    Flux<String> getBookIds(int skip, int limit);
+    Flux<String> getBookIds(String libraryId, int skip, int limit);
 
-    Flux<String> getBookIdsByTitleAndAuthorStartingWith(String titlePrefix, String authorPrefix, int skip, int limit);
+    Flux<String> getBookIdsByTitleAndAuthorStartingWith(String libraryId, String titlePrefix, String authorPrefix, int skip, int limit);
 
 }

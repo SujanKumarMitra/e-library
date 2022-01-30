@@ -1,16 +1,16 @@
 -- books
-insert into books (id, title, publisher, edition, cover_page_image_asset_id) values ('d4c608c4-7ac6-48b9-b90d-9952e798578b', 'Lady Vengeance (Sympathy for Lady Vengeance) (Chinjeolhan geumjassi)', 'Wanda Sykes: Sick and Tired', 'Taboo (Gohatto)', '158NhLveCgNHGAaPjbz1E8AJD5X1SBy2HE');
-insert into books (id, title, publisher, edition, cover_page_image_asset_id) values ('1651bee3-4a18-412a-89bc-abb9dcdfe203', 'Amazing Johnathan: Wrong on Every Level', 'Cure, The', 'We the Party', '12Jc5gSRXy9SPrKCukXFCEeByaSSLHVpHJ');
-insert into books (id, title, publisher, edition, cover_page_image_asset_id) values ('7a900746-e6b7-4ddd-a3b5-99f4ad291321', 'Guard, The', 'That''s Entertainment! III', 'Bangkok Dangerous', '1vbuWupWzsiXN6eZ7PwBrsJXi2YpiTzT2');
-insert into books (id, title, publisher, edition, cover_page_image_asset_id) values ('60dc01ad-43be-4501-aaa8-3c12741dff4f', 'War', 'The Boy', 'American Ninja 5', '18YBxX6ZcfwJMDM7r1P1cYHbqJ1L4FpMpa');
-insert into books (id, title, publisher, edition, cover_page_image_asset_id) values ('2e611bfb-d06d-4ef9-9bf6-8d4f445ba736', 'Play Girl', 'Hong Kong Confidential (Amaya)', 'Hatchet', '15bFAeZ4oesWsgVE5cTqSqQxpQDHxmyezA');
+insert into books (library_id, id, title, publisher, edition, cover_page_image_asset_id) values ('library1', 'd4c608c4-7ac6-48b9-b90d-9952e798578b', 'Lady Vengeance (Sympathy for Lady Vengeance) (Chinjeolhan geumjassi)', 'Wanda Sykes: Sick and Tired', 'Taboo (Gohatto)', '158NhLveCgNHGAaPjbz1E8AJD5X1SBy2HE');
+insert into books (library_id, id, title, publisher, edition, cover_page_image_asset_id) values ('library2', '1651bee3-4a18-412a-89bc-abb9dcdfe203', 'Amazing Johnathan: Wrong on Every Level', 'Cure, The', 'We the Party', '12Jc5gSRXy9SPrKCukXFCEeByaSSLHVpHJ');
+insert into books (library_id, id, title, publisher, edition, cover_page_image_asset_id) values ('library1', '7a900746-e6b7-4ddd-a3b5-99f4ad291321', 'Guard, The', 'That''s Entertainment! III', 'Bangkok Dangerous', '1vbuWupWzsiXN6eZ7PwBrsJXi2YpiTzT2');
+insert into books (library_id, id, title, publisher, edition, cover_page_image_asset_id) values ('library2', '60dc01ad-43be-4501-aaa8-3c12741dff4f', 'War', 'The Boy', 'American Ninja 5', '18YBxX6ZcfwJMDM7r1P1cYHbqJ1L4FpMpa');
+insert into books (library_id, id, title, publisher, edition, cover_page_image_asset_id) values ('library3', '2e611bfb-d06d-4ef9-9bf6-8d4f445ba736', 'Play Girl', 'Hong Kong Confidential (Amaya)', 'Hatchet', '15bFAeZ4oesWsgVE5cTqSqQxpQDHxmyezA');
 
 --packages
-insert into packages (id, name) values ('d913745e-9328-49ca-94fa-2ca7118ae1d2', 'Veribet');
-insert into packages (id, name) values ('b4455113-452b-44af-9873-ac2bfef90129', 'It');
-insert into packages (id, name) values ('5b55d220-37f6-4f53-992a-4686d47e3e3f', 'Sub-Ex');
-insert into packages (id, name) values ('5b9040dd-7425-4c1d-b311-7231ceb18122', 'Job');
-insert into packages (id, name) values ('b1b59ce4-05cc-4732-92ea-34249e3264b7', 'Asoka');
+insert into packages (id, library_id, name) values ('d913745e-9328-49ca-94fa-2ca7118ae1d2', 'library1', 'Veribet');
+insert into packages (id, library_id, name) values ('b4455113-452b-44af-9873-ac2bfef90129', 'library1', 'It');
+insert into packages (id, library_id, name) values ('5b55d220-37f6-4f53-992a-4686d47e3e3f', 'library2', 'Sub-Ex');
+insert into packages (id, library_id, name) values ('5b9040dd-7425-4c1d-b311-7231ceb18122', 'library2', 'Job');
+insert into packages (id, library_id, name) values ('b1b59ce4-05cc-4732-92ea-34249e3264b7', 'library3', 'Asoka');
 
 --package_items
 insert into package_items (package_id, book_id) values('d913745e-9328-49ca-94fa-2ca7118ae1d2','d4c608c4-7ac6-48b9-b90d-9952e798578b');
@@ -47,15 +47,15 @@ insert into ebooks (book_id, format) values ('60dc01ad-43be-4501-aaa8-3c12741dff
 insert into ebooks (book_id, format) values ('2e611bfb-d06d-4ef9-9bf6-8d4f445ba736', 'PDF');
 
 -- physical book leases
-insert into lease_requests (id, book_id, user_id, timestamp, status) values ('f4ba906f-33d7-4a1a-8fef-9949f23c2190', 'd4c608c4-7ac6-48b9-b90d-9952e798578b', 'eyanele0', (extract(epoch from now())*1000)::bigint, 'ACCEPTED');
-insert into lease_requests (id, book_id, user_id, timestamp, status) values ('83484068-ef13-4198-a696-efbf510a06c2', '1651bee3-4a18-412a-89bc-abb9dcdfe203', 'cohms1', (extract(epoch from now())*1000)::bigint, 'PENDING');
-insert into lease_requests (id, book_id, user_id, timestamp, status) values ('1f9b4344-99d9-4cbf-bae1-2394d60706fa', '7a900746-e6b7-4ddd-a3b5-99f4ad291321', 'abudnik2', (extract(epoch from now())*1000)::bigint, 'EXPIRED');
+insert into lease_requests (id, library_id, book_id, user_id, timestamp, status) values ('f4ba906f-33d7-4a1a-8fef-9949f23c2190', 'library1', 'd4c608c4-7ac6-48b9-b90d-9952e798578b', 'eyanele0', (extract(epoch from now())*1000)::bigint, 'ACCEPTED');
+insert into lease_requests (id, library_id, book_id, user_id, timestamp, status) values ('83484068-ef13-4198-a696-efbf510a06c2', 'library2', '1651bee3-4a18-412a-89bc-abb9dcdfe203', 'cohms1', (extract(epoch from now())*1000)::bigint, 'PENDING');
+insert into lease_requests (id, library_id, book_id, user_id, timestamp, status) values ('1f9b4344-99d9-4cbf-bae1-2394d60706fa', 'library1', '7a900746-e6b7-4ddd-a3b5-99f4ad291321', 'abudnik2', (extract(epoch from now())*1000)::bigint, 'EXPIRED');
 
 --ebook leases
-insert into lease_requests (id, book_id, user_id, timestamp, status) values ('80a7d4b8-bd4f-4a31-bdf3-d42ab372892a', '2e611bfb-d06d-4ef9-9bf6-8d4f445ba736', 'apourveer3', (extract(epoch from now())*1000)::bigint, 'ACCEPTED');
-insert into lease_requests (id, book_id, user_id, timestamp, status) values ('7ccd1d51-61af-4602-ab76-814792da682b', '2e611bfb-d06d-4ef9-9bf6-8d4f445ba736', 'qbloxland4', (extract(epoch from now())*1000)::bigint, 'ACCEPTED');
-insert into lease_requests (id, book_id, user_id, timestamp, status) values ('61c22813-7faa-4fb4-9aee-2ce132520d9e', '60dc01ad-43be-4501-aaa8-3c12741dff4f', 'qbloxland5', (extract(epoch from now())*1000)::bigint, 'ACCEPTED');
-insert into lease_requests (id, book_id, user_id, timestamp, status) values ('b9d8ed6b-8bb4-43cd-a3f9-7fed8b8b1d8f', '60dc01ad-43be-4501-aaa8-3c12741dff4f', 'qbloxland4', (extract(epoch from now())*1000)::bigint, 'ACCEPTED');
+insert into lease_requests (id, library_id, book_id, user_id, timestamp, status) values ('80a7d4b8-bd4f-4a31-bdf3-d42ab372892a', 'library1', '2e611bfb-d06d-4ef9-9bf6-8d4f445ba736', 'apourveer3', (extract(epoch from now())*1000)::bigint, 'ACCEPTED');
+insert into lease_requests (id, library_id, book_id, user_id, timestamp, status) values ('7ccd1d51-61af-4602-ab76-814792da682b', 'library2', '2e611bfb-d06d-4ef9-9bf6-8d4f445ba736', 'qbloxland4', (extract(epoch from now())*1000)::bigint, 'ACCEPTED');
+insert into lease_requests (id, library_id, book_id, user_id, timestamp, status) values ('61c22813-7faa-4fb4-9aee-2ce132520d9e', 'library1', '60dc01ad-43be-4501-aaa8-3c12741dff4f', 'qbloxland5', (extract(epoch from now())*1000)::bigint, 'ACCEPTED');
+insert into lease_requests (id, library_id, book_id, user_id, timestamp, status) values ('b9d8ed6b-8bb4-43cd-a3f9-7fed8b8b1d8f', 'library2', '60dc01ad-43be-4501-aaa8-3c12741dff4f', 'qbloxland4', (extract(epoch from now())*1000)::bigint, 'ACCEPTED');
 
 --physical book accepted leases
 insert into accepted_lease_requests (lease_request_id, start_time, duration, relinquished) values ('f4ba906f-33d7-4a1a-8fef-9949f23c2190', 1638416584755, 259200000, FALSE);

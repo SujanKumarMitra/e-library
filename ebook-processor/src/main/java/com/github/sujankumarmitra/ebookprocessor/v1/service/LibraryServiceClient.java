@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono;
 public interface LibraryServiceClient {
 
 
-    Mono<EBook> getEBook(String bookId);
+    Mono<EBook> getEBook(String ebookId);
 
     Mono<String> saveEBookSegment(EBookSegment segment);
 

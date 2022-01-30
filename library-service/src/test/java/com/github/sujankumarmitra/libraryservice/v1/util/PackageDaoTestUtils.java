@@ -24,11 +24,13 @@ public class PackageDaoTestUtils {
 
     public static Mono<R2dbcPackage> insertDummyPackage(@NonNull ConnectionAccessor connAccessor) {
         R2dbcPackage aPackage = new R2dbcPackage();
+        aPackage.setLibraryId(faker.idNumber().valid());
         aPackage.setName(faker.book().title());
 
         return connAccessor.inConnectionMany(conn ->
                         Flux.from(conn.createStatement(R2dbcPostgresqlPackageDao.INSERT_STATEMENT)
-                                .bind("$1", aPackage.getName())
+                                .bind("$1", aPackage.getLibraryId())
+                                .bind("$2", aPackage.getName())
                                 .execute()))
                 .flatMap(result -> result.map((row, __) -> row.get("id", UUID.class)))
                 .next()

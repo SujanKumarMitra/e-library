@@ -10,7 +10,6 @@ import com.github.sujankumarmitra.libraryservice.v1.model.*;
 import com.github.sujankumarmitra.libraryservice.v1.model.impl.DefaultEBookPermission;
 import com.github.sujankumarmitra.libraryservice.v1.service.BookService;
 import com.github.sujankumarmitra.libraryservice.v1.service.EBookPermissionService;
-import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
-import reactor.core.scheduler.Schedulers;
 import reactor.util.function.Tuple3;
 import reactor.util.function.Tuples;
 
@@ -66,23 +64,23 @@ public class DefaultBookService implements BookService, InitializingBean {
 
     @Override
     @Transactional(readOnly = true)
-    public Flux<Book> getBooks(int pageNo) {
+    public Flux<Book> getBooks(String libraryId, int pageNo) {
         int pageSize = pagingProperties.getDefaultPageSize();
         int skip = pageNo * pageSize;
 
         return bookSearchDao
-                .getBookIds(skip, pageSize)
+                .getBookIds(libraryId, skip, pageSize)
                 .flatMap(this::getBook);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Flux<Book> getBooksByTitleAndAuthor(String titlePrefix, String authorPrefix, int pageNo) {
+    public Flux<Book> getBooksByTitleAndAuthor(String libraryId, String titlePrefix, String authorPrefix, int pageNo) {
         int pageSize = pagingProperties.getDefaultPageSize();
         int skip = pageNo * pageSize;
 
         return bookSearchDao
-                .getBookIdsByTitleAndAuthorStartingWith(titlePrefix, authorPrefix, skip, pageSize)
+                .getBookIdsByTitleAndAuthorStartingWith(libraryId, titlePrefix, authorPrefix, skip, pageSize)
                 .flatMap(this::getBook);
     }
 

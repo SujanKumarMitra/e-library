@@ -1,17 +1,21 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE IF NOT EXISTS librarians (
-    id text,
-    CONSTRAINT pk_librarians PRIMARY KEY(id)
+    user_id text,
+    library_id text,
+    CONSTRAINT pk_librarians PRIMARY KEY(user_id, library_id)
 );
 
 CREATE TABLE IF NOT EXISTS books(
 	id uuid DEFAULT uuid_generate_v4(),
+	library_id text,
 	title text,
 	publisher text,
 	edition text,
 	cover_page_image_asset_id text,
 	CONSTRAINT pk_books PRIMARY KEY (id),
+	CONSTRAINT chk_books_library_id_not_null CHECK (library_id IS NOT NULL),
+    CONSTRAINT chk_books_library_id_not_empty CHECK (LENGTH(library_id) > 0),
 	CONSTRAINT chk_books_title_not_null CHECK (title IS NOT NULL),
 	CONSTRAINT chk_books_title_not_empty CHECK (LENGTH(title) > 0),
 	CONSTRAINT chk_books_publisher_not_null CHECK (publisher IS NOT NULL),
@@ -86,8 +90,11 @@ CREATE TABLE IF NOT EXISTS ebook_segments(
 
 CREATE TABLE IF NOT EXISTS packages(
 	id uuid DEFAULT uuid_generate_v4(),
+	library_id text,
 	name text,
 	CONSTRAINT pk_packages PRIMARY KEY(id),
+	CONSTRAINT chk_packages_library_id_not_null CHECK(library_id IS NOT NULL),
+    CONSTRAINT chk_packages_library_id_not_empty CHECK(LENGTH(library_id) > 0),
 	CONSTRAINT chk_packages_name_not_null CHECK(name IS NOT NULL),
 	CONSTRAINT chk_packages_name_not_empty CHECK(LENGTH(name) > 0)
 );
@@ -120,12 +127,15 @@ CREATE TABLE IF NOT EXISTS package_items(
 
 CREATE TABLE IF NOT EXISTS lease_requests (
 	id uuid DEFAULT uuid_generate_v4(),
+	library_id text,
 	book_id uuid,
 	user_id text,
 	timestamp bigint DEFAULT extract(epoch from now()) *1000,
 	status text DEFAULT 'PENDING',
 	CONSTRAINT pk_lease_requests PRIMARY KEY(id),
  	CONSTRAINT fk_lease_requests_books FOREIGN KEY(book_id) REFERENCES books(id) ON DELETE CASCADE,
+	CONSTRAINT chk_lease_requests_library_id_not_null CHECK(library_id IS NOT NULL),
+	CONSTRAINT chk_lease_requests_library_id_not_empty CHECK(LENGTH(library_id) > 0),
 	CONSTRAINT chk_lease_requests_book_id_not_null CHECK(book_id IS NOT NULL),
 	CONSTRAINT chk_lease_requests_user_id_not_null CHECK(user_id IS NOT NULL),
 	CONSTRAINT chk_lease_requests_user_id_not_empty CHECK(LENGTH(user_id) > 0),

@@ -3,6 +3,8 @@ package com.github.sujankumarmitra.libraryservice.v1.controller.dto;
 import com.github.sujankumarmitra.libraryservice.v1.model.AcceptedLease;
 import lombok.AllArgsConstructor;
 
+import static java.lang.Boolean.FALSE;
+
 /**
  * @author skmitra
  * @since Dec 07/12/21, 2021
@@ -24,6 +26,11 @@ public class JacksonValidAcceptLeaseRequestRequestAdaptor extends AcceptedLease 
     @Override
     public Long getDurationInMilliseconds() {
         return request.getDurationInMilliseconds();
+    }
+
+    @Override
+    public Boolean isRelinquished() {
+        return FALSE;
     }
 
 }

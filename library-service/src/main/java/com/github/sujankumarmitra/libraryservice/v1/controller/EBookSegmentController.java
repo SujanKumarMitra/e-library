@@ -6,7 +6,6 @@ import com.github.sujankumarmitra.libraryservice.v1.controller.dto.JacksonValidC
 import com.github.sujankumarmitra.libraryservice.v1.exception.ApiOperationException;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.CreateEBookSegmentRequestSchema;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.GetEBookSegmentResponseSchema;
-import com.github.sujankumarmitra.libraryservice.v1.security.SecurityAnnotations.RoleStudent;
 import com.github.sujankumarmitra.libraryservice.v1.service.EBookSegmentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -26,7 +25,6 @@ import javax.validation.Valid;
 import java.net.URI;
 
 import static com.github.sujankumarmitra.libraryservice.v1.config.OpenApiConfiguration.*;
-import static com.github.sujankumarmitra.libraryservice.v1.security.SecurityAnnotations.RoleLibrarian;
 import static org.springframework.http.HttpStatus.CONFLICT;
 
 /**
@@ -35,7 +33,7 @@ import static org.springframework.http.HttpStatus.CONFLICT;
  */
 @RestController
 @AllArgsConstructor
-@RequestMapping("/api/v1/books/{bookId}/segments")
+@RequestMapping("/api/ebooks/{ebookId}/segments")
 @Tag(
         name = "EBookSegmentController",
         description = "Controller for ebook segments"
@@ -61,10 +59,9 @@ public class EBookSegmentController {
                     )
             )
     )
-    @RoleStudent
-    public Flux<JacksonGetEBookSegmentResponse> getAllSegments(@PathVariable String bookId, @RequestParam(value = "page_no", defaultValue = "0") int pageNo) {
+    public Flux<JacksonGetEBookSegmentResponse> getAllSegments(@PathVariable String ebookId, @RequestParam(value = "page_no", defaultValue = "0") int pageNo) {
         return ebookSegmentService
-                .getSegmentsByEBookId(bookId, pageNo)
+                .getSegmentsByEBookId(ebookId, pageNo)
                 .map(JacksonGetEBookSegmentResponse::new);
     }
 
@@ -80,11 +77,11 @@ public class EBookSegmentController {
                     schema = @Schema(implementation = GetEBookSegmentResponseSchema.class))
     )
     @ApiNotFoundResponse
-    @RoleStudent
-    public Mono<ResponseEntity<JacksonGetEBookSegmentResponse>> getSegmentByIndex(@PathVariable String bookId,
-                                                                                  @PathVariable int segmentIndex) {
+    public Mono<ResponseEntity<JacksonGetEBookSegmentResponse>> getSegmentByIndex(
+            @PathVariable String ebookId,
+            @PathVariable int segmentIndex) {
         return ebookSegmentService
-                .getSegmentByBookIdAndIndex(bookId, segmentIndex)
+                .getSegmentByBookIdAndIndex(ebookId, segmentIndex)
                 .map(JacksonGetEBookSegmentResponse::new)
                 .map(ResponseEntity::ok)
                 .switchIfEmpty(Mono.fromSupplier(() -> ResponseEntity.notFound().build()));
@@ -101,10 +98,11 @@ public class EBookSegmentController {
     @ApiCreatedResponse
     @ApiBadRequestResponse
     @ApiConflictResponse
-    @RoleLibrarian
-    public Mono<ResponseEntity<Object>> createSegment(@PathVariable String bookId, @RequestBody @Valid JacksonValidCreateEBookSegmentRequest request) {
+    public Mono<ResponseEntity<Object>> createSegment(
+            @PathVariable String ebookId,
+            @RequestBody @Valid JacksonValidCreateEBookSegmentRequest request) {
 
-        request.setBookId(bookId);
+        request.setBookId(ebookId);
 
         return ebookSegmentService
                 .createSegment(request)
@@ -120,10 +118,9 @@ public class EBookSegmentController {
     )
     @DeleteMapping
     @ApiAcceptedResponse
-    @RoleLibrarian
-    public Mono<ResponseEntity<Void>> deleteSegments(@PathVariable String bookId) {
+    public Mono<ResponseEntity<Void>> deleteSegments(@PathVariable String ebookId) {
         return ebookSegmentService
-                .deleteSegmentsByBookId(bookId)
+                .deleteSegmentsByBookId(ebookId)
                 .then(Mono.fromSupplier(() -> ResponseEntity.accepted().build()));
     }
 

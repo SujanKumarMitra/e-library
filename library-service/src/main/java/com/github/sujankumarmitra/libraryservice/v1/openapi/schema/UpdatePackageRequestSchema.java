@@ -20,12 +20,16 @@ public class UpdatePackageRequestSchema extends Package {
     }
 
     @Override
+    public String getLibraryId() {
+        return null;
+    }
+
+    @Override
     public String getName() {
         return null;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     @Schema(description = "if it is null, then no changes will be made." +
             "<br>. if it is empty or filled array, then previous items will be replaced by this new items." +
             "<br>. For individual updates see `PATCH /api/v1/packages/{bookId}/items/{itemId}`")
@@ -34,7 +38,6 @@ public class UpdatePackageRequestSchema extends Package {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     @Schema(description = "if it is null, then no changes will be made." +
             "<br>. if it is empty or filled array, then previous tags will be replaced by this new tags." +
             "<br>. For individual updates see `PATCH /api/v1/packages/{bookId}/tags/{tagId}`")

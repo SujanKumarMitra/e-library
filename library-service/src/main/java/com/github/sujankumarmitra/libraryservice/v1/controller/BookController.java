@@ -5,8 +5,6 @@ import com.github.sujankumarmitra.libraryservice.v1.model.Book;
 import com.github.sujankumarmitra.libraryservice.v1.model.EBook;
 import com.github.sujankumarmitra.libraryservice.v1.model.PhysicalBook;
 import com.github.sujankumarmitra.libraryservice.v1.openapi.schema.*;
-import com.github.sujankumarmitra.libraryservice.v1.security.SecurityAnnotations.RoleLibrarian;
-import com.github.sujankumarmitra.libraryservice.v1.security.SecurityAnnotations.RoleStudent;
 import com.github.sujankumarmitra.libraryservice.v1.service.BookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -34,7 +32,7 @@ import static com.github.sujankumarmitra.libraryservice.v1.controller.dto.Jackso
  * @since Nov 30/11/21, 2021
  */
 @RestController
-@RequestMapping(path = "/api/v1/books")
+@RequestMapping(path = "/api/books")
 @AllArgsConstructor
 @Tag(
         name = "BookController",
@@ -64,10 +62,11 @@ public class BookController {
             )
     )
     @GetMapping
-    @RoleStudent
-    public Flux<JacksonGetBookResponse> getBooks(@RequestParam(value = "page_no", defaultValue = "0") int pageNo) {
+    public Flux<JacksonGetBookResponse> getBooks(
+            @RequestParam("library_id") String libraryId,
+            @RequestParam(value = "page_no", defaultValue = "0") int pageNo) {
         return bookService
-                .getBooks(pageNo)
+                .getBooks(libraryId, pageNo)
                 .map(this::adaptToJacksonBook);
     }
 
@@ -87,13 +86,12 @@ public class BookController {
             )
     )
     @ApiNotFoundResponse
-    @RoleStudent
     @GetMapping("/{bookId}")
-    public Mono<ResponseEntity<Object>> getBookById(@PathVariable String bookId) {
+    public Mono<ResponseEntity<JacksonGetBookResponse>> getBookById(@PathVariable String bookId) {
         return bookService
                 .getBook(bookId)
                 .map(this::adaptToJacksonBook)
-                .map(body -> ResponseEntity.ok((Object) body))
+                .map(ResponseEntity::ok)
                 .switchIfEmpty(Mono.fromSupplier(() -> ResponseEntity.notFound().build()));
     }
 
@@ -134,13 +132,13 @@ public class BookController {
             )
     )
     @GetMapping("/search")
-    @RoleStudent
     public Flux<JacksonGetBookResponse> getBooksByTitleAndAuthorStartingWith(
+            @RequestParam("library_id") String libraryId,
             @RequestParam(name = "title_prefix", required = false) String titlePrefix,
             @RequestParam(name = "author_prefix", required = false) String authorPrefix,
             @RequestParam(value = "page_no", defaultValue = "0") int pageNo) {
         return bookService
-                .getBooksByTitleAndAuthor(titlePrefix, authorPrefix, pageNo)
+                .getBooksByTitleAndAuthor(libraryId, titlePrefix, authorPrefix, pageNo)
                 .map(this::adaptToJacksonBook);
 
     }
@@ -161,9 +159,9 @@ public class BookController {
     @ApiCreatedResponse
     @ApiBadRequestResponse
     @ApiAcceptedResponse
-    @RoleLibrarian
     @PostMapping
-    public Mono<ResponseEntity<Void>> createBook(@RequestBody @Valid JacksonValidCreateBookRequest request) {
+    public Mono<ResponseEntity<Void>> createBook(
+            @RequestBody @Valid JacksonValidCreateBookRequest request) {
         JacksonBookType type = request.getType();
 
         Mono<String> createdBookId;
@@ -197,10 +195,10 @@ public class BookController {
     )
     @ApiAcceptedResponse
     @ApiBadRequestResponse
-    @RoleLibrarian
     @PatchMapping(path = "/{bookId}", consumes = {"application/merge-patch+json", "application/json"})
-    public Mono<ResponseEntity<Void>> updateBook(@PathVariable("bookId") String bookId,
-                                                 @RequestBody @Valid JacksonValidUpdateBookRequest request) {
+    public Mono<ResponseEntity<Void>> updateBook(
+            @PathVariable String bookId,
+            @RequestBody @Valid JacksonValidUpdateBookRequest request) {
 
         request.setId(bookId);
         if (request.getAuthors() != null)
@@ -231,9 +229,9 @@ public class BookController {
             summary = "Delete a book",
             description = "Librarians will invoke this API")
     @ApiAcceptedResponse
-    @RoleLibrarian
     @DeleteMapping("/{bookId}")
-    public Mono<ResponseEntity<Void>> deleteBook(@PathVariable("bookId") String bookId) {
+    public Mono<ResponseEntity<Void>> deleteBook(
+            @PathVariable String bookId) {
         return bookService.deleteBook(bookId)
                 .thenReturn(ResponseEntity.accepted().build());
     }

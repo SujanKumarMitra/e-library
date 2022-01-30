@@ -1,8 +1,9 @@
 package com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity;
 
-import com.github.sujankumarmitra.libraryservice.v1.model.Author;
+import com.github.sujankumarmitra.libraryservice.v1.model.BookAuthor;
 import com.github.sujankumarmitra.libraryservice.v1.model.BookTag;
 import com.github.sujankumarmitra.libraryservice.v1.model.PhysicalBook;
+import com.github.sujankumarmitra.libraryservice.v1.util.UuidUtil;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -20,8 +21,9 @@ import java.util.UUID;
 public final class R2dbcPhysicalBook extends PhysicalBook {
 
     private UUID id;
+    private String libraryId;
     private String title;
-    private Set<R2dbcAuthor> authors = new HashSet<>();
+    private Set<R2dbcBookAuthor> authors = new HashSet<>();
     private String publisher;
     private String edition;
     private String coverPageImageAssetId;
@@ -42,7 +44,8 @@ public final class R2dbcPhysicalBook extends PhysicalBook {
     }
 
     public R2dbcPhysicalBook(@NonNull PhysicalBook physicalBook) {
-        this.id = physicalBook.getId() == null ? null : UUID.fromString(physicalBook.getId());
+        this.id = UuidUtil.nullableUuid(physicalBook.getId());
+        this.libraryId = physicalBook.getLibraryId();
         this.title = physicalBook.getTitle();
         this.publisher = physicalBook.getPublisher();
         this.edition = physicalBook.getEdition();
@@ -59,17 +62,9 @@ public final class R2dbcPhysicalBook extends PhysicalBook {
         this.copiesAvailable = physicalBook.getCopiesAvailable();
     }
 
-//    public void addAuthor(@NonNull Author author) {
-//        this.authors.add(convertToR2dbcAuthor(author));
-//    }
-//
-//    public void addTag(@NonNull BookTag tag) {
-//        this.tags.add(convertToR2dbcBookTag(tag));
-//    }
-
-    public <T extends Author> void addAllAuthors(@NonNull Set<T> authors) {
-        for (Author author : authors) {
-            this.authors.add(convertToR2dbcAuthor(author));
+    public <T extends BookAuthor> void addAllAuthors(@NonNull Set<T> authors) {
+        for (BookAuthor bookAuthor : authors) {
+            this.authors.add(convertToR2dbcAuthor(bookAuthor));
         }
     }
 
@@ -79,18 +74,10 @@ public final class R2dbcPhysicalBook extends PhysicalBook {
         }
     }
 
-//    public void removeAllTags() {
-//        this.tags.clear();
-//    }
-//
-//    public void removeAllAuthors() {
-//        this.authors.clear();
-//    }
-
-    private R2dbcAuthor convertToR2dbcAuthor(Author author) {
-        return author instanceof R2dbcAuthor ?
-                (R2dbcAuthor) author :
-                new R2dbcAuthor(author);
+    private R2dbcBookAuthor convertToR2dbcAuthor(BookAuthor bookAuthor) {
+        return bookAuthor instanceof R2dbcBookAuthor ?
+                (R2dbcBookAuthor) bookAuthor :
+                new R2dbcBookAuthor(bookAuthor);
     }
 
     private R2dbcBookTag convertToR2dbcBookTag(BookTag tag) {
@@ -99,4 +86,14 @@ public final class R2dbcPhysicalBook extends PhysicalBook {
                 new R2dbcBookTag(tag);
     }
 
+
+    @Override
+    public boolean equals(Object o) {
+        return super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
 }

@@ -3,7 +3,6 @@ package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 import com.github.sujankumarmitra.libraryservice.v1.exception.LibrarianAlreadyExistsException;
 import com.github.sujankumarmitra.libraryservice.v1.model.Librarian;
 import com.github.sujankumarmitra.libraryservice.v1.model.impl.DefaultLibrarian;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,7 +21,7 @@ import static com.github.sujankumarmitra.libraryservice.v1.util.DaoTestUtils.tru
  * @since Dec 09/12/21, 2021
  */
 @Slf4j
-class R2dbcPostgresqlLibrarianDaoTest extends AbstractDataR2dbcPostgreSQLContainerDependentTest {
+class R2dbcPostgresqlLibrarianDaoTest extends AbstractDataR2dbcPostgresqlContainerDependentTest {
 
     private R2dbcPostgresqlLibrarianDao librarianDao;
     @Autowired
@@ -41,7 +40,7 @@ class R2dbcPostgresqlLibrarianDaoTest extends AbstractDataR2dbcPostgreSQLContain
 
     @Test
     void givenValidLibrarian_whenCreate_shouldCreate() {
-        Librarian librarian = new DefaultLibrarian(UUID.randomUUID().toString());
+        Librarian librarian = new DefaultLibrarian(UUID.randomUUID().toString(), "library_id");
 
         librarianDao
                 .createLibrarian(librarian)
@@ -55,12 +54,13 @@ class R2dbcPostgresqlLibrarianDaoTest extends AbstractDataR2dbcPostgreSQLContain
 
     @Test
     void givenLibrarianWithExistingId_whenCreateLibrarian_shouldEmitError() {
-        Librarian librarian = new DefaultLibrarian(UUID.randomUUID().toString());
+        Librarian librarian = new DefaultLibrarian(UUID.randomUUID().toString(), "library_id");
 
         entityTemplate
                 .getDatabaseClient()
                 .sql(R2dbcPostgresqlLibrarianDao.INSERT_STATEMENT)
-                .bind("$1", librarian.getId())
+                .bind("$1", librarian.getUserId())
+                .bind("$2", librarian.getLibraryId())
                 .fetch()
                 .rowsUpdated()
                 .then(Mono.defer(() -> librarianDao.createLibrarian(librarian)))
@@ -70,7 +70,6 @@ class R2dbcPostgresqlLibrarianDaoTest extends AbstractDataR2dbcPostgreSQLContain
                 .verify();
     }
 
-    @NonNull
     private Mono<Integer> getLibrarianCount() {
         return entityTemplate
                 .getDatabaseClient()
@@ -82,15 +81,19 @@ class R2dbcPostgresqlLibrarianDaoTest extends AbstractDataR2dbcPostgreSQLContain
     @Test
     void givenValidLibrarian_whenDelete_shouldDelete() {
 
-        String librarianId = UUID.randomUUID().toString();
+        String userId = UUID.randomUUID().toString();
+        String libraryId = UUID.randomUUID().toString();
+
+        Librarian librarian = new DefaultLibrarian(userId, libraryId);
 
         entityTemplate
                 .getDatabaseClient()
                 .sql(R2dbcPostgresqlLibrarianDao.INSERT_STATEMENT)
-                .bind("$1", librarianId)
+                .bind("$1", librarian.getUserId())
+                .bind("$2", librarian.getLibraryId())
                 .fetch()
                 .rowsUpdated()
-                .then(Mono.defer(() -> librarianDao.deleteLibrarian(librarianId)))
+                .then(Mono.defer(() -> librarianDao.deleteLibrarian(librarian)))
                 .then(getLibrarianCount())
                 .as(StepVerifier::create)
                 .expectSubscription()
@@ -102,10 +105,10 @@ class R2dbcPostgresqlLibrarianDaoTest extends AbstractDataR2dbcPostgreSQLContain
     @Test
     void givenNonExistingLibrarianId_whenDelete_shouldEmitEmpty() {
 
-        String librarianId = UUID.randomUUID().toString();
+        DefaultLibrarian librarian = new DefaultLibrarian("user_id", "librarian_id");
 
         librarianDao
-                .deleteLibrarian(librarianId)
+                .deleteLibrarian(librarian)
                 .as(StepVerifier::create)
                 .expectSubscription()
                 .expectComplete()

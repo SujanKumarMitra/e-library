@@ -20,6 +20,11 @@ public class GetPendingLeaseRequestResponseSchema extends LeaseRequest {
     }
 
     @Override
+    public String getLibraryId() {
+        return null;
+    }
+
+    @Override
     @NotEmpty
     @Schema(description = "id of the book to be leased")
     public String getBookId() {

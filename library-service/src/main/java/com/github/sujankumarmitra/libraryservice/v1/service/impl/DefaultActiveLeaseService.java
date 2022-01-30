@@ -3,7 +3,7 @@ package com.github.sujankumarmitra.libraryservice.v1.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.sujankumarmitra.libraryservice.v1.config.PagingProperties;
-import com.github.sujankumarmitra.libraryservice.v1.dao.LeaseRecordDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.AcceptedLeaseDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.LeaseRequestDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.PhysicalBookDao;
 import com.github.sujankumarmitra.libraryservice.v1.exception.BookNotFoundException;
@@ -44,7 +44,7 @@ import static java.math.BigDecimal.ZERO;
 @AllArgsConstructor
 public class DefaultActiveLeaseService implements ActiveLeaseService {
     @NonNull
-    private final LeaseRecordDao leaseRecordDao;
+    private final AcceptedLeaseDao acceptedLeaseDao;
     @NonNull
     private final LeaseRequestDao leaseRequestDao;
     @NonNull
@@ -60,22 +60,22 @@ public class DefaultActiveLeaseService implements ActiveLeaseService {
 
 
     @Override
-    public Flux<LeaseRecord> getAllActiveLeases(int pageNo) {
+    public Flux<AcceptedLease> getAllActiveLeases(String libraryId, int pageNo) {
         int pageSize = pagingProperties.getDefaultPageSize();
 
         int skip = pageSize * pageNo;
 
-        return leaseRecordDao
-                .getActiveLeaseRecords(skip, pageSize);
+        return acceptedLeaseDao
+                .getActiveLeaseRecords(libraryId, skip, pageSize);
     }
 
     @Override
-    public Flux<LeaseRecord> getAllActiveLeases(String userId, int pageNo) {
+    public Flux<AcceptedLease> getAllActiveLeases(String libraryId, String userId, int pageNo) {
         int pageSize = pagingProperties.getDefaultPageSize();
 
         int skip = pageSize * pageNo;
-        return leaseRecordDao
-                .getActiveLeaseRecordsByUserId(userId, skip, pageSize);
+        return acceptedLeaseDao
+                .getActiveLeaseRecords(libraryId, userId, skip, pageSize);
     }
 
     @Override
@@ -90,13 +90,13 @@ public class DefaultActiveLeaseService implements ActiveLeaseService {
                         .getBook(leaseRequest.getBookId())
                         .switchIfEmpty(Mono.error(new BookNotFoundException(leaseRequest.getBookId())))
                         .map(PhysicalBook::getFinePerDay)
-                        .flatMap(fine -> leaseRecordDao
+                        .flatMap(fine -> acceptedLeaseDao
                                 .getLeaseRecord(leaseRequestId)
                                 .map(leaseRecord -> Tuples.of(fine, leaseRecord))))
                 .map(tuple2 -> computeFine(tuple2.getT1(), tuple2.getT2(), currentTimeMillis));
     }
 
-    private Money computeFine(Money finePerDay, LeaseRecord leaseRecord, long currentTimeMillis) {
+    private Money computeFine(Money finePerDay, AcceptedLease leaseRecord, long currentTimeMillis) {
 
         long duration = leaseRecord.getDurationInMilliseconds();
         String currencyCode = finePerDay.getCurrencyCode();
@@ -142,11 +142,11 @@ public class DefaultActiveLeaseService implements ActiveLeaseService {
                 .getLeaseRequest(leaseRequestId)
                 .switchIfEmpty(Mono.error(new LeaseRequestNotFoundException(leaseRequestId)))
                 .handle(this::emitErrorIfAlreadyHandled)
-                .flatMap(leaseRequest -> leaseRecordDao
+                .flatMap(leaseRequest -> acceptedLeaseDao
                         .markAsRelinquished(leaseRequestId)
                         .then(leaseRequestDao.setLeaseStatus(leaseRequestId, EXPIRED))
                         .then(bookService.onLeaseRelinquish(leaseRequest)))
-                .then(Mono.fromRunnable(() -> sendNotification(leaseRequestId)));
+                .then(sendNotification(leaseRequestId));
     }
 
     private void emitErrorIfAlreadyHandled(LeaseRequest leaseRequest, SynchronousSink<LeaseRequest> sink) {
@@ -159,15 +159,15 @@ public class DefaultActiveLeaseService implements ActiveLeaseService {
 
     @Override
     @Transactional
-    public Mono<Void> invalidateStateEBookLeases() {
-        return leaseRecordDao
+    public Mono<Void> invalidateStaleEBookLeases() {
+        return acceptedLeaseDao
                 .getStaleEBookLeaseRecordIds()
                 .flatMap(this::relinquishActiveLease)
                 .then();
     }
 
-    void sendNotification(String leaseRequestId) {
-        leaseRequestDao
+    private Mono<Void> sendNotification(String leaseRequestId) {
+        return leaseRequestDao
                 .getLeaseRequest(leaseRequestId)
                 .map(leaseRequest -> {
                     DefaultNotification notification = new DefaultNotification();
@@ -179,10 +179,9 @@ public class DefaultActiveLeaseService implements ActiveLeaseService {
                     return notification;
                 })
                 .flatMap(notificationService::sendNotification)
-                .subscribe(s -> {
-                        },
-                        err -> log.info("Error in sending notification ", err),
-                        () -> log.info("Sent notification for lease expiry"));
+                .doOnSuccess(aVoid -> log.info("Sent notification for lease expiry"))
+                .doOnError(err -> log.info("Error in sending notification ", err))
+                .onErrorResume(th -> Mono.empty());
     }
 
     private String createPayload(LeaseRequest request) {

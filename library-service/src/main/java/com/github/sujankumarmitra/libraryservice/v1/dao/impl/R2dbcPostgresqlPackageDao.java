@@ -34,11 +34,11 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class R2dbcPostgresqlPackageDao implements PackageDao {
 
-    public static final String INSERT_STATEMENT = "INSERT INTO packages(name) values($1) RETURNING id";
-    public static final String SELECT_BY_ID_STATEMENT = "SELECT id,name FROM packages WHERE id=$1";
-    public static final String SELECT_BY_NAME_STATEMENT = "SELECT id,name FROM packages WHERE name LIKE $1 LIMIT $3 OFFSET $2";
-    public static final String SELECT_ALL_STATEMENT = "SELECT id,name FROM packages LIMIT $2 OFFSET $1";
-    public static final String UPDATE_STATEMENT = "UPDATE packages SET name=$1 WHERE id=$2";
+    public static final String INSERT_STATEMENT = "INSERT INTO packages(library_id, name) values($1,$2) RETURNING id";
+    public static final String SELECT_BY_ID_STATEMENT = "SELECT id,library_id,name FROM packages WHERE id=$1";
+    public static final String SELECT_BY_NAME_STATEMENT = "SELECT id,library_id,name FROM packages WHERE library_id=$4 AND name LIKE $1 LIMIT $3 OFFSET $2";
+    public static final String SELECT_ALL_STATEMENT = "SELECT id,library_id,name FROM packages WHERE library_id=$3 LIMIT $2 OFFSET $1";
+    public static final String UPDATE_STATEMENT = "UPDATE packages SET library_id=$1, name=$2 WHERE id=$3";
     public static final String DELETE_STATEMENT = "DELETE FROM packages WHERE id=$1";
 
     @NonNull
@@ -54,7 +54,8 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
         R2dbcPackage r2dbcPackage = new R2dbcPackage(aPackage);
         return this.databaseClient
                 .sql(INSERT_STATEMENT)
-                .bind("$1", r2dbcPackage.getName())
+                .bind("$1", r2dbcPackage.getLibraryId())
+                .bind("$2", r2dbcPackage.getName())
                 .map(row -> row.get("id", UUID.class))
                 .one()
                 .doOnSuccess(id -> log.debug("created package {}", id))
@@ -74,11 +75,12 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
 
     @Override
     @Transactional(readOnly = true)
-    public Flux<Package> getPackages(int skip, int limit) {
+    public Flux<Package> getPackages(String libraryId, int skip, int limit) {
         return databaseClient
                 .sql(SELECT_ALL_STATEMENT)
                 .bind("$1", skip)
                 .bind("$2", limit)
+                .bind("$3", libraryId)
                 .map(this::mapToR2dbcPackage)
                 .all()
                 .flatMapSequential(aPackage -> packageItemDao
@@ -98,12 +100,13 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
 
     @Override
     @Transactional(readOnly = true)
-    public Flux<Package> getPackagesByNameStartingWith(@NonNull String prefix, int skip, int limit) {
+    public Flux<Package> getPackagesByNameStartingWith(String libraryId, @NonNull String prefix, int skip, int limit) {
         return databaseClient
                 .sql(SELECT_BY_NAME_STATEMENT)
                 .bind("$1", prefix + "%")
                 .bind("$2", skip)
                 .bind("$3", limit)
+                .bind("$4", libraryId)
                 .map(this::mapToR2dbcPackage)
                 .all()
                 .flatMapSequential(aPackage -> packageItemDao
@@ -175,6 +178,7 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
         R2dbcPackage r2dbcPackage = new R2dbcPackage();
 
         r2dbcPackage.setId(row.get("id", UUID.class));
+        r2dbcPackage.setLibraryId(row.get("library_id", String.class));
         r2dbcPackage.setName(row.get("name", String.class));
 
         return r2dbcPackage;
@@ -204,8 +208,9 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
                     .doOnNext(fetchedPackage -> applyUpdates(aPackage, fetchedPackage))
                     .flatMap(fetchedPackage -> this.databaseClient
                             .sql(UPDATE_STATEMENT)
-                            .bind("$1", fetchedPackage.getName())
-                            .bind("$2", fetchedPackage.getUuid())
+                            .bind("$1", fetchedPackage.getLibraryId())
+                            .bind("$2", fetchedPackage.getName())
+                            .bind("$3", fetchedPackage.getUuid())
                             .fetch()
                             .rowsUpdated()
                             .then())
@@ -234,6 +239,10 @@ public class R2dbcPostgresqlPackageDao implements PackageDao {
     }
 
     private void applyUpdates(Package aPackage, R2dbcPackage fetchedPackage) {
+        if(aPackage.getLibraryId() != null) {
+            fetchedPackage.setLibraryId(aPackage.getLibraryId());
+        }
+
         if (aPackage.getName() != null) {
             fetchedPackage.setName(aPackage.getName());
         }

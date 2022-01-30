@@ -65,7 +65,6 @@ class JacksonSerializationTest {
         JsonNode root = mapper.reader().readTree(jsonResponse);
 
         assertThat(root.get("active").asBoolean()).isTrue();
-        assertThat(root.get("nbf").asLong()).isEqualTo(1637154940522L);
         assertThat(root.get("exp").asLong()).isEqualTo(1637154940522L);
         assertThat(root.get("sub").asText()).isEqualTo("subject");
 

@@ -1,11 +1,11 @@
 package com.github.sujankumarmitra.libraryservice.v1.dao.impl;
 
-import com.github.sujankumarmitra.libraryservice.v1.dao.AuthorDao;
-import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcAuthor;
+import com.github.sujankumarmitra.libraryservice.v1.dao.BookAuthorDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcBookAuthor;
 import com.github.sujankumarmitra.libraryservice.v1.exception.BookNotFoundException;
 import com.github.sujankumarmitra.libraryservice.v1.exception.DefaultErrorDetails;
 import com.github.sujankumarmitra.libraryservice.v1.exception.DuplicateAuthorNameException;
-import com.github.sujankumarmitra.libraryservice.v1.model.Author;
+import com.github.sujankumarmitra.libraryservice.v1.model.BookAuthor;
 import io.r2dbc.spi.R2dbcDataIntegrityViolationException;
 import io.r2dbc.spi.Result;
 import io.r2dbc.spi.Row;
@@ -30,13 +30,11 @@ import java.util.UUID;
 @Repository
 @AllArgsConstructor
 @Slf4j
-public class R2dbcPostgresqlAuthorDao implements AuthorDao {
+public class R2dbcPostgresqlAuthorDao implements BookAuthorDao {
 
     public static final String INSERT_STATEMENT = "INSERT INTO authors(book_id,name) VALUES ($1,$2) RETURNING id";
     public static final String SELECT_STATEMENT = "SELECT id,book_id,name FROM authors WHERE book_id=$1";
-    public static final String UPDATE_STATEMENT = "UPDATE authors SET name=$1 WHERE id=$2";
     public static final String DELETE_BY_AUTHOR_ID_STATEMENT = "DELETE FROM authors WHERE book_id=$1";
-    public static final String DELETE_BY_ID_STATEMENT = "DELETE FROM authors WHERE id=$1";
     public static final String UNIQUE_AUTHOR_CONSTRAINT_NAME = "unq_authors_book_id_name";
     public static final String FOREIGN_KEY_CONSTRAINT_NAME = "fk_authors_books";
 
@@ -64,7 +62,7 @@ public class R2dbcPostgresqlAuthorDao implements AuthorDao {
 
     @Override
     @Transactional
-    public Flux<String> createAuthors(Collection<? extends Author> authors) {
+    public Flux<String> createAuthors(Collection<? extends BookAuthor> authors) {
         return Flux.defer(() -> {
             if (authors == null) {
                 log.debug("given authors is null");
@@ -73,8 +71,8 @@ public class R2dbcPostgresqlAuthorDao implements AuthorDao {
             return databaseClient.inConnectionMany(connection -> {
                         Statement statement = connection.createStatement(INSERT_STATEMENT);
 
-                        for (Author author : authors) {
-                            String bookId = author.getBookId();
+                        for (BookAuthor bookAuthor : authors) {
+                            String bookId = bookAuthor.getBookId();
                             UUID uuid;
                             try {
                                 uuid = UUID.fromString(bookId);
@@ -84,7 +82,7 @@ public class R2dbcPostgresqlAuthorDao implements AuthorDao {
                             }
                             statement = statement
                                     .bind("$1", uuid)
-                                    .bind("$2", author.getName())
+                                    .bind("$2", bookAuthor.getName())
                                     .add();
                         }
 
@@ -98,7 +96,7 @@ public class R2dbcPostgresqlAuthorDao implements AuthorDao {
 
     @Override
     @Transactional(readOnly = true)
-    public Flux<Author> getAuthorsByBookId(String bookId) {
+    public Flux<BookAuthor> getAuthorsByBookId(String bookId) {
         return Flux.defer(() -> {
             if (bookId == null) {
                 log.debug("given bookId is null");
@@ -116,42 +114,9 @@ public class R2dbcPostgresqlAuthorDao implements AuthorDao {
                     .bind("$1", uuid)
                     .map(this::mapToR2dbcAuthor)
                     .all()
-                    .cast(Author.class);
+                    .cast(BookAuthor.class);
         });
 
-    }
-
-    @Override
-    @Transactional
-    public Mono<Void> updateAuthors(Collection<? extends Author> authors) {
-        return Mono.defer(() -> {
-            if (authors == null) {
-                log.debug("given authors is null");
-                return Mono.error(new NullPointerException("given authors is null"));
-            }
-            return databaseClient.inConnectionMany(connection -> {
-                        Statement statement = connection.createStatement(UPDATE_STATEMENT);
-                        for (Author author : authors) {
-                            String id = author.getId();
-                            UUID uuid;
-                            try {
-                                uuid = UUID.fromString(id);
-                            } catch (IllegalArgumentException e) {
-                                log.debug("{} is not valid uuid, skipping update", id);
-                                continue;
-                            }
-                            statement = statement
-                                    .bind("$1", author.getName())
-                                    .bind("$2", uuid)
-                                    .add();
-                        }
-
-                        return Flux.from(statement.execute());
-                    }).flatMap(Result::getRowsUpdated)
-                    .reduce(Integer::sum)
-                    .doOnSuccess(updateCount -> log.debug("author update count {}", updateCount))
-                    .then();
-        });
     }
 
     @Override
@@ -180,38 +145,8 @@ public class R2dbcPostgresqlAuthorDao implements AuthorDao {
         });
     }
 
-    @Override
-    @Transactional
-    public Mono<Void> deleteById(String authorId) {
-        return Mono.defer(() -> {
-            if (authorId == null) {
-                log.debug("authorId is null. returning Mono.error(NullPointerException)");
-                return Mono.error(new NullPointerException("authorId is null"));
-            }
-
-            UUID id;
-            try {
-                id = UUID.fromString(authorId);
-            } catch (IllegalArgumentException ex) {
-                log.debug("{} is not valid uuid, return empty Mono", authorId);
-                return Mono.empty();
-            }
-
-            return databaseClient
-                    .sql(DELETE_BY_ID_STATEMENT)
-                    .bind("$1", id)
-                    .fetch()
-                    .rowsUpdated()
-                    .doOnSuccess(deleteCount -> {
-                        if (deleteCount > 0) log.debug("deleted author with id {}", id);
-                        else log.debug("no author exists with id {}", id);
-                    })
-                    .then();
-        });
-    }
-
-    private R2dbcAuthor mapToR2dbcAuthor(Row row) {
-        R2dbcAuthor author = new R2dbcAuthor();
+    private R2dbcBookAuthor mapToR2dbcAuthor(Row row) {
+        R2dbcBookAuthor author = new R2dbcBookAuthor();
 
         author.setId(row.get("id", UUID.class));
         author.setBookId(row.get("book_id", UUID.class));

@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @since Dec 06/12/21, 2021
  */
 @Slf4j
-class R2dbcPostgresqlRejectedLeaseDaoTest extends AbstractDataR2dbcPostgreSQLContainerDependentTest {
+class R2dbcPostgresqlRejectedLeaseDaoTest extends AbstractDataR2dbcPostgresqlContainerDependentTest {
 
     @Autowired
     private R2dbcEntityTemplate entityTemplate = null;

@@ -19,6 +19,11 @@ public class JacksonGetPendingLeaseRequestResponse extends LeaseRequest {
     }
 
     @Override
+    public String getLibraryId() {
+        return delegate.getLibraryId();
+    }
+
+    @Override
     public String getBookId() {
         return delegate.getBookId();
     }
@@ -37,5 +42,15 @@ public class JacksonGetPendingLeaseRequestResponse extends LeaseRequest {
     @Override
     public Long getTimestamp() {
         return delegate.getTimestamp();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 }

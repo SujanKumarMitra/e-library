@@ -12,12 +12,14 @@ public interface PackageService {
 
     Mono<String> createPackage(Package aPackage);
 
-    Flux<Package> getPackages(int pageNo);
+    Flux<Package> getPackages(String libraryId, int pageNo);
 
-    Flux<Package> getPackagesByName(String namePrefix, int pageNo);
+    Flux<Package> getPackagesByName(String libraryId, String namePrefix, int pageNo);
+
+    Mono<Package> getPackage(String packageId);
 
     Mono<Void> updatePackage(Package aPackage);
 
     Mono<Void> deletePackage(String packageId);
-
+    
 }

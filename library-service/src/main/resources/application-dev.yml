@@ -7,9 +7,14 @@ app:
     createAssetPermissionsTopicName: "asset_permissions"
   auth:
     baseUrl: "http://localhost:8000"
+    internal-user:
+      username: "username"
+      password: "password"
   remoteServices:
     - id: "asset-service"
       baseUrl: "http://localhost:8082"
+    - id: "notification-service"
+      baseUrl: "http://localhost:8083"
 logging:
   level:
     com.github.sujankumarmitra.libraryservice: "DEBUG"

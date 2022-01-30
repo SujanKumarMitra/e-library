@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.validation.constraints.NotEmpty;
+
 /**
  * @author skmitra
  * @since Dec 09/12/21, 2021
@@ -15,5 +17,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DefaultLibrarian extends Librarian {
-    private String id;
+    @NotEmpty
+    private String userId;
+    @NotEmpty
+    private String libraryId;
 }

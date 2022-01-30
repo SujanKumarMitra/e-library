@@ -2,10 +2,10 @@ package com.github.sujankumarmitra.libraryservice.v1.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.sujankumarmitra.libraryservice.v1.config.PagingProperties;
-import com.github.sujankumarmitra.libraryservice.v1.dao.LeaseRecordDao;
+import com.github.sujankumarmitra.libraryservice.v1.dao.AcceptedLeaseDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.LeaseRequestDao;
 import com.github.sujankumarmitra.libraryservice.v1.dao.PhysicalBookDao;
-import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcLeaseRecord;
+import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcAcceptedLease;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcLeaseRequest;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcMoney;
 import com.github.sujankumarmitra.libraryservice.v1.dao.impl.entity.R2dbcPhysicalBook;
@@ -46,7 +46,7 @@ class DefaultActiveLeaseServiceTest {
     @Mock
     private PagingProperties pagingProperties;
     @Mock
-    private LeaseRecordDao leaseRecordDao;
+    private AcceptedLeaseDao acceptedLeaseDao;
     @Mock
     private LeaseRequestDao leaseRequestDao;
     @Mock
@@ -59,7 +59,7 @@ class DefaultActiveLeaseServiceTest {
     @BeforeEach
     void setUp() {
         activeLeaseService = new DefaultActiveLeaseService(
-                leaseRecordDao,
+                acceptedLeaseDao,
                 leaseRequestDao,
                 physicalBookDao,
                 pagingProperties,
@@ -87,7 +87,7 @@ class DefaultActiveLeaseServiceTest {
                 .when(physicalBookDao)
                 .getBook(validPhysicalBookId.toString());
 
-        R2dbcLeaseRecord leaseRecord = new R2dbcLeaseRecord();
+        R2dbcAcceptedLease leaseRecord = new R2dbcAcceptedLease();
 
         leaseRecord.setLeaseRequestId(validLeaseRequestId);
         leaseRecord.setStartTimeInEpochMilliseconds(daysFromToday(10));
@@ -95,7 +95,7 @@ class DefaultActiveLeaseServiceTest {
         leaseRecord.setRelinquished(false);
 
         Mockito.doReturn(Mono.fromSupplier(() -> leaseRecord))
-                .when(leaseRecordDao)
+                .when(acceptedLeaseDao)
                 .getLeaseRecord(validLeaseRequestId.toString());
 
 

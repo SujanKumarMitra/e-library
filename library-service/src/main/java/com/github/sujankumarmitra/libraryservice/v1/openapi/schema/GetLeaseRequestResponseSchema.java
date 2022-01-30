@@ -19,6 +19,12 @@ public class GetLeaseRequestResponseSchema extends LeaseRequest {
 
     @Override
     @NotEmpty
+    public String getLibraryId() {
+        return null;
+    }
+
+    @Override
+    @NotEmpty
     public String getBookId() {
         return null;
     }

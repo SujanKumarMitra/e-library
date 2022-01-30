@@ -29,6 +29,7 @@ import static reactor.core.publisher.Mono.just;
 @Service
 @Slf4j
 public class RemoteServiceEBookPermissionService implements EBookPermissionService {
+    public static final String GRANT_PERMISSIONS_URI = "/api/assets/{assetId}/permissions";
     @NonNull
     private final EBookSegmentDao eBookSegmentDao;
     @NonNull
@@ -70,7 +71,7 @@ public class RemoteServiceEBookPermissionService implements EBookPermissionServi
     protected Mono<Void> assignPermissionToSegmentAsset(AssetPermission permission) {
         return webClient
                 .patch()
-                .uri("/api/v1/assets/{assetId}/permissions", permission.assetId)
+                .uri(GRANT_PERMISSIONS_URI, permission.assetId)
                 .body(fromPublisher(just(permission), AssetPermission.class))
                 .retrieve()
                 .toBodilessEntity()

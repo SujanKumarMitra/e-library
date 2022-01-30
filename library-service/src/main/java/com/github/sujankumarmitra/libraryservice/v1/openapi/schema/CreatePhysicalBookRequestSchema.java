@@ -24,6 +24,12 @@ public class CreatePhysicalBookRequestSchema extends PhysicalBook {
 
     @Override
     @NotEmpty
+    public String getLibraryId() {
+        return null;
+    }
+
+    @Override
+    @NotEmpty
     public String getTitle() {
         return null;
     }
@@ -32,7 +38,7 @@ public class CreatePhysicalBookRequestSchema extends PhysicalBook {
     @SuppressWarnings("unchecked")
     @NotNull
     @Size(min = 1)
-    public Set<CreateAuthorRequestSchema> getAuthors() {
+    public Set<CreateBookAuthorRequestSchema> getAuthors() {
         return Collections.emptySet();
     }
 

@@ -22,6 +22,13 @@ public class CreatePackageRequestSchema extends Package {
     }
 
     @Override
+    @Schema
+    @NotEmpty
+    public String getLibraryId() {
+        return null;
+    }
+
+    @Override
     @Schema(description = "name of the package")
     @NotEmpty
     public String getName() {
@@ -29,15 +36,13 @@ public class CreatePackageRequestSchema extends Package {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     @NotNull
     @Size(min = 1)
-    public Set<CreatePackageItemSchema> getItems() {
+    public Set<CreatePackageItemRequestSchema> getItems() {
         return Collections.emptySet();
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Set<CreatePackageTagRequestSchema> getTags() {
         return Collections.emptySet();
     }

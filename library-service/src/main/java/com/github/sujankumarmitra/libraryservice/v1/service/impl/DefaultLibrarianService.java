@@ -27,12 +27,12 @@ public class DefaultLibrarianService implements LibrarianService {
         return librarianDao
                 .createLibrarian(librarian)
                 .onErrorResume(LibrarianAlreadyExistsException.class,
-                        err -> Mono.fromRunnable(() -> log.info("Librarian with id '{}' already exists.", librarian.getId())));
+                        err -> Mono.fromRunnable(() -> log.info("Librarian with id '{}' already exists.", librarian.getUserId())));
     }
 
     @Override
-    public Mono<Void> deleteLibrarian(String librarianId) {
+    public Mono<Void> deleteLibrarian(Librarian librarian) {
         return librarianDao
-                .deleteLibrarian(librarianId);
+                .deleteLibrarian(librarian);
     }
 }
