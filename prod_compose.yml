@@ -84,11 +84,9 @@ services:
       - "7004:8080"
     environment:
       DEFAULT_PAGE_SIZE: "10"
-      KAFKA_BOOTSTRAP_SERVERS: "kafka:19092"
-      NOTIFICATIONS_TOPIC: "create_notifications"
-      CREATE_ASSET_PERMISSIONS_TOPIC: "create_asset_permissions"
       AUTH_BASEURL: "http://authorization-service:8080"
       ASSET_SERVICE_BASEURL: "http://asset-service:8080"
+      NOTIFICATION_SERVICE_BASEURL: "http://notification-service:8080"
       DB_URL: "r2dbc:postgresql://postgres:5432/library_service_db"
       DB_USERNAME: "library_service"
       DB_PASSWORD: "library_service"
@@ -133,5 +131,5 @@ services:
   authorization-service:
     image: "authorization-service:1.0.0"
     ports:
-      - "8000:8080"
+      - "7001:8080"
 

@@ -14,7 +14,7 @@ app:
     - id: "asset-service"
       baseUrl: "${ASSET_SERVICE_BASEURL}"
     - id: "notification-service"
-      baseUrl: "{NOTIFICATION_SERVICE_BASEURL}"
+      baseUrl: "${NOTIFICATION_SERVICE_BASEURL}"
 spring:
   r2dbc:
     url: "${DB_URL}"
