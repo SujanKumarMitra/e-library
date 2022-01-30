@@ -1,6 +1,7 @@
 package com.github.sujankumarmitra.assetservice.v1.dao;
 
 import com.github.sujankumarmitra.assetservice.v1.model.Asset;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
@@ -13,4 +14,6 @@ public interface AssetDao {
     Mono<Void> delete(String assetId);
 
     Mono<Asset> findOne(String assetId);
+
+    Flux<Asset> findByLibraryId(String libraryId);
 }

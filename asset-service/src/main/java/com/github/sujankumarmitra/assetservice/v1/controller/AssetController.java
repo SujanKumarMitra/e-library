@@ -1,6 +1,7 @@
 package com.github.sujankumarmitra.assetservice.v1.controller;
 
 import com.github.sujankumarmitra.assetservice.v1.controller.dto.CreateAssetRequest;
+import com.github.sujankumarmitra.assetservice.v1.controller.dto.GetAssetResponse;
 import com.github.sujankumarmitra.assetservice.v1.model.Asset;
 import com.github.sujankumarmitra.assetservice.v1.service.AssetService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -10,6 +11,7 @@ import lombok.NonNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
@@ -41,7 +43,7 @@ public class AssetController {
     @PostMapping
     @Operation(
             summary = "Create an asset for storing binary object",
-            description = "Scopes required: WRITE_ASSET"
+            description = "Librarians can invoke this API"
     )
     @ApiCreatedResponse
     @ApiBadRequestResponse
@@ -54,11 +56,19 @@ public class AssetController {
                 .map(assetId -> created(create(assetId)).build());
     }
 
+    @Operation(summary = "Gets assets belonging to a library", description = "Librarians can invoke this API")
+    @GetMapping("/{libraryId}")
+    public Flux<GetAssetResponse> getAssets(@PathVariable String libraryId) {
+        return assetService
+                .getAssets(libraryId)
+                .map(GetAssetResponse::new);
+    }
+
     @DeleteMapping("/{assetId}")
     @Operation(
             summary = "Deletes an asset.",
             description = "Deletes an existing asset along with the binary object." +
-                    "<br>Scopes required: WRITE_ASSET"
+                    "<br>Librarians can invoke this API"
     )
     @ApiAcceptedResponse
     public Mono<ResponseEntity<Void>> deleteAsset(@PathVariable String assetId) {

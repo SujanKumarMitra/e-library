@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import static com.github.sujankumarmitra.assetservice.v1.security.SecurityRoles.ROLE_LIBRARIAN;
@@ -47,6 +48,12 @@ public class SecuredAssetService implements AssetService {
     @Override
     public Mono<Asset> getAsset(String assetId) {
         return delegate.getAsset(assetId);
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority(#libraryId + ':" + ROLE_LIBRARIAN + "')")
+    public Flux<Asset> getAssets(String libraryId) {
+        return delegate.getAssets(libraryId);
     }
 
 }

@@ -5,6 +5,7 @@ import com.github.sujankumarmitra.assetservice.v1.model.Asset;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
@@ -35,5 +36,10 @@ public class DefaultAssetService implements AssetService {
     @Override
     public Mono<Asset> getAsset(String assetId) {
         return assetDao.findOne(assetId);
+    }
+
+    @Override
+    public Flux<Asset> getAssets(String libraryId) {
+        return assetDao.findByLibraryId(libraryId);
     }
 }
